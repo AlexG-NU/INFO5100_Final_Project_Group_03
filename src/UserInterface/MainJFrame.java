@@ -4,17 +4,40 @@
  */
 package UserInterface;
 
+import Business.ConfigureABusiness;
+import UserInterface.Client.ManageStaffingRequestsJPanel;
+import WorkOrders.StaffingRequest;
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  *
  * @author Alex
  */
 public class MainJFrame extends javax.swing.JFrame {
 
+    private List<StaffingRequest> masterRequestList = new ArrayList<>();
     /**
      * Creates new form MainJFrame
      */
     public MainJFrame() {
         initComponents();
+        
+        masterRequestList = ConfigureABusiness.populateStaffingRequests();
+        
+        ManageStaffingRequestsJPanel panel = 
+            new ManageStaffingRequestsJPanel(contentPanel, masterRequestList); //change this
+        showPanel(panel);
+        this.pack();
+        this.setLocationRelativeTo(null);
+    }
+    
+    public void showPanel(javax.swing.JPanel panel) {
+        contentPanel.removeAll();
+        contentPanel.setLayout(new java.awt.BorderLayout());
+        contentPanel.add(panel, java.awt.BorderLayout.CENTER);
+        contentPanel.revalidate();
+        contentPanel.repaint();
     }
 
     /**
@@ -26,17 +49,27 @@ public class MainJFrame extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        contentPanel = new javax.swing.JPanel();
+
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+
+        contentPanel.setLayout(new java.awt.BorderLayout());
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 400, Short.MAX_VALUE)
+            .addGroup(layout.createSequentialGroup()
+                .addGap(165, 165, 165)
+                .addComponent(contentPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 300, Short.MAX_VALUE)
+            .addGroup(layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(contentPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addContainerGap())
         );
 
         pack();
@@ -78,5 +111,6 @@ public class MainJFrame extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JPanel contentPanel;
     // End of variables declaration//GEN-END:variables
 }

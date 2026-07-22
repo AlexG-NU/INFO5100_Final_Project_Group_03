@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<Form version="1.5" maxVersion="1.9" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
+  <AuxValues>
+    <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="1"/>
+  </AuxValues>
+  <Layout>
+    <DimensionLayout dim="0">
+      <Group type="103" groupAlignment="0">
+        <Group type="102">
+          <EmptySpace pref="35"/>
+          <Group type="103" groupAlignment="0">
+            <Component id="lblTitle"/>
+            <Component id="jScrollPaneTable" pref="820"/>
+            <Component id="pnlDetails"/>
+            <Component id="btnBack"/>
+          </Group>
+          <EmptySpace pref="35"/>
+        </Group>
+      </Group>
+    </DimensionLayout>
+    <DimensionLayout dim="1">
+      <Group type="103" groupAlignment="0">
+        <Group type="102">
+          <EmptySpace pref="25"/>
+          <Component id="lblTitle"/>
+          <EmptySpace pref="15"/>
+          <Component id="jScrollPaneTable" pref="150"/>
+          <EmptySpace pref="12"/>
+          <Component id="pnlDetails"/>
+          <EmptySpace pref="12"/>
+          <Component id="btnBack"/>
+          <EmptySpace pref="25"/>
+        </Group>
+      </Group>
+    </DimensionLayout>
+  </Layout>
+  <SubComponents>
+    <Component class="javax.swing.JLabel" name="lblTitle">
+      <Properties>
+        <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
+          <Font name="Segoe UI" size="18" style="1"/>
+        </Property>
+        <Property name="text" type="java.lang.String" value="Verification Request Details"/>
+      </Properties>
+    </Component>
+    <Container class="javax.swing.JScrollPane" name="jScrollPaneTable">
+      <Properties><Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor"><Border info="org.netbeans.modules.form.compat2.border.TitledBorderInfo"><TitledBorder title="Verification Request"/></Border></Property></Properties>
+      <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
+      <SubComponents><Component class="javax.swing.JTable" name="tblRequests"><Properties><Property name="model" type="javax.swing.table.TableModel" editor="org.netbeans.modules.form.editors2.TableModelEditor"><Table columnCount="7" rowCount="0"><Column editable="false" title="Request ID" type="java.lang.Object"/><Column editable="false" title="Assignment ID" type="java.lang.Object"/><Column editable="false" title="Contractor ID" type="java.lang.Object"/><Column editable="false" title="Contractor" type="java.lang.Object"/><Column editable="false" title="Verification Type" type="java.lang.Object"/><Column editable="false" title="Assigned Analyst" type="java.lang.Object"/><Column editable="false" title="Status" type="java.lang.Object"/></Table></Property><Property name="tableHeader" type="javax.swing.table.JTableHeader" editor="org.netbeans.modules.form.editors2.JTableHeaderEditor"><TableHeader reorderingAllowed="true" resizingAllowed="true"/></Property></Properties></Component></SubComponents>
+    </Container>
+    <Container class="javax.swing.JPanel" name="pnlDetails">
+      <Properties>
+        <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
+          <Border info="org.netbeans.modules.form.compat2.border.TitledBorderInfo">
+            <TitledBorder title="Selected Request"/>
+          </Border>
+        </Property>
+      </Properties>
+      <Layout>
+        <DimensionLayout dim="0">
+          <Group type="103" groupAlignment="0">
+            <Group type="102">
+              <EmptySpace pref="18"/>
+              <Group type="103" groupAlignment="1">
+                <Component id="lblRequestId"/><Component id="lblAssignmentId"/>
+                <Component id="lblContractorId"/><Component id="lblContractor"/>
+                <Component id="lblVerificationType"/><Component id="lblAnalyst"/>
+                <Component id="lblStatus"/><Component id="lblFindings"/>
+              </Group>
+              <EmptySpace pref="18"/>
+              <Group type="103" groupAlignment="0">
+                <Component id="txtRequestId" pref="260"/><Component id="txtAssignmentId" pref="260"/>
+                <Component id="txtContractorId" pref="260"/><Component id="txtContractor" pref="260"/>
+                <Component id="txtVerificationType" pref="260"/><Component id="txtAnalyst" pref="260"/>
+                <Component id="txtStatus" pref="260"/><Component id="jScrollPane1" pref="390"/>
+              </Group>
+              <EmptySpace pref="18"/>
+            </Group>
+          </Group>
+        </DimensionLayout>
+        <DimensionLayout dim="1">
+          <Group type="103" groupAlignment="0">
+            <Group type="102">
+              <EmptySpace pref="12"/>
+              <Group type="103" groupAlignment="3"><Component id="lblRequestId"/><Component id="txtRequestId"/></Group>
+              <EmptySpace pref="8"/>
+              <Group type="103" groupAlignment="3"><Component id="lblAssignmentId"/><Component id="txtAssignmentId"/></Group>
+              <EmptySpace pref="8"/>
+              <Group type="103" groupAlignment="3"><Component id="lblContractorId"/><Component id="txtContractorId"/></Group>
+              <EmptySpace pref="8"/>
+              <Group type="103" groupAlignment="3"><Component id="lblContractor"/><Component id="txtContractor"/></Group>
+              <EmptySpace pref="8"/>
+              <Group type="103" groupAlignment="3"><Component id="lblVerificationType"/><Component id="txtVerificationType"/></Group>
+              <EmptySpace pref="8"/>
+              <Group type="103" groupAlignment="3"><Component id="lblAnalyst"/><Component id="txtAnalyst"/></Group>
+              <EmptySpace pref="8"/>
+              <Group type="103" groupAlignment="3"><Component id="lblStatus"/><Component id="txtStatus"/></Group>
+              <EmptySpace pref="8"/>
+              <Group type="103" groupAlignment="0"><Component id="lblFindings"/><Component id="jScrollPane1" min="80" pref="80" max="80"/></Group>
+              <EmptySpace pref="12"/>
+            </Group>
+          </Group>
+        </DimensionLayout>
+      </Layout>
+      <SubComponents>
+        <Component class="javax.swing.JLabel" name="lblRequestId"><Properties><Property name="text" type="java.lang.String" value="Request ID:"/></Properties></Component>
+        <Component class="javax.swing.JTextField" name="txtRequestId"><Properties><Property name="editable" type="boolean" value="false"/></Properties></Component>
+        <Component class="javax.swing.JLabel" name="lblAssignmentId"><Properties><Property name="text" type="java.lang.String" value="Assignment ID:"/></Properties></Component>
+        <Component class="javax.swing.JTextField" name="txtAssignmentId"><Properties><Property name="editable" type="boolean" value="false"/></Properties></Component>
+        <Component class="javax.swing.JLabel" name="lblContractorId"><Properties><Property name="text" type="java.lang.String" value="Contractor ID:"/></Properties></Component>
+        <Component class="javax.swing.JTextField" name="txtContractorId"><Properties><Property name="editable" type="boolean" value="false"/></Properties></Component>
+        <Component class="javax.swing.JLabel" name="lblContractor"><Properties><Property name="text" type="java.lang.String" value="Contractor:"/></Properties></Component>
+        <Component class="javax.swing.JTextField" name="txtContractor"><Properties><Property name="editable" type="boolean" value="false"/></Properties></Component>
+        <Component class="javax.swing.JLabel" name="lblVerificationType"><Properties><Property name="text" type="java.lang.String" value="Verification Type:"/></Properties></Component>
+        <Component class="javax.swing.JTextField" name="txtVerificationType"><Properties><Property name="editable" type="boolean" value="false"/></Properties></Component>
+        <Component class="javax.swing.JLabel" name="lblAnalyst"><Properties><Property name="text" type="java.lang.String" value="Assigned Analyst:"/></Properties></Component>
+        <Component class="javax.swing.JTextField" name="txtAnalyst"><Properties><Property name="editable" type="boolean" value="false"/></Properties></Component>
+        <Component class="javax.swing.JLabel" name="lblStatus"><Properties><Property name="text" type="java.lang.String" value="Status:"/></Properties></Component>
+        <Component class="javax.swing.JTextField" name="txtStatus"><Properties><Property name="editable" type="boolean" value="false"/></Properties></Component>
+        <Component class="javax.swing.JLabel" name="lblFindings"><Properties><Property name="text" type="java.lang.String" value="Findings:"/></Properties></Component>
+        <Container class="javax.swing.JScrollPane" name="jScrollPane1">
+          <AuxValues><AuxValue name="autoScrollPane" type="java.lang.Boolean" value="true"/></AuxValues>
+          <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
+          <SubComponents>
+            <Component class="javax.swing.JTextArea" name="txtFindings">
+              <Properties><Property name="editable" type="boolean" value="false"/><Property name="columns" type="int" value="25"/><Property name="rows" type="int" value="4"/></Properties>
+            </Component>
+          </SubComponents>
+        </Container>
+      </SubComponents>
+    </Container>
+    <Component class="javax.swing.JButton" name="btnBack">
+      <Properties><Property name="text" type="java.lang.String" value="&lt;&lt; Back"/></Properties>
+      <Events><EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnBackActionPerformed"/></Events>
+    </Component>
+  </SubComponents>
+</Form>

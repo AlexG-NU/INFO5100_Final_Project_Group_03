@@ -2,25 +2,23 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-package Model;
+package Core;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
  *
  * @author Alex
  */
-public abstract class Organization {
+public abstract class Enterprise {
     
     private String name;
+    private OrganizationDirectory organizationDirectory;
     
-    // private UserAccountDirectory userAccountDirectory;
-    // private WorkQueue workQueue;
-    
-    public Organization(String name) {
+    public Enterprise(String name) {
         this.name = name;
-        // this.userAccountDirectory = new UserAccountDirectory();
-        // this.workQueue = new WorkQueue();
+        this.organizationDirectory = new OrganizationDirectory();
     }
 
     public String getName() {
@@ -30,15 +28,12 @@ public abstract class Organization {
     public void setName(String name) {
         this.name = name;
     }
+
+
+    public OrganizationDirectory getOrganizationDirectory() {
+         return organizationDirectory;
+    }
     
-    // public UserAccountDirectory getUserAccountDirectory() {
-    //     return userAccountDirectory;
-    // }
-
-    // public WorkQueue getWorkQueue() {
-    //     return workQueue;
-    // }
-
     public abstract List<Role> getSupportedRoles();
     
     @Override

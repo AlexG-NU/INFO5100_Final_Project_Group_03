@@ -14,13 +14,13 @@ public abstract class Organization {
     
     private String name;
     
-    // private UserAccountDirectory userAccountDirectory;
-    // private WorkQueue workQueue;
+    //private UserAccountDirectory userAccountDirectory;
+    private WorkOrderQueue workOrderQueue;
     
     public Organization(String name) {
         this.name = name;
-        // this.userAccountDirectory = new UserAccountDirectory();
-        // this.workQueue = new WorkQueue();
+        //this.userAccountDirectory = new UserAccountDirectory();
+        this.workOrderQueue = new WorkOrderQueue();
     }
 
     public String getName() {
@@ -31,13 +31,13 @@ public abstract class Organization {
         this.name = name;
     }
     
-    // public UserAccountDirectory getUserAccountDirectory() {
-    //     return userAccountDirectory;
-    // }
+    //public UserAccountDirectory getUserAccountDirectory() {
+    //    return userAccountDirectory;
+    //}
 
-    // public WorkQueue getWorkQueue() {
-    //     return workQueue;
-    // }
+    public WorkOrderQueue getWorkQueue() {
+        return workOrderQueue;
+    }
 
     public abstract List<Role> getSupportedRoles();
     

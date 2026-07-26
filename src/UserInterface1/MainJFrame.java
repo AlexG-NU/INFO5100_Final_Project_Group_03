@@ -19,6 +19,7 @@ import javax.swing.JPasswordField;
 import javax.swing.JSplitPane;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
+import StaffingAgency.Request.CandidateSubmission;
 
 public class MainJFrame extends JFrame {
 
@@ -34,6 +35,8 @@ public class MainJFrame extends JFrame {
 
     private List<Candidate> candidateList =
             new ArrayList<>();
+    private List<CandidateSubmission> submissionList =
+        new ArrayList<>();
 
     /*
      * Main UI components.
@@ -201,7 +204,8 @@ public class MainJFrame extends JFrame {
         new RecruiterWorkAreaJPanel(
                 contentPanel,
                 masterRequestList,
-                candidateList
+                candidateList,
+                submissionList
         );
 
         showPanel(recruiterPanel);

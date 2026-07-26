@@ -23,12 +23,14 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.SwingConstants;
 import javax.swing.table.DefaultTableModel;
+ import StaffingAgency.Request.CandidateSubmission;
 
 public class RecruiterWorkAreaJPanel extends JPanel {
 
     private final JPanel mainContentPanel;
     private final List<StaffingRequest> masterRequestList;
     private final List<Candidate> candidateList;
+    private final List<CandidateSubmission> submissionList;
 
     private JTable tblMain;
     private DefaultTableModel tableModel;
@@ -40,35 +42,43 @@ public class RecruiterWorkAreaJPanel extends JPanel {
     private JButton btnRefresh;
 
     public RecruiterWorkAreaJPanel(
-            JPanel mainContentPanel,
-            List<StaffingRequest> masterRequestList,
-            List<Candidate> candidateList
-    ) {
-        if (mainContentPanel == null) {
-            throw new IllegalArgumentException(
-                    "Main content panel cannot be null."
-            );
-        }
-
-        if (masterRequestList == null) {
-            throw new IllegalArgumentException(
-                    "Staffing request list cannot be null."
-            );
-        }
-
-        if (candidateList == null) {
-            throw new IllegalArgumentException(
-                    "Candidate list cannot be null."
-            );
-        }
-
-        this.mainContentPanel = mainContentPanel;
-        this.masterRequestList = masterRequestList;
-        this.candidateList = candidateList;
-
-        initComponents();
-        populateDashboardTable();
+        JPanel mainContentPanel,
+        List<StaffingRequest> masterRequestList,
+        List<Candidate> candidateList,
+        List<CandidateSubmission> submissionList
+) {
+    if (mainContentPanel == null) {
+        throw new IllegalArgumentException(
+                "Main content panel cannot be null."
+        );
     }
+
+    if (masterRequestList == null) {
+        throw new IllegalArgumentException(
+                "Staffing request list cannot be null."
+        );
+    }
+
+    if (candidateList == null) {
+        throw new IllegalArgumentException(
+                "Candidate list cannot be null."
+        );
+    }
+
+    if (submissionList == null) {
+        throw new IllegalArgumentException(
+                "Submission list cannot be null."
+        );
+    }
+
+    this.mainContentPanel = mainContentPanel;
+    this.masterRequestList = masterRequestList;
+    this.candidateList = candidateList;
+    this.submissionList = submissionList;
+
+    initComponents();
+    populateDashboardTable();
+}
 
     private void initComponents() {
 
@@ -263,11 +273,8 @@ public class RecruiterWorkAreaJPanel extends JPanel {
         );
 
         btnCandidateSubmissions.addActionListener(
-                event -> JOptionPane.showMessageDialog(
-                        this,
-                        "Candidate submissions will be added next."
-                )
-        );
+        event -> openCandidateSubmissions()
+);
 
         btnReports.addActionListener(
                 event -> JOptionPane.showMessageDialog(
@@ -311,6 +318,13 @@ public class RecruiterWorkAreaJPanel extends JPanel {
                     "Candidates assigned to a workflow status"
                 }
         );
+        tableModel.addRow(
+        new Object[]{
+            "Candidate Submissions",
+            submissionList.size(),
+            "Candidates submitted to client companies"
+        }
+);
     }
 
     private void openStaffingRequests() {
@@ -347,4 +361,15 @@ public class RecruiterWorkAreaJPanel extends JPanel {
         mainContentPanel.revalidate();
         mainContentPanel.repaint();
     }
+    private void openCandidateSubmissions() {
+
+    CandidateSubmissionsJPanel submissionPanel =
+            new CandidateSubmissionsJPanel(
+                    candidateList,
+                    masterRequestList,
+                    submissionList
+            );
+
+    displayPanel(submissionPanel);
+}
 }

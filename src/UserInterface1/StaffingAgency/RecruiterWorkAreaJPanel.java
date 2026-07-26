@@ -9,49 +9,47 @@ import UserInterface.Client.ManageStaffingRequestsJPanel;
 import UserInterface1.ManageCandidatesJPanel;
 import WorkOrders.StaffingRequest;
 import java.awt.BorderLayout;
-import java.awt.CardLayout;
 import java.awt.Color;
+import java.awt.FlowLayout;
 import java.awt.Font;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
+import java.awt.GridLayout;
 import java.util.List;
+import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
 import javax.swing.SwingConstants;
+import javax.swing.table.DefaultTableModel;
 
 public class RecruiterWorkAreaJPanel extends JPanel {
 
-    /*
-     * Shared application data.
-     * These lists are created outside this panel and passed in.
-     */
+    private final JPanel mainContentPanel;
     private final List<StaffingRequest> masterRequestList;
     private final List<Candidate> candidateList;
 
-    /*
-     * Main UI panels.
-     */
-    private JPanel navigationPanel;
-    private JPanel workAreaPanel;
+    private JTable tblMain;
+    private DefaultTableModel tableModel;
 
-    /*
-     * Navigation buttons.
-     */
-    private JButton btnDashboard;
-    private JButton btnStaffingRequests;
-    private JButton btnManageCandidates;
+    private JButton btnViewRequests;
     private JButton btnCandidateSubmissions;
-    private JButton btnCredentialVerification;
+    private JButton btnManageCandidates;
     private JButton btnReports;
-
-    private JLabel lblTitle;
+    private JButton btnRefresh;
 
     public RecruiterWorkAreaJPanel(
+            JPanel mainContentPanel,
             List<StaffingRequest> masterRequestList,
             List<Candidate> candidateList
     ) {
+        if (mainContentPanel == null) {
+            throw new IllegalArgumentException(
+                    "Main content panel cannot be null."
+            );
+        }
+
         if (masterRequestList == null) {
             throw new IllegalArgumentException(
                     "Staffing request list cannot be null."
@@ -64,169 +62,199 @@ public class RecruiterWorkAreaJPanel extends JPanel {
             );
         }
 
+        this.mainContentPanel = mainContentPanel;
         this.masterRequestList = masterRequestList;
         this.candidateList = candidateList;
 
         initComponents();
-        showDashboard();
+        populateDashboardTable();
     }
 
-    /**
-     * Creates the main Recruiter work-area layout.
-     */
     private void initComponents() {
 
-        setLayout(new BorderLayout());
-        setBackground(Color.WHITE);
+        setLayout(new BorderLayout(20, 20));
+        setBackground(new Color(255, 255, 204));
+        setBorder(BorderFactory.createEmptyBorder(
+                25,
+                35,
+                25,
+                35
+        ));
 
-        createNavigationPanel();
-        createWorkAreaPanel();
-
-        add(navigationPanel, BorderLayout.WEST);
-        add(workAreaPanel, BorderLayout.CENTER);
+        add(createHeaderPanel(), BorderLayout.NORTH);
+        add(createCenterPanel(), BorderLayout.CENTER);
+        add(createBottomPanel(), BorderLayout.SOUTH);
     }
 
-    /**
-     * Creates the left-side navigation menu.
-     */
-    private void createNavigationPanel() {
+    private JPanel createHeaderPanel() {
 
-        navigationPanel = new JPanel(
-                new GridBagLayout()
+        JPanel headerPanel = new JPanel(
+                new BorderLayout(10, 15)
         );
 
-        navigationPanel.setBackground(
-                new Color(44, 62, 80)
+        headerPanel.setOpaque(false);
+
+        JPanel titlePanel = new JPanel(
+                new GridLayout(2, 1, 0, 5)
         );
 
-        navigationPanel.setPreferredSize(
-                new java.awt.Dimension(240, 700)
-        );
+        titlePanel.setOpaque(false);
 
-        lblTitle = new JLabel(
-                "<html><center>"
-                + "Recruiter"
-                + "<br>"
-                + "Work Area"
-                + "</center></html>",
-                SwingConstants.CENTER
+        JLabel lblTitle = new JLabel(
+                "Recruiter Work Area"
         );
 
         lblTitle.setFont(
-                new Font("Arial", Font.BOLD, 22)
+                new Font(
+                        "Myanmar Sangam MN",
+                        Font.ITALIC,
+                        24
+                )
         );
 
-        lblTitle.setForeground(Color.WHITE);
-
-        btnDashboard = createMenuButton(
-                "Dashboard"
+        JLabel lblSubtitle = new JLabel(
+                "Staffing Agency Enterprise - Recruiting Organization"
         );
 
-        btnStaffingRequests = createMenuButton(
-                "View Staffing Requests"
+        lblSubtitle.setFont(
+                new Font(
+                        "Myanmar MN",
+                        Font.PLAIN,
+                        14
+                )
         );
 
-        btnManageCandidates = createMenuButton(
-                "Manage Candidates"
+        lblSubtitle.setForeground(
+                new Color(102, 102, 102)
         );
 
-        btnCandidateSubmissions = createMenuButton(
-                "Candidate Submissions"
+        titlePanel.add(lblTitle);
+        titlePanel.add(lblSubtitle);
+
+        headerPanel.add(
+                titlePanel,
+                BorderLayout.NORTH
         );
 
-        btnCredentialVerification = createMenuButton(
-                "Credential Verification"
+        JPanel buttonPanel = new JPanel(
+                new GridLayout(2, 2, 40, 20)
         );
 
-        btnReports = createMenuButton(
-                "Recruiter Reports"
+        buttonPanel.setOpaque(false);
+        buttonPanel.setBorder(
+                BorderFactory.createEmptyBorder(
+                        20,
+                        80,
+                        10,
+                        80
+                )
         );
 
-        GridBagConstraints gbc =
-                new GridBagConstraints();
+        btnViewRequests =
+                new JButton("View Staffing Requests");
 
-        gbc.gridx = 0;
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.weightx = 1;
+        btnCandidateSubmissions =
+                new JButton("Candidate Submissions");
 
-        /*
-         * Title.
-         */
-        gbc.gridy = 0;
-        gbc.insets = new Insets(
-                35,
-                20,
-                35,
-                20
+        btnManageCandidates =
+                new JButton("Manage Candidates");
+
+        btnReports =
+                new JButton("Recruiter Reports");
+
+        buttonPanel.add(btnViewRequests);
+        buttonPanel.add(btnCandidateSubmissions);
+        buttonPanel.add(btnManageCandidates);
+        buttonPanel.add(btnReports);
+
+        headerPanel.add(
+                buttonPanel,
+                BorderLayout.CENTER
         );
 
-        navigationPanel.add(lblTitle, gbc);
+        addButtonActions();
 
-        /*
-         * Menu buttons.
-         */
-        gbc.insets = new Insets(
-                8,
-                20,
-                8,
-                20
+        return headerPanel;
+    }
+
+    private JPanel createCenterPanel() {
+
+        JPanel centerPanel = new JPanel(
+                new BorderLayout(10, 10)
         );
 
-        gbc.gridy = 1;
-        navigationPanel.add(
-                btnDashboard,
-                gbc
+        centerPanel.setOpaque(false);
+
+        JLabel lblSummary = new JLabel(
+                "Recruiter Dashboard Summary",
+                SwingConstants.LEFT
         );
 
-        gbc.gridy = 2;
-        navigationPanel.add(
-                btnStaffingRequests,
-                gbc
+        lblSummary.setFont(
+                new Font("Arial", Font.BOLD, 16)
         );
 
-        gbc.gridy = 3;
-        navigationPanel.add(
-                btnManageCandidates,
-                gbc
+        String[] columns = {
+            "Category",
+            "Total",
+            "Description"
+        };
+
+        tableModel = new DefaultTableModel(
+                new Object[][]{},
+                columns
+        ) {
+            @Override
+            public boolean isCellEditable(
+                    int row,
+                    int column
+            ) {
+                return false;
+            }
+        };
+
+        tblMain = new JTable(tableModel);
+        tblMain.setRowHeight(28);
+        tblMain.getTableHeader().setReorderingAllowed(false);
+
+        JScrollPane scrollPane =
+                new JScrollPane(tblMain);
+
+        centerPanel.add(
+                lblSummary,
+                BorderLayout.NORTH
         );
 
-        gbc.gridy = 4;
-        navigationPanel.add(
-                btnCandidateSubmissions,
-                gbc
+        centerPanel.add(
+                scrollPane,
+                BorderLayout.CENTER
         );
 
-        gbc.gridy = 5;
-        navigationPanel.add(
-                btnCredentialVerification,
-                gbc
+        return centerPanel;
+    }
+
+    private JPanel createBottomPanel() {
+
+        JPanel bottomPanel = new JPanel(
+                new FlowLayout(FlowLayout.RIGHT)
         );
 
-        gbc.gridy = 6;
-        navigationPanel.add(
-                btnReports,
-                gbc
+        bottomPanel.setOpaque(false);
+
+        btnRefresh = new JButton("Refresh");
+
+        btnRefresh.addActionListener(
+                event -> populateDashboardTable()
         );
 
-        /*
-         * Push menu items toward the top.
-         */
-        gbc.gridy = 7;
-        gbc.weighty = 1;
+        bottomPanel.add(btnRefresh);
 
-        navigationPanel.add(
-                new JLabel(),
-                gbc
-        );
+        return bottomPanel;
+    }
 
-        /*
-         * Button actions.
-         */
-        btnDashboard.addActionListener(
-                event -> showDashboard()
-        );
+    private void addButtonActions() {
 
-        btnStaffingRequests.addActionListener(
+        btnViewRequests.addActionListener(
                 event -> openStaffingRequests()
         );
 
@@ -235,153 +263,67 @@ public class RecruiterWorkAreaJPanel extends JPanel {
         );
 
         btnCandidateSubmissions.addActionListener(
-                event -> showPlaceholder(
-                        "Candidate Submissions",
-                        "The candidate submission workflow "
-                        + "will be added next."
-                )
-        );
-
-        btnCredentialVerification.addActionListener(
-                event -> showPlaceholder(
-                        "Credential Verification",
-                        "Credential verification requests "
-                        + "will appear here."
+                event -> JOptionPane.showMessageDialog(
+                        this,
+                        "Candidate submissions will be added next."
                 )
         );
 
         btnReports.addActionListener(
-                event -> showPlaceholder(
-                        "Recruiter Reports",
-                        "Recruiter analytics and summary "
-                        + "reports will appear here."
+                event -> JOptionPane.showMessageDialog(
+                        this,
+                        "Recruiter reports will be added later."
                 )
         );
     }
 
-    /**
-     * Creates a consistently styled navigation button.
-     */
-    private JButton createMenuButton(
-            String buttonText
-    ) {
+    private void populateDashboardTable() {
 
-        JButton button =
-                new JButton(buttonText);
+        tableModel.setRowCount(0);
 
-        button.setFont(
-                new Font(
-                        "Arial",
-                        Font.BOLD,
-                        14
-                )
+        tableModel.addRow(
+                new Object[]{
+                    "Staffing Requests",
+                    masterRequestList.size(),
+                    "Requests available for recruiter review"
+                }
         );
 
-        button.setFocusPainted(false);
-
-        button.setPreferredSize(
-                new java.awt.Dimension(
-                        195,
-                        42
-                )
+        tableModel.addRow(
+                new Object[]{
+                    "Candidates",
+                    candidateList.size(),
+                    "Candidate records in the staffing system"
+                }
         );
 
-        return button;
-    }
+        long candidatesWithStatus =
+                candidateList.stream()
+                        .filter(candidate ->
+                                candidate.getCandidateStatus() != null
+                        )
+                        .count();
 
-    /**
-     * Creates the right-side CardLayout panel.
-     */
-    private void createWorkAreaPanel() {
-
-        workAreaPanel = new JPanel(
-                new CardLayout()
-        );
-
-        workAreaPanel.setBackground(
-                Color.WHITE
+        tableModel.addRow(
+                new Object[]{
+                    "Candidates With Status",
+                    candidatesWithStatus,
+                    "Candidates assigned to a workflow status"
+                }
         );
     }
 
-    /**
-     * Displays the Recruiter dashboard.
-     */
-    private void showDashboard() {
-
-        JPanel dashboardPanel =
-                new JPanel(
-                        new BorderLayout()
-                );
-
-        dashboardPanel.setBackground(
-                Color.WHITE
-        );
-
-        JLabel welcomeLabel =
-                new JLabel(
-                        "<html>"
-                        + "<div style='text-align:center;'>"
-                        + "Welcome to the Recruiter Work Area"
-                        + "<br><br>"
-                        + "<span style='font-size:16px;'>"
-                        + "Select an option from the left menu."
-                        + "</span>"
-                        + "<br><br>"
-                        + "<span style='font-size:14px;'>"
-                        + "Staffing Requests: "
-                        + masterRequestList.size()
-                        + "&nbsp;&nbsp;&nbsp;"
-                        + "Candidates: "
-                        + candidateList.size()
-                        + "</span>"
-                        + "</div>"
-                        + "</html>",
-                        SwingConstants.CENTER
-                );
-
-        welcomeLabel.setFont(
-                new Font(
-                        "Arial",
-                        Font.BOLD,
-                        28
-                )
-        );
-
-        welcomeLabel.setForeground(
-                new Color(44, 62, 80)
-        );
-
-        dashboardPanel.add(
-                welcomeLabel,
-                BorderLayout.CENTER
-        );
-
-        showWorkAreaPanel(
-                "RecruiterDashboard",
-                dashboardPanel
-        );
-    }
-
-    /**
-     * Opens the existing staffing-request screen.
-     */
     private void openStaffingRequests() {
 
         ManageStaffingRequestsJPanel staffingPanel =
                 new ManageStaffingRequestsJPanel(
-                        workAreaPanel,
+                        mainContentPanel,
                         masterRequestList
                 );
 
-        showWorkAreaPanel(
-                "StaffingRequests",
-                staffingPanel
-        );
+        displayPanel(staffingPanel);
     }
 
-    /**
-     * Opens the candidate CRUD screen.
-     */
     private void openManageCandidates() {
 
         ManageCandidatesJPanel candidatePanel =
@@ -389,91 +331,20 @@ public class RecruiterWorkAreaJPanel extends JPanel {
                         candidateList
                 );
 
-        showWorkAreaPanel(
-                "ManageCandidates",
-                candidatePanel
-        );
+        displayPanel(candidatePanel);
     }
 
-    /**
-     * Displays a temporary screen for modules that have not yet been built.
-     */
-    private void showPlaceholder(
-            String title,
-            String message
-    ) {
+    private void displayPanel(JPanel panel) {
 
-        JPanel placeholderPanel =
-                new JPanel(
-                        new BorderLayout()
-                );
+        mainContentPanel.removeAll();
+        mainContentPanel.setLayout(new BorderLayout());
 
-        placeholderPanel.setBackground(
-                Color.WHITE
-        );
-
-        JLabel placeholderLabel =
-                new JLabel(
-                        "<html>"
-                        + "<div style='text-align:center;'>"
-                        + title
-                        + "<br><br>"
-                        + "<span style='font-size:16px;'>"
-                        + message
-                        + "</span>"
-                        + "</div>"
-                        + "</html>",
-                        SwingConstants.CENTER
-                );
-
-        placeholderLabel.setFont(
-                new Font(
-                        "Arial",
-                        Font.BOLD,
-                        26
-                )
-        );
-
-        placeholderLabel.setForeground(
-                new Color(44, 62, 80)
-        );
-
-        placeholderPanel.add(
-                placeholderLabel,
+        mainContentPanel.add(
+                panel,
                 BorderLayout.CENTER
         );
 
-        showWorkAreaPanel(
-                title,
-                placeholderPanel
-        );
-    }
-
-    /**
-     * Replaces the current panel shown inside the Recruiter work area.
-     */
-    private void showWorkAreaPanel(
-            String cardName,
-            JPanel panel
-    ) {
-
-        workAreaPanel.removeAll();
-
-        workAreaPanel.add(
-                panel,
-                cardName
-        );
-
-        CardLayout cardLayout =
-                (CardLayout)
-                        workAreaPanel.getLayout();
-
-        cardLayout.show(
-                workAreaPanel,
-                cardName
-        );
-
-        workAreaPanel.revalidate();
-        workAreaPanel.repaint();
+        mainContentPanel.revalidate();
+        mainContentPanel.repaint();
     }
 }

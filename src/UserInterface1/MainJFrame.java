@@ -197,11 +197,12 @@ public class MainJFrame extends JFrame {
         /*
          * Open the Recruiter work area using the shared lists.
          */
-        RecruiterWorkAreaJPanel recruiterPanel =
-                new RecruiterWorkAreaJPanel(
-                        masterRequestList,
-                        candidateList
-                );
+      RecruiterWorkAreaJPanel recruiterPanel =
+        new RecruiterWorkAreaJPanel(
+                contentPanel,
+                masterRequestList,
+                candidateList
+        );
 
         showPanel(recruiterPanel);
 

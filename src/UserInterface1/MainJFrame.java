@@ -1,7 +1,8 @@
 package UserInterface1;
 
 import Business.ConfigureABusiness;
-import UserInterface.Client.ManageStaffingRequestsJPanel;
+import StaffingAgency.People.Candidate;
+import UserInterface1.StaffingAgency.RecruiterWorkAreaJPanel;
 import WorkOrders.StaffingRequest;
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
@@ -22,10 +23,17 @@ import javax.swing.SwingConstants;
 public class MainJFrame extends JFrame {
 
     /*
-     * Current project data.
-     * This is retained from your existing MainJFrame.
+     * Shared application data.
+     *
+     * These lists are created once in MainJFrame and passed to
+     * the Recruiter work area so data is not recreated every time
+     * the user changes screens.
      */
-    private List<StaffingRequest> masterRequestList = new ArrayList<>();
+    private List<StaffingRequest> masterRequestList =
+            new ArrayList<>();
+
+    private List<Candidate> candidateList =
+            new ArrayList<>();
 
     /*
      * Main UI components.
@@ -47,47 +55,52 @@ public class MainJFrame extends JFrame {
 
     public MainJFrame() {
 
-        /*
-         * Creates the MainJFrame UI.
-         */
         initComponents();
 
         /*
-         * Current code retained:
-         * Load the sample staffing requests.
+         * Load existing staffing-request sample data.
          */
         masterRequestList =
                 ConfigureABusiness.populateStaffingRequests();
 
         /*
-         * Frame settings.
+         * Leave candidateList empty for now.
+         *
+         * Later, this can be replaced with Faker-generated data:
+         *
+         * candidateList =
+         *         ConfigureABusiness.populateCandidates();
          */
+        candidateList = new ArrayList<>();
+
         setTitle("Global Workforce Staffing Network");
         setSize(1100, 700);
         setLocationRelativeTo(null);
 
-        /*
-         * User must log in before seeing the work area.
-         */
         btnLogout.setVisible(false);
 
         showWelcomePanel();
     }
 
     /**
-     * Displays a JPanel inside the main content area.
-     *
-     * This replaces the content shown on the right side of the frame.
+     * Displays a panel inside the right-side content area.
      */
     public void showPanel(JPanel panel) {
 
         contentPanel.removeAll();
-        contentPanel.add(panel, "currentPanel");
+
+        contentPanel.add(
+                panel,
+                "currentPanel"
+        );
 
         CardLayout cardLayout =
                 (CardLayout) contentPanel.getLayout();
 
-        cardLayout.show(contentPanel, "currentPanel");
+        cardLayout.show(
+                contentPanel,
+                "currentPanel"
+        );
 
         contentPanel.revalidate();
         contentPanel.repaint();
@@ -104,18 +117,24 @@ public class MainJFrame extends JFrame {
         welcomePanel.setBackground(Color.WHITE);
 
         lblWelcome = new JLabel(
-                "<html><div style='text-align:center;'>"
+                "<html>"
+                + "<div style='text-align:center;'>"
                 + "Global Workforce Staffing Network"
                 + "<br><br>"
                 + "<span style='font-size:16px;'>"
                 + "Please log in to continue"
                 + "</span>"
-                + "</div></html>",
+                + "</div>"
+                + "</html>",
                 SwingConstants.CENTER
         );
 
         lblWelcome.setFont(
-                new Font("Arial", Font.BOLD, 28)
+                new Font(
+                        "Arial",
+                        Font.BOLD,
+                        28
+                )
         );
 
         lblWelcome.setForeground(
@@ -131,7 +150,7 @@ public class MainJFrame extends JFrame {
     }
 
     /**
-     * Handles the login action.
+     * Handles login.
      */
     private void login() {
 
@@ -139,12 +158,12 @@ public class MainJFrame extends JFrame {
                 txtUsername.getText().trim();
 
         String password =
-                new String(txtPassword.getPassword());
+                new String(
+                        txtPassword.getPassword()
+                );
 
-        /*
-         * Validate empty fields.
-         */
-        if (username.isEmpty() || password.isEmpty()) {
+        if (username.isEmpty()
+                || password.isEmpty()) {
 
             JOptionPane.showMessageDialog(
                     this,
@@ -157,9 +176,10 @@ public class MainJFrame extends JFrame {
         }
 
         /*
-         * Temporary authentication.
+         * Temporary recruiter authentication.
          *
-         * Replace this later with UserAccountDirectory.
+         * Later, replace this with UserAccountDirectory
+         * authentication and role-based routing.
          */
         if (!username.equalsIgnoreCase("recruiter")
                 || !password.equals("password")) {
@@ -175,16 +195,15 @@ public class MainJFrame extends JFrame {
         }
 
         /*
-         * Current project logic retained:
-         * Open ManageStaffingRequestsJPanel after login.
+         * Open the Recruiter work area using the shared lists.
          */
-        ManageStaffingRequestsJPanel panel =
-                new ManageStaffingRequestsJPanel(
-                        contentPanel,
-                        masterRequestList
+        RecruiterWorkAreaJPanel recruiterPanel =
+                new RecruiterWorkAreaJPanel(
+                        masterRequestList,
+                        candidateList
                 );
 
-        showPanel(panel);
+        showPanel(recruiterPanel);
 
         setLoginFieldsVisible(false);
         btnLogout.setVisible(true);
@@ -205,9 +224,11 @@ public class MainJFrame extends JFrame {
     }
 
     /**
-     * Shows or hides the login fields.
+     * Shows or hides the login controls.
      */
-    private void setLoginFieldsVisible(boolean visible) {
+    private void setLoginFieldsVisible(
+            boolean visible
+    ) {
 
         lblUsername.setVisible(visible);
         lblPassword.setVisible(visible);
@@ -219,7 +240,7 @@ public class MainJFrame extends JFrame {
     }
 
     /**
-     * Creates the full MainJFrame interface.
+     * Creates the complete MainJFrame interface.
      */
     private void initComponents() {
 
@@ -243,128 +264,189 @@ public class MainJFrame extends JFrame {
         );
 
         /*
-         * Split pane configuration.
+         * Split-pane settings.
          */
         splitPane.setDividerLocation(230);
         splitPane.setDividerSize(4);
         splitPane.setEnabled(false);
 
         /*
-         * Left-side login panel.
+         * Left login panel.
          */
         loginPanel.setBackground(
                 new Color(0, 153, 153)
         );
 
         loginPanel.setMinimumSize(
-                new java.awt.Dimension(230, 700)
+                new java.awt.Dimension(
+                        230,
+                        700
+                )
         );
 
         loginPanel.setPreferredSize(
-                new java.awt.Dimension(230, 700)
+                new java.awt.Dimension(
+                        230,
+                        700
+                )
         );
 
         /*
          * Portal title.
          */
         lblPortalTitle.setFont(
-                new Font("Arial", Font.BOLD, 20)
+                new Font(
+                        "Arial",
+                        Font.BOLD,
+                        20
+                )
         );
 
-        lblPortalTitle.setForeground(Color.WHITE);
+        lblPortalTitle.setForeground(
+                Color.WHITE
+        );
 
         lblPortalTitle.setHorizontalAlignment(
                 SwingConstants.CENTER
         );
 
         lblPortalTitle.setText(
-                "<html><center>"
+                "<html>"
+                + "<center>"
                 + "Staffing Agency"
                 + "<br>"
                 + "Portal"
-                + "</center></html>"
+                + "</center>"
+                + "</html>"
         );
 
         /*
-         * Username label and field.
+         * Username field.
          */
         lblUsername.setFont(
-                new Font("Arial", Font.BOLD, 14)
+                new Font(
+                        "Arial",
+                        Font.BOLD,
+                        14
+                )
         );
 
-        lblUsername.setForeground(Color.WHITE);
-        lblUsername.setText("Username");
+        lblUsername.setForeground(
+                Color.WHITE
+        );
+
+        lblUsername.setText(
+                "Username"
+        );
 
         txtUsername.setFont(
-                new Font("Arial", Font.PLAIN, 14)
+                new Font(
+                        "Arial",
+                        Font.PLAIN,
+                        14
+                )
         );
 
         /*
-         * Optional temporary default username.
-         * Remove this line later if desired.
+         * Temporary default username.
+         * You can remove this later.
          */
-        txtUsername.setText("recruiter");
+        txtUsername.setText(
+                "recruiter"
+        );
 
         /*
-         * Password label and field.
+         * Password field.
          */
         lblPassword.setFont(
-                new Font("Arial", Font.BOLD, 14)
+                new Font(
+                        "Arial",
+                        Font.BOLD,
+                        14
+                )
         );
 
-        lblPassword.setForeground(Color.WHITE);
-        lblPassword.setText("Password");
+        lblPassword.setForeground(
+                Color.WHITE
+        );
+
+        lblPassword.setText(
+                "Password"
+        );
 
         txtPassword.setFont(
-                new Font("Arial", Font.PLAIN, 14)
+                new Font(
+                        "Arial",
+                        Font.PLAIN,
+                        14
+                )
         );
 
         /*
-         * Optional temporary default password.
-         * Remove this line later if desired.
+         * Temporary default password.
+         * You can remove this later.
          */
-        txtPassword.setText("password");
+        txtPassword.setText(
+                "password"
+        );
 
         /*
-         * Pressing Enter in the password field logs in.
+         * Pressing Enter in the password field
+         * will attempt login.
          */
         txtPassword.addActionListener(
-                evt -> login()
+                event -> login()
         );
 
         /*
          * Login button.
          */
         btnLogin.setFont(
-                new Font("Arial", Font.BOLD, 14)
+                new Font(
+                        "Arial",
+                        Font.BOLD,
+                        14
+                )
         );
 
-        btnLogin.setText("Login");
+        btnLogin.setText(
+                "Login"
+        );
 
         btnLogin.addActionListener(
-                evt -> login()
+                event -> login()
         );
 
         /*
          * Logout button.
          */
         btnLogout.setFont(
-                new Font("Arial", Font.BOLD, 14)
+                new Font(
+                        "Arial",
+                        Font.BOLD,
+                        14
+                )
         );
 
-        btnLogout.setText("Logout");
+        btnLogout.setText(
+                "Logout"
+        );
 
         btnLogout.addActionListener(
-                evt -> logout()
+                event -> logout()
         );
 
         /*
-         * Login panel layout.
+         * Left-panel layout.
          */
         javax.swing.GroupLayout loginPanelLayout =
-                new javax.swing.GroupLayout(loginPanel);
+                new javax.swing.GroupLayout(
+                        loginPanel
+                );
 
-        loginPanel.setLayout(loginPanelLayout);
+        loginPanel.setLayout(
+                loginPanelLayout
+        );
 
         loginPanelLayout.setHorizontalGroup(
                 loginPanelLayout
@@ -374,7 +456,11 @@ public class MainJFrame extends JFrame {
                         .addGroup(
                                 loginPanelLayout
                                         .createSequentialGroup()
-                                        .addGap(25, 25, 25)
+                                        .addGap(
+                                                25,
+                                                25,
+                                                25
+                                        )
                                         .addGroup(
                                                 loginPanelLayout
                                                         .createParallelGroup(
@@ -432,14 +518,22 @@ public class MainJFrame extends JFrame {
                         .addGroup(
                                 loginPanelLayout
                                         .createSequentialGroup()
-                                        .addGap(45, 45, 45)
+                                        .addGap(
+                                                45,
+                                                45,
+                                                45
+                                        )
                                         .addComponent(
                                                 lblPortalTitle,
                                                 javax.swing.GroupLayout.PREFERRED_SIZE,
                                                 60,
                                                 javax.swing.GroupLayout.PREFERRED_SIZE
                                         )
-                                        .addGap(55, 55, 55)
+                                        .addGap(
+                                                55,
+                                                55,
+                                                55
+                                        )
                                         .addComponent(
                                                 lblUsername
                                         )
@@ -452,7 +546,11 @@ public class MainJFrame extends JFrame {
                                                 35,
                                                 javax.swing.GroupLayout.PREFERRED_SIZE
                                         )
-                                        .addGap(18, 18, 18)
+                                        .addGap(
+                                                18,
+                                                18,
+                                                18
+                                        )
                                         .addComponent(
                                                 lblPassword
                                         )
@@ -465,14 +563,22 @@ public class MainJFrame extends JFrame {
                                                 35,
                                                 javax.swing.GroupLayout.PREFERRED_SIZE
                                         )
-                                        .addGap(25, 25, 25)
+                                        .addGap(
+                                                25,
+                                                25,
+                                                25
+                                        )
                                         .addComponent(
                                                 btnLogin,
                                                 javax.swing.GroupLayout.PREFERRED_SIZE,
                                                 35,
                                                 javax.swing.GroupLayout.PREFERRED_SIZE
                                         )
-                                        .addGap(18, 18, 18)
+                                        .addGap(
+                                                18,
+                                                18,
+                                                18
+                                        )
                                         .addComponent(
                                                 btnLogout,
                                                 javax.swing.GroupLayout.PREFERRED_SIZE,
@@ -486,18 +592,27 @@ public class MainJFrame extends JFrame {
                         )
         );
 
-        splitPane.setLeftComponent(loginPanel);
+        splitPane.setLeftComponent(
+                loginPanel
+        );
 
         /*
-         * Right-side work area.
+         * Right-side content panel.
          */
-        contentPanel.setBackground(Color.WHITE);
-        contentPanel.setLayout(new CardLayout());
+        contentPanel.setBackground(
+                Color.WHITE
+        );
 
-        splitPane.setRightComponent(contentPanel);
+        contentPanel.setLayout(
+                new CardLayout()
+        );
+
+        splitPane.setRightComponent(
+                contentPanel
+        );
 
         /*
-         * Add split pane to the frame.
+         * Add split pane to frame.
          */
         getContentPane().setLayout(
                 new BorderLayout()
@@ -511,11 +626,10 @@ public class MainJFrame extends JFrame {
         pack();
     }
 
-    public static void main(String[] args) {
+    public static void main(
+            String[] args
+    ) {
 
-        /*
-         * Use Nimbus look and feel when available.
-         */
         try {
 
             for (
@@ -524,7 +638,9 @@ public class MainJFrame extends JFrame {
                             .getInstalledLookAndFeels()
             ) {
 
-                if ("Nimbus".equals(info.getName())) {
+                if ("Nimbus".equals(
+                        info.getName()
+                )) {
 
                     javax.swing.UIManager.setLookAndFeel(
                             info.getClassName()
@@ -542,7 +658,9 @@ public class MainJFrame extends JFrame {
         ) {
 
             java.util.logging.Logger
-                    .getLogger(MainJFrame.class.getName())
+                    .getLogger(
+                            MainJFrame.class.getName()
+                    )
                     .log(
                             java.util.logging.Level.SEVERE,
                             null,
@@ -551,7 +669,8 @@ public class MainJFrame extends JFrame {
         }
 
         java.awt.EventQueue.invokeLater(
-                () -> new MainJFrame().setVisible(true)
+                () -> new MainJFrame()
+                        .setVisible(true)
         );
     }
 }

@@ -43,11 +43,11 @@ public abstract class Person {
         if (firstName == null || firstName.isBlank()) {
             throw new IllegalArgumentException("firstName cannot be blank");
         }
-        this.firstName = firstName;
+        this.firstName = firstName.trim();
     }
 
     public String getLastName() {
-        return lastName;
+        return lastName.trim();
     }
 
     public void setLastName(String lastName) {
@@ -77,8 +77,15 @@ public abstract class Person {
     }
 
     public void setPhone(String phone) {
-        this.phone = phone;
+    if (phone == null
+            || !phone.matches("[0-9()\\-+ ]{7,20}")) {
+        throw new IllegalArgumentException(
+                "Enter a valid phone number."
+        );
     }
+
+    this.phone = phone.trim();
+}
 
     public String getSkills() {
         return skills;

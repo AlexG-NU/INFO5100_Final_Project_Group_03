@@ -4,6 +4,7 @@
  */
 package Business;
 
+import Client.ClientEnterprise;
 import WorkOrders.StaffingRequest;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -14,6 +15,22 @@ import java.util.List;
  * @author Alex
  */
 public class ConfigureABusiness {
+    
+    public static Network configure() {
+        Network network = new Network();
+        
+        ClientEnterprise client = new ClientEnterprise("Client Enterprise");
+        //PayrollEnterprise payroll = new PayrollEnterprise("Payroll Enterprise");
+        //StaffingEnterprise staffing = new StaffingEnterprise("Staffing Enterprise");
+        //ComplianceEnterprise compliance = new ComplianceEnterprise("Compliance Enterprise");
+    
+        network.getEnterpriseList().add(client);
+        //network.getEnterpriseList().add(payroll);
+        //network.getEnterpriseList().add(staffing);
+        //network.getEnterpriseList().add(compliance);
+        
+        return network;
+    }
     
     public static List<StaffingRequest> populateStaffingRequests() {
         List<StaffingRequest> requests = new ArrayList<>();

@@ -5,6 +5,8 @@
 package UserInterface;
 
 import Business.ConfigureABusiness;
+import Business.Network;
+import UserInterface.Client.ContractorJPanel;
 import UserInterface.Client.ManageStaffingRequestsJPanel;
 import WorkOrders.StaffingRequest;
 import java.util.ArrayList;
@@ -17,6 +19,7 @@ import java.util.List;
 public class MainJFrame extends javax.swing.JFrame {
 
     private List<StaffingRequest> masterRequestList = new ArrayList<>();
+    private Network network;
     /**
      * Creates new form MainJFrame
      */
@@ -24,9 +27,10 @@ public class MainJFrame extends javax.swing.JFrame {
         initComponents();
         
         masterRequestList = ConfigureABusiness.populateStaffingRequests();
-        
-        ManageStaffingRequestsJPanel panel = 
-            new ManageStaffingRequestsJPanel(contentPanel, masterRequestList); //change this
+        this.network = ConfigureABusiness.configure();
+        //ManageStaffingRequestsJPanel panel = 
+        //    new ManageStaffingRequestsJPanel(contentPanel, masterRequestList); //change this
+        ContractorJPanel panel = new ContractorJPanel();
         showPanel(panel);
         this.pack();
         this.setLocationRelativeTo(null);

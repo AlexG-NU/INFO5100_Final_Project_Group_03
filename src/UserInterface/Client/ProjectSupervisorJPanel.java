@@ -67,11 +67,11 @@ public class ProjectSupervisorJPanel extends javax.swing.JPanel {
         setBackground(new java.awt.Color(255, 255, 204));
 
         lblTitle.setFont(new java.awt.Font("Myanmar Sangam MN", 3, 18)); // NOI18N
-        lblTitle.setText("Payroll Specialist Work Area");
+        lblTitle.setText("Project Supervisor Work Area");
 
         lblSubtitle.setFont(new java.awt.Font("Myanmar MN", 0, 13)); // NOI18N
         lblSubtitle.setForeground(new java.awt.Color(102, 102, 102));
-        lblSubtitle.setText("Payroll & Billing Enterprise - Payroll Processing Organization");
+        lblSubtitle.setText("Client Enterprise - Operations Organization");
 
         btnViewRequests.setText("View Request");
         btnViewRequests.addActionListener(new java.awt.event.ActionListener() {

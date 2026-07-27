@@ -5,6 +5,12 @@
 package Business;
 
 import Client.ClientEnterprise;
+import ComplianceEnterprise.Model.ComplianceData;
+import ComplianceEnterprise.Model.ComplianceDataGenerator;
+import ComplianceEnterprise.Role.ComplianceAnalystRole;
+import ComplianceEnterprise.Role.ComplianceManagerRole;
+import ComplianceEnterprise.Role.CredentialSpecialistRole;
+import Core.UserAccountDirectory;
 import WorkOrders.StaffingRequest;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -30,6 +36,37 @@ public class ConfigureABusiness {
         //network.getEnterpriseList().add(compliance);
         
         return network;
+    }
+
+    public static ComplianceData populateComplianceData(
+            UserAccountDirectory userAccountDirectory) {
+
+        ComplianceData complianceData =
+                ComplianceDataGenerator.generate();
+
+        /*
+         * All Compliance accounts are added to the one shared
+         * network-wide UserAccountDirectory.
+         */
+        userAccountDirectory.createUserAccount(
+                "C.manager",
+                "password",
+                new ComplianceManagerRole(complianceData)
+        );
+
+        userAccountDirectory.createUserAccount(
+                "C.analyst",
+                "password",
+                new ComplianceAnalystRole(complianceData)
+        );
+
+        userAccountDirectory.createUserAccount(
+                "C.specialist",
+                "password",
+                new CredentialSpecialistRole(complianceData)
+        );
+
+        return complianceData;
     }
     
     public static List<StaffingRequest> populateStaffingRequests() {

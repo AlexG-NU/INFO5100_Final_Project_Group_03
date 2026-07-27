@@ -32,7 +32,7 @@ public class UserAccountDirectory {
         return null;
     }
     
-    public UserAccount createUserAccount(String username, String password, Role role) {
+    public UserAccount createUserAccount(String username, String password, Person person, Role role) {
         // Enforce uniqueness before creation
         if (!uniqueUsername(username)) {
             return null;

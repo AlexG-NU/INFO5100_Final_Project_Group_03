@@ -12,22 +12,25 @@ public class UserAccount {
     private String username;
     private String password;
     private Role role;
-    private Organization organization;
+    //private Organization organization;
+    private Person person;
     
     public UserAccount(String username, String password, Role role) {
         this.username = username;
         this.password = password;
         this.role = role;
-        this.organization = organization;
+        this.person = person;
     }
 
-    public Organization getOrganization() {
-        return organization;
+    public Person getPerson() {
+        return person;
     }
 
-    public void setOrganization(Organization organization) {
-        this.organization = organization;
+    public void setPerson(Person person) {
+        this.person = person;
     }
+
+
 
     public String getUsername() {
         return username;

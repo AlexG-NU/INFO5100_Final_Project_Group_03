@@ -14,6 +14,9 @@ import Client.Roles.ContractorRole;
 import Client.Roles.HiringManagerRole;
 import Core.Person;
 import Core.UserAccountDirectory;
+import StaffingAgency.People.Candidate;
+import StaffingAgency.Request.CandidateSubmission;
+import StaffingAgency.Role.RecruiterRole;
 import WorkOrders.StaffingRequest;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -26,6 +29,16 @@ import java.util.List;
 public class ConfigureABusiness {
     
     public static Network configure() {
+        return configure(
+                populateStaffingRequests(),
+                new ArrayList<>(),
+                new ArrayList<>());
+    }
+
+    public static Network configure(
+            List<StaffingRequest> staffingRequestList,
+            List<Candidate> candidateList,
+            List<CandidateSubmission> submissionList) {
         Network network = new Network();
         
         ClientEnterprise client = new ClientEnterprise("Client Enterprise");
@@ -51,6 +64,17 @@ public class ConfigureABusiness {
                 contractorPerson,
                 new ContractorRole()
         );
+
+        Person recruiterPerson = new Person("Staffing Recruiter");
+        network.getUserAccountDirectory().createUserAccount(
+                "recruiter",
+                "password",
+                recruiterPerson,
+                new RecruiterRole(
+                        staffingRequestList,
+                        candidateList,
+                        submissionList)
+        );
         
         /*
          * Add the Compliance users and demonstration records to the same
@@ -58,7 +82,6 @@ public class ConfigureABusiness {
          */
         populateComplianceData(network.getUserAccountDirectory());
         
-        populateStaffingRequests();
         return network;
     }
     

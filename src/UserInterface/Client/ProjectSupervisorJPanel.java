@@ -4,7 +4,10 @@
  */
 package UserInterface.Client;
 
+import Business.Network;
+import Core.UserAccount;
 import UserInterface.WorkArea.*;
+import javax.swing.JPanel;
 
 /**
  *
@@ -15,8 +18,14 @@ public class ProjectSupervisorJPanel extends javax.swing.JPanel {
     /**
      * Creates new form WorkAreaTemplatePanel
      */
+    private JPanel userProcessContainer;
+    private UserAccount account;
+    private Network network;
     public ProjectSupervisorJPanel() {
         initComponents();
+        this.userProcessContainer = userProcessContainer;
+        this.account = account;
+        this.network = network;
     }
     public void setWorkAreaHeader(String title, String subtitle) {
         lblTitle.setText(title);

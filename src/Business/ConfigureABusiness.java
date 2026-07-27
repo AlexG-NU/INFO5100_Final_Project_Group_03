@@ -7,7 +7,11 @@ package Business;
 import Client.ClientEnterprise;
 import Client.Roles.ContractorRole;
 import Client.Roles.HiringManagerRole;
+import Client.Roles.ProjectSupervisorRole;
 import Core.Person;
+import Core.UserAccount;
+import Core.WorkOrderStatus;
+import Core.WorkOrders.TaskWorkOrder;
 import WorkOrders.StaffingRequest;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -32,21 +36,29 @@ public class ConfigureABusiness {
         //network.getEnterpriseList().add(staffing);
         //network.getEnterpriseList().add(compliance);
         Person hrPerson = new Person("Ted HR");
-        network.getUserAccountDirectory().createUserAccount(
+        UserAccount hrAccount = network.getUserAccountDirectory().createUserAccount(
                 "HR", 
                 "password", 
                 hrPerson,
                 new HiringManagerRole()
         );
         Person contractorPerson = new Person("Alex Contractor");
-        network.getUserAccountDirectory().createUserAccount(
+        UserAccount contractorAccount = network.getUserAccountDirectory().createUserAccount(
                 "Contractor", 
                 "password", 
                 contractorPerson,
                 new ContractorRole()
         );
+        Person supervisorPerson = new Person("Lisa Supervisor");
+        UserAccount supervisorAccount = network.getUserAccountDirectory().createUserAccount(
+                "Sup", 
+                "password", 
+                supervisorPerson,
+                new ProjectSupervisorRole()
+        );
         
         populateStaffingRequests();
+        populateContractorTasks(contractorAccount, supervisorAccount);
         return network;
     }
     
@@ -99,6 +111,32 @@ public class ConfigureABusiness {
         ));
 
         return requests;
+    }
+    
+    public static void populateContractorTasks(UserAccount contractor, UserAccount supervisor) {
+        // Task 1
+        TaskWorkOrder task1 = new TaskWorkOrder();
+        task1.setTaskName("Inspect HVAC System");
+        task1.setMessage("Perform quarterly inspection and replace air filters in Building B.");
+        task1.setSender(supervisor);
+        task1.setReceiver(contractor);
+        task1.setStatus(WorkOrderStatus.PENDING);
+
+        // Task 2
+        TaskWorkOrder task2 = new TaskWorkOrder();
+        task2.setTaskName("Repair Lobby Drywall");
+        task2.setMessage("Patch drywall damage near the front entrance and prep for painting.");
+        task2.setSender(supervisor);
+        task2.setReceiver(contractor);
+        task2.setStatus(WorkOrderStatus.IN_PROGRESS);
+
+        // Add to Contractor's private queue
+        contractor.getWorkQueue().getWorkOrderList().add(task1);
+        contractor.getWorkQueue().getWorkOrderList().add(task2);
+
+        // Add to Supervisor's private queue for tracking
+        supervisor.getWorkQueue().getWorkOrderList().add(task1);
+        supervisor.getWorkQueue().getWorkOrderList().add(task2);
     }
     
 }

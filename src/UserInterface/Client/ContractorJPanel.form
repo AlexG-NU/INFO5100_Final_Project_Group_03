@@ -117,7 +117,7 @@
     </Component>
     <Component class="javax.swing.JButton" name="btnViewRequests">
       <Properties>
-        <Property name="text" type="java.lang.String" value="View Request"/>
+        <Property name="text" type="java.lang.String" value="Tasks"/>
       </Properties>
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnViewRequestsActionPerformed"/>
@@ -130,7 +130,7 @@
     </Component>
     <Component class="javax.swing.JButton" name="btnPrimaryAction">
       <Properties>
-        <Property name="text" type="java.lang.String" value="Primary Action"/>
+        <Property name="text" type="java.lang.String" value="Submit Timecard"/>
       </Properties>
     </Component>
     <Component class="javax.swing.JButton" name="btnBack">

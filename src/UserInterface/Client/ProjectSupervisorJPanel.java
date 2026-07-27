@@ -21,7 +21,7 @@ public class ProjectSupervisorJPanel extends javax.swing.JPanel {
     private JPanel userProcessContainer;
     private UserAccount account;
     private Network network;
-    public ProjectSupervisorJPanel() {
+    public ProjectSupervisorJPanel(JPanel userProcessContainer, UserAccount account, Network network) {
         initComponents();
         this.userProcessContainer = userProcessContainer;
         this.account = account;

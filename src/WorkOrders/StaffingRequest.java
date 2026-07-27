@@ -131,8 +131,8 @@ public class StaffingRequest {
 
     // JTABLE DISPLAY OVERRIDE
     @Override
-    public String toString() {
-        return String.valueOf(this.requestId); 
-    }
+public String toString() {
+    return requestId + " - " + jobTitle;
+}
     
 }

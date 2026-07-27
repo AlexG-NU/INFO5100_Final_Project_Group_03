@@ -4,6 +4,7 @@
  */
 package Core;
 
+import Business.Network;
 import javax.swing.JPanel;
 
 /**
@@ -14,9 +15,9 @@ public abstract class Role {
     
     public abstract JPanel createWorkArea(JPanel userProcessContainer, 
                                           UserAccount account,  
-                                          Organization organization, 
-                                          Enterprise enterprise 
-                                          /* Network network */);
+                                          //Organization organization, 
+                                          //Enterprise enterprise 
+                                          Network network);
     
     @Override
     public String toString() {

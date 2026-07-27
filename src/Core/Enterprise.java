@@ -14,11 +14,16 @@ import java.util.List;
 public abstract class Enterprise {
     
     private String name;
+    private UserAccountDirectory userAccountDirectory;
+    private PersonDirectory personDirectory;
     private OrganizationDirectory organizationDirectory;
     
     public Enterprise(String name) {
         this.name = name;
+        this.userAccountDirectory = new UserAccountDirectory();
+        this.personDirectory = new PersonDirectory();
         this.organizationDirectory = new OrganizationDirectory();
+        
     }
 
     public String getName() {
@@ -32,6 +37,14 @@ public abstract class Enterprise {
 
     public OrganizationDirectory getOrganizationDirectory() {
          return organizationDirectory;
+    }
+    
+    public PersonDirectory getPersonDirectory() {
+        return personDirectory;
+    }
+
+    public UserAccountDirectory getUserAccountDirectory() {
+        return userAccountDirectory;
     }
     
     public abstract List<Role> getSupportedRoles();

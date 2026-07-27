@@ -12,11 +12,21 @@ public class UserAccount {
     private String username;
     private String password;
     private Role role;
+    private Organization organization;
     
     public UserAccount(String username, String password, Role role) {
         this.username = username;
         this.password = password;
         this.role = role;
+        this.organization = organization;
+    }
+
+    public Organization getOrganization() {
+        return organization;
+    }
+
+    public void setOrganization(Organization organization) {
+        this.organization = organization;
     }
 
     public String getUsername() {

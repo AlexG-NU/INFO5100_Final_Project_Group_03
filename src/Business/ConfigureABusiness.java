@@ -5,6 +5,9 @@
 package Business;
 
 import Client.ClientEnterprise;
+import Client.Roles.ContractorRole;
+import Client.Roles.HiringManagerRole;
+import Core.Person;
 import WorkOrders.StaffingRequest;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -28,7 +31,22 @@ public class ConfigureABusiness {
         //network.getEnterpriseList().add(payroll);
         //network.getEnterpriseList().add(staffing);
         //network.getEnterpriseList().add(compliance);
+        Person hrPerson = new Person("Ted HR");
+        network.getUserAccountDirectory().createUserAccount(
+                "HR", 
+                "password", 
+                hrPerson,
+                new HiringManagerRole()
+        );
+        Person contractorPerson = new Person("Alex Contractor");
+        network.getUserAccountDirectory().createUserAccount(
+                "Contractor", 
+                "password", 
+                contractorPerson,
+                new ContractorRole()
+        );
         
+        populateStaffingRequests();
         return network;
     }
     

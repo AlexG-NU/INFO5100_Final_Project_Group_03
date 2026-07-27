@@ -5,9 +5,18 @@
 package Business;
 
 import Client.ClientEnterprise;
+import ComplianceEnterprise.Model.ComplianceData;
+import ComplianceEnterprise.Model.ComplianceDataGenerator;
+import ComplianceEnterprise.Role.ComplianceAnalystRole;
+import ComplianceEnterprise.Role.ComplianceManagerRole;
+import ComplianceEnterprise.Role.CredentialSpecialistRole;
 import Client.Roles.ContractorRole;
 import Client.Roles.HiringManagerRole;
 import Core.Person;
+import Core.UserAccountDirectory;
+import StaffingAgency.People.Candidate;
+import StaffingAgency.Request.CandidateSubmission;
+import StaffingAgency.Role.RecruiterRole;
 import WorkOrders.StaffingRequest;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -20,6 +29,16 @@ import java.util.List;
 public class ConfigureABusiness {
     
     public static Network configure() {
+        return configure(
+                populateStaffingRequests(),
+                new ArrayList<>(),
+                new ArrayList<>());
+    }
+
+    public static Network configure(
+            List<StaffingRequest> staffingRequestList,
+            List<Candidate> candidateList,
+            List<CandidateSubmission> submissionList) {
         Network network = new Network();
         
         ClientEnterprise client = new ClientEnterprise("Client Enterprise");
@@ -45,9 +64,59 @@ public class ConfigureABusiness {
                 contractorPerson,
                 new ContractorRole()
         );
+
+        Person recruiterPerson = new Person("Staffing Recruiter");
+        network.getUserAccountDirectory().createUserAccount(
+                "recruiter",
+                "password",
+                recruiterPerson,
+                new RecruiterRole(
+                        staffingRequestList,
+                        candidateList,
+                        submissionList)
+        );
         
-        populateStaffingRequests();
+        /*
+         * Add the Compliance users and demonstration records to the same
+         * network-wide UserAccountDirectory.
+         */
+        populateComplianceData(network.getUserAccountDirectory());
+        
         return network;
+    }
+    
+    public static ComplianceData populateComplianceData(
+            UserAccountDirectory userAccountDirectory) {
+
+        ComplianceData complianceData =
+                ComplianceDataGenerator.generate();
+
+        /*
+         * All Compliance accounts are added to the one shared
+         * network-wide UserAccountDirectory.
+         */
+        userAccountDirectory.createUserAccount(
+                "C.manager",
+                "password",
+                new Person("Morgan Lee"),
+                new ComplianceManagerRole(complianceData)
+        );
+
+        userAccountDirectory.createUserAccount(
+                "C.analyst",
+                "password",
+                new Person("Jamie Cruz"),
+                new ComplianceAnalystRole(complianceData)
+        );
+
+        userAccountDirectory.createUserAccount(
+                "C.specialist",
+                "password",
+                new Person("Taylor Reed"),
+                new CredentialSpecialistRole(complianceData)
+        );
+
+        return complianceData;
     }
     
     public static List<StaffingRequest> populateStaffingRequests() {

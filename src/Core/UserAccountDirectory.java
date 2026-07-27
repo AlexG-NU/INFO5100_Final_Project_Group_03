@@ -25,7 +25,8 @@ public class UserAccountDirectory {
     
     public UserAccount authenticateUser(String username, String password) {
         for (UserAccount ua : userAccountList) {
-            if (ua.getUsername().equals(username) && ua.getPassword().equals(password)) {
+            if (ua.getUsername().equalsIgnoreCase(username)
+                    && ua.getPassword().equals(password)) {
                 return ua;
             }
         }
@@ -39,6 +40,7 @@ public class UserAccountDirectory {
         }
         
         UserAccount userAccount = new UserAccount(username, password, role);
+        userAccount.setPerson(person);
         userAccountList.add(userAccount);
         return userAccount;
     }

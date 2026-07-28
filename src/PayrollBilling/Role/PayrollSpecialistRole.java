@@ -1,12 +1,32 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package PayrollBilling.Role;
 
-public class PayrollSpecialistRole {
+import Business.Network;
+import Core.Role;
+import Core.UserAccount;
+import UserInterface.WorkArea.WorkAreaTemplatePanel;
+import javax.swing.JPanel;
 
-    public String createWorkArea() {
-        return "Payroll Specialist Work Area";
+public class PayrollSpecialistRole extends Role {
+
+    @Override
+    public JPanel createWorkArea(JPanel userProcessContainer,
+                                 UserAccount account,
+                                 Network network) {
+
+        WorkAreaTemplatePanel panel = new WorkAreaTemplatePanel();
+
+        panel.setWorkAreaHeader(
+                "Payroll Specialist Work Area",
+                "Payroll & Billing Enterprise - Payroll Processing Organization"
+        );
+
+        panel.setButtonLabels(
+                "View Payroll Requests",
+                "Process Payroll",
+                "Manage Payments",
+                "Payroll Report"
+        );
+
+        return panel;
     }
 }

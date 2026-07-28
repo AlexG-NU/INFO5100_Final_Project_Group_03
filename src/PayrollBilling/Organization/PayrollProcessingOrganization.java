@@ -1,12 +1,25 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package PayrollBilling.Organization;
 
-public class PayrollProcessingOrganization {
+import Core.Organization;
+import Core.Role;
+import PayrollBilling.Role.PayrollSpecialistRole;
+import java.util.ArrayList;
+import java.util.List;
 
-    public void processApprovedTimesheets() {
-        System.out.println("Processing approved timesheets...");
+public class PayrollProcessingOrganization extends Organization {
+
+    public PayrollProcessingOrganization() {
+        super("Payroll Processing Organization");
+    }
+
+    public void processApprovedTimecards() {
+        System.out.println("Processing approved timecards...");
+    }
+
+    @Override
+    public List<Role> getSupportedRoles() {
+        List<Role> roles = new ArrayList<>();
+        roles.add(new PayrollSpecialistRole());
+        return roles;
     }
 }

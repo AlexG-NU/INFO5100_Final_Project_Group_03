@@ -1,13 +1,10 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
-*/
 package PayrollBilling;
 
 import PayrollBilling.Record.BillingRecord;
 import PayrollBilling.Record.Invoice;
 import PayrollBilling.Record.PaymentRecord;
 import PayrollBilling.Record.PayrollRecord;
+import PayrollBilling.Report.PayrollReport;
 import PayrollBilling.Request.BillingRequest;
 import PayrollBilling.Request.ContractorPaymentRequest;
 import PayrollBilling.Request.PayrollRequest;
@@ -25,6 +22,7 @@ public class PayrollBillingModule {
     private ArrayList<PaymentRecord> paymentRecords;
     private ArrayList<BillingRecord> billingRecords;
     private ArrayList<Invoice> invoices;
+    private ArrayList<PayrollReport> payrollReports;
 
     public PayrollBillingModule() {
         this.moduleName = "Payroll and Billing Module";
@@ -37,6 +35,7 @@ public class PayrollBillingModule {
         paymentRecords = new ArrayList<>();
         billingRecords = new ArrayList<>();
         invoices = new ArrayList<>();
+        payrollReports = new ArrayList<>();
     }
 
     public String getModuleName() {
@@ -69,5 +68,9 @@ public class PayrollBillingModule {
 
     public ArrayList<Invoice> getInvoices() {
         return invoices;
+    }
+
+    public ArrayList<PayrollReport> getPayrollReports() {
+        return payrollReports;
     }
 }

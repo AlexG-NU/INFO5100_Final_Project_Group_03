@@ -14,12 +14,30 @@ public class UserAccount {
     private Role role;
     //private Organization organization;
     private Person person;
+    private UserAccount supervisor;
+    private WorkOrderQueue workQueue;
     
     public UserAccount(String username, String password, Role role) {
         this.username = username;
         this.password = password;
         this.role = role;
         this.person = person;
+        this.workQueue = new WorkOrderQueue();
+    }
+
+    public WorkOrderQueue getWorkQueue() {
+        //if (this.workQueue == null) {
+        //    this.workQueue = new WorkOrderQueue();
+        //}
+        return workQueue;
+    }
+
+    public UserAccount getSupervisor() {
+        return supervisor;
+    }
+
+    public void setSupervisor(UserAccount supervisor) {
+        this.supervisor = supervisor;
     }
 
     public Person getPerson() {

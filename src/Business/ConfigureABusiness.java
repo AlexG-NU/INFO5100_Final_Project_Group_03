@@ -41,29 +41,16 @@ public class ConfigureABusiness {
             List<CandidateSubmission> submissionList) {
         Network network = new Network();
         
-        ClientEnterprise client = new ClientEnterprise("Client Enterprise");
+        
         //PayrollEnterprise payroll = new PayrollEnterprise("Payroll Enterprise");
         //StaffingEnterprise staffing = new StaffingEnterprise("Staffing Enterprise");
         //ComplianceEnterprise compliance = new ComplianceEnterprise("Compliance Enterprise");
     
-        network.getEnterpriseList().add(client);
+
         //network.getEnterpriseList().add(payroll);
         //network.getEnterpriseList().add(staffing);
         //network.getEnterpriseList().add(compliance);
-        Person hrPerson = new Person("Ted HR");
-        network.getUserAccountDirectory().createUserAccount(
-                "HR", 
-                "password", 
-                hrPerson,
-                new HiringManagerRole()
-        );
-        Person contractorPerson = new Person("Alex Contractor");
-        network.getUserAccountDirectory().createUserAccount(
-                "Contractor", 
-                "password", 
-                contractorPerson,
-                new ContractorRole()
-        );
+
 
         Person recruiterPerson = new Person("Staffing Recruiter");
         network.getUserAccountDirectory().createUserAccount(
@@ -81,7 +68,7 @@ public class ConfigureABusiness {
          * network-wide UserAccountDirectory.
          */
         populateComplianceData(network.getUserAccountDirectory());
-        
+        ConfigureAClient.populateClientData(network);
         return network;
     }
     

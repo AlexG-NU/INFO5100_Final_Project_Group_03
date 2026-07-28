@@ -9,6 +9,7 @@ import Core.Enterprise;
 import Core.Organization;
 import Core.Role;
 import Core.UserAccount;
+import UserInterface.Client.ProjectSupervisorJPanel;
 import javax.swing.JPanel;
 
 /**
@@ -19,7 +20,7 @@ public class ProjectSupervisorRole extends Role{
     
     @Override
     public JPanel createWorkArea(JPanel userProcessContainer, UserAccount account, Network network) {
-        return new JPanel(); //new HiringManagerWorkAreaJPanel(userProcessContainer, organization, enterprise);
+        return new ProjectSupervisorJPanel(userProcessContainer, account, network);
     }
 
     

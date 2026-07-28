@@ -15,9 +15,6 @@ import javax.swing.JPanel;
  */
 public class ContractorJPanel extends javax.swing.JPanel {
 
-    /**
-     * Creates new form WorkAreaTemplatePanel
-     */
     private JPanel userProcessContainer;
     private UserAccount account;
     private Network network;
@@ -82,7 +79,7 @@ public class ContractorJPanel extends javax.swing.JPanel {
         lblSubtitle.setForeground(new java.awt.Color(102, 102, 102));
         lblSubtitle.setText("Client Enterprise - Operations Organization");
 
-        btnViewRequests.setText("View Request");
+        btnViewRequests.setText("Tasks");
         btnViewRequests.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnViewRequestsActionPerformed(evt);
@@ -90,14 +87,23 @@ public class ContractorJPanel extends javax.swing.JPanel {
         });
 
         btnManageRecords.setText("Manage Records");
+        btnManageRecords.setEnabled(false);
 
-        btnPrimaryAction.setText("Primary Action");
+        btnPrimaryAction.setText("Submit Timecard");
+        btnPrimaryAction.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnPrimaryActionActionPerformed(evt);
+            }
+        });
 
         btnBack.setText("Back");
+        btnBack.setEnabled(false);
 
         btnRefresh.setText("Refresh");
+        btnRefresh.setEnabled(false);
 
         btnReports.setText("Reports");
+        btnReports.setEnabled(false);
 
         tblMain.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
@@ -110,6 +116,7 @@ public class ContractorJPanel extends javax.swing.JPanel {
                 "ID", "Type", "Status", "Sender", "Receiver", "Date"
             }
         ));
+        tblMain.setEnabled(false);
         jScrollPane1.setViewportView(tblMain);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
@@ -173,8 +180,18 @@ public class ContractorJPanel extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnViewRequestsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnViewRequestsActionPerformed
-        // TODO add your handling code here:
+        ContractorTasksJPanel panel = new ContractorTasksJPanel(userProcessContainer, account, network);
+        userProcessContainer.add("ContractorTasksJPanel", panel);
+        java.awt.CardLayout layout = (java.awt.CardLayout) userProcessContainer.getLayout();
+        layout.next(userProcessContainer);
     }//GEN-LAST:event_btnViewRequestsActionPerformed
+
+    private void btnPrimaryActionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnPrimaryActionActionPerformed
+        ContractorTimecardsJPanel panel = new ContractorTimecardsJPanel(userProcessContainer, account, network);
+        userProcessContainer.add("ContractorTimecardsJPanel", panel);
+        java.awt.CardLayout layout = (java.awt.CardLayout) userProcessContainer.getLayout();
+        layout.next(userProcessContainer);
+    }//GEN-LAST:event_btnPrimaryActionActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

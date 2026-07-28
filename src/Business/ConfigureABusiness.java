@@ -4,6 +4,7 @@
  */
 package Business;
 
+import PayrollBilling.ConfigurePayrollBilling;
 import Client.ClientEnterprise;
 import ComplianceEnterprise.Model.ComplianceData;
 import ComplianceEnterprise.Model.ComplianceDataGenerator;
@@ -69,6 +70,7 @@ public class ConfigureABusiness {
          */
         populateComplianceData(network.getUserAccountDirectory());
         ConfigureAClient.populateClientData(network);
+        ConfigurePayrollBilling.populatePayrollBillingData(network);
         return network;
     }
     

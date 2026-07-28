@@ -9,7 +9,7 @@ import java.util.List;
 public class ClientBillingOrganization extends Organization {
 
     public ClientBillingOrganization() {
-        super("Client Billing Organization");
+        super("ClientBilling");
     }
 
     public void generateClientInvoice() {

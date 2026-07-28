@@ -9,7 +9,7 @@ import java.util.List;
 public class PayrollProcessingOrganization extends Organization {
 
     public PayrollProcessingOrganization() {
-        super("Payroll Processing Organization");
+        super("PayrollProcessing");
     }
 
     public void processApprovedTimecards() {

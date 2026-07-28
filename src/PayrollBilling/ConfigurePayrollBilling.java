@@ -1,5 +1,7 @@
 package PayrollBilling;
 
+import Business.Network;
+import Core.Person;
 import Core.WorkOrders.TimecardWorkOrder;
 import PayrollBilling.Record.BillingRecord;
 import PayrollBilling.Record.Invoice;
@@ -9,6 +11,8 @@ import PayrollBilling.Report.PayrollReport;
 import PayrollBilling.Request.BillingRequest;
 import PayrollBilling.Request.ContractorPaymentRequest;
 import PayrollBilling.Request.PayrollRequest;
+import PayrollBilling.Role.BillingAnalystRole;
+import PayrollBilling.Role.PayrollSpecialistRole;
 import StaffingAgency.People.Contractor;
 import StaffingAgency.Request.Contract;
 import StaffingAgency.Request.ContractorAssignment;
@@ -53,7 +57,9 @@ public class ConfigurePayrollBilling {
 
         PayrollRequest payrollRequest = new PayrollRequest(timecard, assignment);
         PayrollRecord payrollRecord = payrollRequest.processPayroll();
+
         PaymentRecord paymentRecord = new PaymentRecord(payrollRecord);
+
         ContractorPaymentRequest contractorPaymentRequest =
                 new ContractorPaymentRequest(paymentRecord);
 
@@ -80,6 +86,36 @@ public class ConfigurePayrollBilling {
         );
 
         module.getPayrollReports().add(report);
+
+        return module;
+    }
+
+    public static PayrollBillingModule populatePayrollBillingData(Network network) {
+
+        PayrollBillingModule module = configurePayrollBillingModule();
+
+        PayrollBillingEnterprise payrollBillingEnterprise =
+                new PayrollBillingEnterprise("PayrollBilling");
+
+        network.getEnterpriseList().add(payrollBillingEnterprise);
+
+        Person payrollPerson = new Person("Payroll Specialist");
+
+        network.getUserAccountDirectory().createUserAccount(
+                "p.specialist",
+                "password",
+                payrollPerson,
+                new PayrollSpecialistRole()
+        );
+
+        Person billingPerson = new Person("Billing Analyst");
+
+        network.getUserAccountDirectory().createUserAccount(
+                "b.analyst",
+                "password",
+                billingPerson,
+                new BillingAnalystRole()
+        );
 
         return module;
     }

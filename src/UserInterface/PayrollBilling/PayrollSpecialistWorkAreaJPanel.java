@@ -4,6 +4,7 @@
  */
 package UserInterface.PayrollBilling;
 
+import PayrollBilling.Request.BillingRequest;
 import Business.Network;
 import Core.NetworkUtils;
 import Core.Organization;
@@ -416,6 +417,18 @@ public class PayrollSpecialistWorkAreaJPanel extends javax.swing.JPanel {
             module.getPayrollRequests().add(payrollRequest);
             module.getPayrollRecords().add(payrollRecord);
             module.getPaymentRecords().add(paymentRecord);
+            
+            BillingRequest billingRequest = new BillingRequest(timecard, assignment);
+            billingRequest.setSender(account);
+            billingRequest.setReceiver(getBillingAnalystAccount());
+
+            module.getBillingRequests().add(billingRequest);
+
+            Organization billingOrg = getClientBillingOrganization();
+
+            if (billingOrg != null) {
+                billingOrg.getWorkQueue().getWorkOrderList().add(billingRequest);
+            }
 
             JOptionPane.showMessageDialog(
                     this,
@@ -443,6 +456,25 @@ public class PayrollSpecialistWorkAreaJPanel extends javax.swing.JPanel {
                 network,
                 "PayrollBilling",
                 "PayrollProcessing"
+        );
+    }
+    
+    private Organization getClientBillingOrganization() {
+        return NetworkUtils.findOrganizationByName(
+                network,
+                "PayrollBilling",
+                "ClientBilling"
+        );
+    }
+    
+    private UserAccount getBillingAnalystAccount() {
+        if (network == null || network.getUserAccountDirectory() == null) {
+            return null;
+        }
+
+        return network.getUserAccountDirectory().authenticateUser(
+                "b.analyst",
+                "password"
         );
     }
 

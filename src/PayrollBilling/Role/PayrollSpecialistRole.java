@@ -1,7 +1,6 @@
 package PayrollBilling.Role;
 
-import Core.Enterprise;
-import Core.Organization;
+import Business.Network;
 import Core.Role;
 import Core.UserAccount;
 import UserInterface.WorkArea.WorkAreaTemplatePanel;
@@ -12,8 +11,7 @@ public class PayrollSpecialistRole extends Role {
     @Override
     public JPanel createWorkArea(JPanel userProcessContainer,
                                  UserAccount account,
-                                 Organization organization,
-                                 Enterprise enterprise) {
+                                 Network network) {
 
         WorkAreaTemplatePanel panel = new WorkAreaTemplatePanel();
 

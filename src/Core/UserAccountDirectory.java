@@ -39,6 +39,7 @@ public class UserAccountDirectory {
         }
         
         UserAccount userAccount = new UserAccount(username, password, role);
+        userAccount.setPerson(person);
         userAccountList.add(userAccount);
         return userAccount;
     }

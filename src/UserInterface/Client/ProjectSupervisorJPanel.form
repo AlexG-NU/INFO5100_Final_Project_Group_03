@@ -117,7 +117,7 @@
     </Component>
     <Component class="javax.swing.JButton" name="btnViewRequests">
       <Properties>
-        <Property name="text" type="java.lang.String" value="View Request"/>
+        <Property name="text" type="java.lang.String" value="View Contractors"/>
       </Properties>
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnViewRequestsActionPerformed"/>
@@ -125,13 +125,19 @@
     </Component>
     <Component class="javax.swing.JButton" name="btnManageRecords">
       <Properties>
-        <Property name="text" type="java.lang.String" value="Manage Records"/>
+        <Property name="text" type="java.lang.String" value="Manage Tasks"/>
       </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnManageRecordsActionPerformed"/>
+      </Events>
     </Component>
     <Component class="javax.swing.JButton" name="btnPrimaryAction">
       <Properties>
-        <Property name="text" type="java.lang.String" value="Primary Action"/>
+        <Property name="text" type="java.lang.String" value="Approve Timecards"/>
       </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnPrimaryActionActionPerformed"/>
+      </Events>
     </Component>
     <Component class="javax.swing.JButton" name="btnBack">
       <Properties>
@@ -142,6 +148,9 @@
       <Properties>
         <Property name="text" type="java.lang.String" value="Refresh"/>
       </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnRefreshActionPerformed"/>
+      </Events>
     </Component>
     <Component class="javax.swing.JButton" name="btnReports">
       <Properties>

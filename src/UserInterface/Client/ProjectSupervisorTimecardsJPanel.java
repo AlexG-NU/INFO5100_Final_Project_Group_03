@@ -5,12 +5,15 @@
 package UserInterface.Client;
 
 import Business.Network;
+import Core.NetworkUtils;
+import Core.Organization;
 import Core.UserAccount;
 import Core.WorkOrder;
 import Core.WorkOrderStatus;
 import Core.WorkOrders.TimecardWorkOrder;
 import WorkOrders.StaffingRequest;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Date;
 import java.util.List;
@@ -24,7 +27,7 @@ import javax.swing.table.DefaultTableModel;
  *
  * @author Alex
  */
-public class ContractorTimecardsJPanel extends javax.swing.JPanel {
+public class ProjectSupervisorTimecardsJPanel extends javax.swing.JPanel {
 
     private JPanel container;
     private UserAccount userAccount;
@@ -36,7 +39,7 @@ public class ContractorTimecardsJPanel extends javax.swing.JPanel {
         "Timecard ID", "Week Ending", "Total Hours", "Status"
     };
 
-    public ContractorTimecardsJPanel(JPanel container, UserAccount userAccount, Network network) {
+    public ProjectSupervisorTimecardsJPanel(JPanel container, UserAccount userAccount, Network network) {
         initComponents(); 
         this.container = container;
         this.userAccount = userAccount;
@@ -92,7 +95,7 @@ public class ContractorTimecardsJPanel extends javax.swing.JPanel {
         hours[6]=parseHours(txtSat);
         item.setDailyHours(hours);
         item.setWorkSummary(txtareaDescription.getText().trim());
-        item.setStatus((WorkOrderStatus) cmbStatus.getSelectedItem());
+        //item.setStatus((WorkOrderStatus) cmbStatus.getSelectedItem());
         // Status and SubmittedDate are usually handled by system logic 
         
     }
@@ -127,6 +130,14 @@ public class ContractorTimecardsJPanel extends javax.swing.JPanel {
 
     }
     
+    private boolean validateSelection() {
+        if (selectedRecord == null) {
+            JOptionPane.showMessageDialog(this, "Please select a timecard from the table to review.", "Warning", JOptionPane.WARNING_MESSAGE);
+            return false;
+        }
+        return true;
+    }
+    
     /*private void setupComboBox() {
         cmbStatus.removeAllItems();
 
@@ -150,7 +161,10 @@ public class ContractorTimecardsJPanel extends javax.swing.JPanel {
         for (WorkOrder workOrder : userAccount.getWorkQueue().getWorkOrderList()) {
             if (workOrder instanceof TimecardWorkOrder) {
                 TimecardWorkOrder timecard = (TimecardWorkOrder) workOrder;
-                model.addRow(mapObjectToRow(timecard));
+                if (timecard.getStatus() == WorkOrderStatus.PENDING) {
+                    model.addRow(mapObjectToRow(timecard));
+                }
+                
             }
         }
         tblData.setModel(model); 
@@ -186,8 +200,8 @@ public class ContractorTimecardsJPanel extends javax.swing.JPanel {
         tblData = new javax.swing.JTable();
         btnBack = new javax.swing.JButton();
         jLabel2 = new javax.swing.JLabel();
-        btnSave = new javax.swing.JButton();
-        btnDelete = new javax.swing.JButton();
+        btnApprove = new javax.swing.JButton();
+        btnReject = new javax.swing.JButton();
         btnClear = new javax.swing.JButton();
         jLabel6 = new javax.swing.JLabel();
         jScrollPane2 = new javax.swing.JScrollPane();
@@ -208,8 +222,6 @@ public class ContractorTimecardsJPanel extends javax.swing.JPanel {
         txtSat = new javax.swing.JTextField();
         jLabel10 = new javax.swing.JLabel();
         spinWeekEnding = new javax.swing.JSpinner();
-        jLabel11 = new javax.swing.JLabel();
-        cmbStatus = new javax.swing.JComboBox<>();
 
         tblData.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
@@ -238,17 +250,17 @@ public class ContractorTimecardsJPanel extends javax.swing.JPanel {
 
         jLabel2.setText("Description:");
 
-        btnSave.setText("Save");
-        btnSave.addActionListener(new java.awt.event.ActionListener() {
+        btnApprove.setText("Approve");
+        btnApprove.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnSaveActionPerformed(evt);
+                btnApproveActionPerformed(evt);
             }
         });
 
-        btnDelete.setText("Delete");
-        btnDelete.addActionListener(new java.awt.event.ActionListener() {
+        btnReject.setText("Reject");
+        btnReject.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnDeleteActionPerformed(evt);
+                btnRejectActionPerformed(evt);
             }
         });
 
@@ -264,6 +276,7 @@ public class ContractorTimecardsJPanel extends javax.swing.JPanel {
 
         txtareaDescription.setColumns(20);
         txtareaDescription.setRows(5);
+        txtareaDescription.setEnabled(false);
         jScrollPane2.setViewportView(txtareaDescription);
 
         jLabel1.setText("Sun");
@@ -280,18 +293,31 @@ public class ContractorTimecardsJPanel extends javax.swing.JPanel {
 
         jLabel9.setText("Sat");
 
+        txtSun.setEnabled(false);
+
+        txtMon.setEnabled(false);
+
+        txtTues.setEnabled(false);
+
+        txtWed.setEnabled(false);
+
+        txtThurs.setEnabled(false);
+
+        txtFri.setEnabled(false);
+
+        txtSat.setEnabled(false);
+
         jLabel10.setText("Week Ending:");
 
         spinWeekEnding.setModel(new javax.swing.SpinnerDateModel());
-
-        jLabel11.setText("Status");
+        spinWeekEnding.setEnabled(false);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
                         .addGap(70, 70, 70)
                         .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
@@ -331,30 +357,22 @@ public class ContractorTimecardsJPanel extends javax.swing.JPanel {
                                     .addComponent(jLabel8))
                                 .addGap(18, 18, 18)
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addGroup(layout.createSequentialGroup()
-                                        .addComponent(txtSat, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addGap(0, 0, Short.MAX_VALUE))
-                                    .addGroup(layout.createSequentialGroup()
-                                        .addComponent(jLabel9)
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
+                                    .addComponent(txtSat, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(jLabel9)))
                             .addGroup(layout.createSequentialGroup()
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                                    .addComponent(jLabel11)
-                                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                        .addComponent(jLabel2)
-                                        .addComponent(jLabel10)))
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(jLabel2)
+                                    .addComponent(jLabel10))
                                 .addGap(18, 18, 18)
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                     .addComponent(spinWeekEnding, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(cmbStatus, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                .addGap(0, 0, Short.MAX_VALUE)))))
+                                    .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))))))
                 .addContainerGap(78, Short.MAX_VALUE))
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addGap(0, 0, Short.MAX_VALUE)
-                .addComponent(btnSave)
+                .addComponent(btnApprove)
                 .addGap(52, 52, 52)
-                .addComponent(btnDelete)
+                .addComponent(btnReject)
                 .addGap(80, 80, 80)
                 .addComponent(btnClear)
                 .addGap(122, 122, 122))
@@ -394,14 +412,10 @@ public class ContractorTimecardsJPanel extends javax.swing.JPanel {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel2))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 21, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 66, Short.MAX_VALUE)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel11)
-                    .addComponent(cmbStatus, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(23, 23, 23)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(btnSave)
-                    .addComponent(btnDelete)
+                    .addComponent(btnApprove)
+                    .addComponent(btnReject)
                     .addComponent(btnClear))
                 .addGap(42, 42, 42))
         );
@@ -413,51 +427,48 @@ public class ContractorTimecardsJPanel extends javax.swing.JPanel {
         layout.previous(container);
     }//GEN-LAST:event_btnBackActionPerformed
 
-    private void btnSaveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSaveActionPerformed
-        if (!validateInput()) return;
+    private void btnApproveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnApproveActionPerformed
+        if (!validateSelection()) return;
 
-        TimecardWorkOrder timecard = (selectedRecord != null) ? selectedRecord : new TimecardWorkOrder();
-        updateObjectFromFields(timecard);
+        selectedRecord.setStatus(WorkOrderStatus.APPROVED);
+        selectedRecord.setResolveDate(LocalDateTime.now());
 
-        
-        timecard.setSender(userAccount);
+        Organization payrollOrg = NetworkUtils.findOrganizationByName(
+            network, 
+            "PayrollBilling", 
+            "PayrollProcessing"
+        );
 
-        UserAccount supervisor = userAccount.getSupervisor();
-        if (supervisor != null) {
-            timecard.setReceiver(supervisor);
-            timecard.setStatus(WorkOrderStatus.PENDING); 
-
-            
-            if (!supervisor.getWorkQueue().getWorkOrderList().contains(timecard)) {
-                supervisor.getWorkQueue().getWorkOrderList().add(timecard);
-            }
+        if (payrollOrg != null) {
+            payrollOrg.getWorkQueue().getWorkOrderList().add(selectedRecord);
+            JOptionPane.showMessageDialog(this, "Timecard approved and routed to Payroll Processing successfully!");
         } else {
-            JOptionPane.showMessageDialog(this, "No supervisor assigned. Contact Admin.", "Warning", JOptionPane.WARNING_MESSAGE);
-            return;
+            JOptionPane.showMessageDialog(this, "Timecard approved, but Payroll Processing Organization was not found.", "Warning", JOptionPane.WARNING_MESSAGE);
         }
-
-       
-        if (!userAccount.getWorkQueue().getWorkOrderList().contains(timecard)) {
-            userAccount.getWorkQueue().getWorkOrderList().add(timecard);
-        }
-
         refreshTable();
         clearFormAndSelection();
-        JOptionPane.showMessageDialog(this, "Timecard submitted to supervisor successfully!");
-    }//GEN-LAST:event_btnSaveActionPerformed
+    }//GEN-LAST:event_btnApproveActionPerformed
 
-    private void btnDeleteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDeleteActionPerformed
-        if (selectedRecord != null) {
-            int confirm = JOptionPane.showConfirmDialog(this, "Are you sure you want to delete this record?", "Confirm Deletion", JOptionPane.YES_NO_OPTION);
-            if (confirm == JOptionPane.YES_OPTION) {
-                userAccount.getWorkQueue().getWorkOrderList().remove(selectedRecord);                
-                refreshTable();
-                clearFormAndSelection();
-            }
-        } else {
-            JOptionPane.showMessageDialog(this, "Please select a row from the table first.", "Warning", JOptionPane.WARNING_MESSAGE);
+    private void btnRejectActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnRejectActionPerformed
+        if (!validateSelection()) return;
+
+        // 1. Optional: Prompt for a rejection reason
+        String reason = JOptionPane.showInputDialog(this, "Please enter a reason for rejection:");
+        if (reason == null || reason.trim().isEmpty()) {
+            JOptionPane.showMessageDialog(this, "A rejection reason is required.", "Warning", JOptionPane.WARNING_MESSAGE);
+            return; 
         }
-    }//GEN-LAST:event_btnDeleteActionPerformed
+
+        // 2. Update status and append feedback to the message
+        selectedRecord.setStatus(WorkOrderStatus.REJECTED);
+        selectedRecord.setResolveDate(LocalDateTime.now());
+        selectedRecord.setMessage(reason); // Assuming your WorkOrder class has a generic message/feedback field
+
+        // 3. Notify the user and refresh
+        JOptionPane.showMessageDialog(this, "Timecard Rejected. Feedback sent to contractor.");
+        refreshTable();
+        clearFormAndSelection();
+    }//GEN-LAST:event_btnRejectActionPerformed
 
     private void btnClearActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnClearActionPerformed
         clearFormAndSelection();
@@ -479,14 +490,12 @@ public class ContractorTimecardsJPanel extends javax.swing.JPanel {
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton btnApprove;
     private javax.swing.JButton btnBack;
     private javax.swing.JButton btnClear;
-    private javax.swing.JButton btnDelete;
-    private javax.swing.JButton btnSave;
-    private javax.swing.JComboBox<String> cmbStatus;
+    private javax.swing.JButton btnReject;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel10;
-    private javax.swing.JLabel jLabel11;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;

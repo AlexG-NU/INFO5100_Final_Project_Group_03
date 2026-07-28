@@ -14,6 +14,7 @@ public class UserAccount {
     private Role role;
     //private Organization organization;
     private Person person;
+    private UserAccount supervisor;
     private WorkOrderQueue workQueue;
     
     public UserAccount(String username, String password, Role role) {
@@ -29,6 +30,14 @@ public class UserAccount {
         //    this.workQueue = new WorkOrderQueue();
         //}
         return workQueue;
+    }
+
+    public UserAccount getSupervisor() {
+        return supervisor;
+    }
+
+    public void setSupervisor(UserAccount supervisor) {
+        this.supervisor = supervisor;
     }
 
     public Person getPerson() {

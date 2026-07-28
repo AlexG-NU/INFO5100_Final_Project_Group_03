@@ -1,0 +1,383 @@
+/*
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+ * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JPanel.java to edit this template
+ */
+package UserInterface.Client;
+
+import Business.Network;
+import Core.UserAccount;
+import Core.WorkOrder;
+import Core.WorkOrderStatus;
+import Core.WorkOrders.TaskWorkOrder;
+import java.time.LocalDate;
+import java.util.List;
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.JComboBox;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.table.DefaultTableModel;
+
+/**
+ *
+ * @author Alex
+ */
+public class ProjectSupervisorTasksJPanel extends javax.swing.JPanel {
+
+    private JPanel container;
+    private UserAccount userAccount;
+    private Network network;
+    private TaskWorkOrder selectedRecord;
+
+    // Define the columns you actually want visible in the JTable
+    private final String[] COLUMN_NAMES = {
+        "Req ID", "Task Name", "Created Date", "Status"
+    };
+
+    public ProjectSupervisorTasksJPanel(JPanel container, UserAccount userAccount, Network network) {
+        initComponents(); 
+        this.container = container;
+        this.userAccount = userAccount;
+        this.network = network;
+        setupComboBox();
+        setupContractorComboBox();
+        refreshTable();
+    }
+
+    // Map object to the table row
+    private Object[] mapObjectToRow(TaskWorkOrder item) {
+        return new Object[]{
+            item,                      // Column 0: The object (displays ID via toString)
+            item.getTaskName(),        // Column 1
+            item.getRequestDate(),   // Column 2
+            item.getStatus(),       // Column 3
+            //item.getStatus()           // Column 4
+        };
+    }
+
+    // Create a new blank object and pass it to the update method
+    private TaskWorkOrder buildObjectFromFields() throws NumberFormatException {
+        TaskWorkOrder newItem = new TaskWorkOrder();
+        newItem.setTaskName(txtTitle.getText().trim());
+        newItem.setMessage(txtareaDescription.getText().trim());
+        newItem.setStatus((WorkOrderStatus) cmbStatus.getSelectedItem());
+        
+        // Routing Data
+        newItem.setSender(userAccount); // The Supervisor
+        newItem.setReceiver((UserAccount) cmbContractor.getSelectedItem()); // The Contractor
+        //newItem.setRequestDate(LocalDate.now().toString());
+        return newItem;
+    }
+
+    // Update an object with text fields
+    private void updateObjectFromFields(TaskWorkOrder item) throws NumberFormatException {
+        item.setTaskName(txtTitle.getText().trim());
+        item.setMessage(txtareaDescription.getText().trim());
+        item.setStatus((WorkOrderStatus) cmbStatus.getSelectedItem());
+        
+    }
+
+    // Fill text fields when a table row is clicked
+    private void populateForm(TaskWorkOrder item) {
+        
+        
+        txtTitle.setText(item.getTaskName());
+        txtareaDescription.setText(item.getMessage());
+        cmbStatus.setSelectedItem(item.getStatus());
+        cmbContractor.setSelectedItem(item.getReceiver());
+        
+    }
+
+    // Check for empty string fields before saving
+    private boolean validateInput() {
+        if (txtTitle.getText().trim().isEmpty() || 
+            txtareaDescription.getText().trim().isEmpty()) {
+            
+            JOptionPane.showMessageDialog(this, "Task Title and Description are required.", "Warning", JOptionPane.WARNING_MESSAGE);
+            return false;
+        }
+        
+        if (cmbContractor.getSelectedItem() == null) {
+            JOptionPane.showMessageDialog(this, "Please select a contractor to assign this task to.", "Warning", JOptionPane.WARNING_MESSAGE);
+            return false;
+        }
+        return true;
+    }
+    
+    private void setupComboBox() {
+        cmbStatus.removeAllItems();
+
+    
+        WorkOrderStatus[] allowedStatuses = {
+            WorkOrderStatus.PENDING,
+            WorkOrderStatus.IN_PROGRESS,
+            WorkOrderStatus.COMPLETED
+        };
+
+        cmbStatus.setModel(new DefaultComboBoxModel<>(allowedStatuses));
+    }
+    
+    private void setupContractorComboBox() {
+        cmbContractor.removeAllItems();
+
+        List<UserAccount> allUsers = network.getUserAccountDirectory().getUserAccountList(); 
+
+        for (UserAccount ua : allUsers) {
+            if (ua.getSupervisor() != null && ua.getSupervisor().equals(this.userAccount)) {
+                cmbContractor.addItem(ua);
+            }
+        }
+    }
+    
+    //-------------You should not need to edit below this line--------------------
+
+    private void refreshTable() {
+        DefaultTableModel model = new DefaultTableModel(COLUMN_NAMES, 0) {
+            @Override
+            public boolean isCellEditable(int row, int col) { return false; }
+        };
+        for (WorkOrder workOrder : userAccount.getWorkQueue().getWorkOrderList()) {
+            if (workOrder instanceof TaskWorkOrder) {
+                TaskWorkOrder task = (TaskWorkOrder) workOrder;
+                model.addRow(mapObjectToRow(task));
+            }
+        }
+        tblData.setModel(model); 
+    }
+
+    private void clearFormAndSelection() {
+        // Clear visually (add specific fields here if needed in Zone 1, 
+        // but looping components keeps it generic)
+        java.awt.Component[] components = getComponents();
+        for (java.awt.Component component : components) {
+            if (component instanceof javax.swing.JTextField) {
+                ((javax.swing.JTextField) component).setText("");
+            }
+        }
+        txtareaDescription.setText("");
+        cmbStatus.setSelectedItem(null);
+        cmbContractor.setSelectedItem(null);
+        selectedRecord = null;
+        tblData.clearSelection();
+    }
+
+
+
+    /**
+     * This method is called from within the constructor to initialize the form.
+     * WARNING: Do NOT modify this code. The content of this method is always
+     * regenerated by the Form Editor.
+     */
+    @SuppressWarnings("unchecked")
+    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
+    private void initComponents() {
+
+        jScrollPane1 = new javax.swing.JScrollPane();
+        tblData = new javax.swing.JTable();
+        btnBack = new javax.swing.JButton();
+        txtTitle = new javax.swing.JTextField();
+        jLabel1 = new javax.swing.JLabel();
+        jLabel2 = new javax.swing.JLabel();
+        jLabel4 = new javax.swing.JLabel();
+        btnSave = new javax.swing.JButton();
+        btnClear = new javax.swing.JButton();
+        cmbStatus = new javax.swing.JComboBox<>();
+        jScrollPane2 = new javax.swing.JScrollPane();
+        txtareaDescription = new javax.swing.JTextArea();
+        jLabel3 = new javax.swing.JLabel();
+        jLabel5 = new javax.swing.JLabel();
+        cmbContractor = new javax.swing.JComboBox<>();
+
+        tblData.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null}
+            },
+            new String [] {
+                "Title 1", "Title 2", "Title 3", "Title 4"
+            }
+        ));
+        tblData.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                tblDataMouseClicked(evt);
+            }
+        });
+        jScrollPane1.setViewportView(tblData);
+
+        btnBack.setText("<< Back");
+        btnBack.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnBackActionPerformed(evt);
+            }
+        });
+
+        jLabel1.setText("Task:");
+
+        jLabel2.setText("Description:");
+
+        jLabel4.setText("Status");
+
+        btnSave.setText("Save");
+        btnSave.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnSaveActionPerformed(evt);
+            }
+        });
+
+        btnClear.setText("Clear");
+        btnClear.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnClearActionPerformed(evt);
+            }
+        });
+
+        txtareaDescription.setColumns(20);
+        txtareaDescription.setLineWrap(true);
+        txtareaDescription.setRows(5);
+        jScrollPane2.setViewportView(txtareaDescription);
+
+        jLabel3.setFont(new java.awt.Font("Segoe UI", 0, 24)); // NOI18N
+        jLabel3.setText("Task List");
+
+        jLabel5.setText("Assign To:");
+
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
+        this.setLayout(layout);
+        layout.setHorizontalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(134, 134, 134)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                                .addComponent(jLabel1)
+                                .addComponent(jLabel2)
+                                .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
+                                    .addComponent(btnSave)
+                                    .addGap(7, 7, 7)))
+                            .addComponent(jLabel5)
+                            .addComponent(jLabel4))
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(layout.createSequentialGroup()
+                                .addGap(197, 197, 197)
+                                .addComponent(btnClear))
+                            .addGroup(layout.createSequentialGroup()
+                                .addGap(18, 18, 18)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 228, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(txtTitle, javax.swing.GroupLayout.PREFERRED_SIZE, 228, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                                        .addComponent(cmbContractor, javax.swing.GroupLayout.Alignment.LEADING, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                        .addComponent(cmbStatus, javax.swing.GroupLayout.Alignment.LEADING, 0, 108, Short.MAX_VALUE))))))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(70, 70, 70)
+                        .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(31, 31, 31)
+                        .addComponent(btnBack)
+                        .addGap(153, 153, 153)
+                        .addComponent(jLabel3)))
+                .addContainerGap(78, Short.MAX_VALUE))
+        );
+        layout.setVerticalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addGap(18, 18, 18)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(btnBack)
+                    .addComponent(jLabel3))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 216, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(18, 18, 18)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(txtTitle, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel1))
+                .addGap(18, 18, 18)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabel2)
+                    .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 59, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(21, 21, 21)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel5)
+                    .addComponent(cmbContractor, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel4)
+                    .addComponent(cmbStatus, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(18, 18, 18)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(btnSave)
+                    .addComponent(btnClear))
+                .addContainerGap(87, Short.MAX_VALUE))
+        );
+    }// </editor-fold>//GEN-END:initComponents
+
+    private void btnBackActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnBackActionPerformed
+        container.remove(this);
+        java.awt.CardLayout layout = (java.awt.CardLayout) container.getLayout();
+        layout.previous(container);
+    }//GEN-LAST:event_btnBackActionPerformed
+
+    private void btnSaveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSaveActionPerformed
+        if (!validateInput()) return;
+
+        try {
+            if (selectedRecord == null) {
+                TaskWorkOrder newTask = buildObjectFromFields();
+               
+                userAccount.getWorkQueue().addWorkOrder(newTask);
+                
+                UserAccount assignedContractor = newTask.getReceiver();
+                assignedContractor.getWorkQueue().addWorkOrder(newTask);
+                
+                JOptionPane.showMessageDialog(this, "Task assigned to " + assignedContractor.getUsername() + " successfully.");
+            } else {
+                updateObjectFromFields(selectedRecord);
+                JOptionPane.showMessageDialog(this, "Record updated successfully.");
+            }
+            refreshTable();
+            clearFormAndSelection();
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, "An unexpected error occurred: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }//GEN-LAST:event_btnSaveActionPerformed
+
+    private void btnClearActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnClearActionPerformed
+        clearFormAndSelection();
+    }//GEN-LAST:event_btnClearActionPerformed
+
+    private void tblDataMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tblDataMouseClicked
+        int viewRow = tblData.getSelectedRow();
+        if (viewRow >= 0) {
+            int modelRow = tblData.convertRowIndexToModel(viewRow);
+            
+            // Suppress warning here as we strictly control column 0 insertion
+            @SuppressWarnings("unchecked") 
+            TaskWorkOrder castRecord = (TaskWorkOrder) tblData.getValueAt(modelRow, 0);
+            
+            selectedRecord = castRecord;
+            populateForm(selectedRecord);
+        }
+    }//GEN-LAST:event_tblDataMouseClicked
+
+
+    // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton btnBack;
+    private javax.swing.JButton btnClear;
+    private javax.swing.JButton btnSave;
+    private javax.swing.JComboBox<UserAccount> cmbContractor;
+    private javax.swing.JComboBox<WorkOrderStatus> cmbStatus;
+    private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel4;
+    private javax.swing.JLabel jLabel5;
+    private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JScrollPane jScrollPane2;
+    private javax.swing.JTable tblData;
+    private javax.swing.JTextField txtTitle;
+    private javax.swing.JTextArea txtareaDescription;
+    // End of variables declaration//GEN-END:variables
+}

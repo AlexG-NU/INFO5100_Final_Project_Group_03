@@ -66,8 +66,8 @@ public class MainJFrame extends JFrame {
         /*
          * Load existing staffing-request sample data.
          */
-        masterRequestList =
-                ConfigureABusiness.populateStaffingRequests();
+        //masterRequestList =
+        //        ConfigureABusiness.populateStaffingRequests();
         this.network = ConfigureABusiness.configure();
         
 

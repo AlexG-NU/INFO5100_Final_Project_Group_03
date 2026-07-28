@@ -80,6 +80,10 @@ public class MainJFrame extends JFrame {
          *         ConfigureABusiness.populateCandidates();
          */
         candidateList = new ArrayList<>();
+        this.network = ConfigureABusiness.configure(
+                masterRequestList,
+                candidateList,
+                submissionList);
 
         setTitle("Global Workforce Staffing Network");
         setSize(1100, 700);

@@ -13,16 +13,13 @@ import java.time.LocalDate;
  */
 public class StaffingReqWorkOrder extends WorkOrder{
     private String jobTitle;
-    private int positionsNeeded;
-    private double targetHourlyRate;
+    private String description;
     private String requiredSkills;
-    private LocalDate targetStartDate;
+    private int numberOfPositions;
+    private LocalDate startDate;
     
-    public StaffingReqWorkOrder(String jobTitle, int positionsNeeded, double targetHourlyRate) {
+    public StaffingReqWorkOrder() {
         super();
-        this.jobTitle = jobTitle;
-        this.positionsNeeded = positionsNeeded;
-        this.targetHourlyRate = targetHourlyRate;
     }
 
     public String getJobTitle() {
@@ -33,22 +30,6 @@ public class StaffingReqWorkOrder extends WorkOrder{
         this.jobTitle = jobTitle;
     }
 
-    public int getPositionsNeeded() {
-        return positionsNeeded;
-    }
-
-    public void setPositionsNeeded(int positionsNeeded) {
-        this.positionsNeeded = positionsNeeded;
-    }
-
-    public double getTargetHourlyRate() {
-        return targetHourlyRate;
-    }
-
-    public void setTargetHourlyRate(double targetHourlyRate) {
-        this.targetHourlyRate = targetHourlyRate;
-    }
-
     public String getRequiredSkills() {
         return requiredSkills;
     }
@@ -57,12 +38,34 @@ public class StaffingReqWorkOrder extends WorkOrder{
         this.requiredSkills = requiredSkills;
     }
 
-    public LocalDate getTargetStartDate() {
-        return targetStartDate;
+    public String getDescription() {
+        return description;
     }
 
-    public void setTargetStartDate(LocalDate targetStartDate) {
-        this.targetStartDate = targetStartDate;
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public int getNumberOfPositions() {
+        return numberOfPositions;
+    }
+
+    public void setNumberOfPositions(int numberOfPositions) {
+        this.numberOfPositions = numberOfPositions;
+    }
+
+    public LocalDate getStartDate() {
+        return startDate;
+    }
+
+    public void setStartDate(LocalDate startDate) {
+        this.startDate = startDate;
+    }
+
+    @Override
+    public String toString() {
+        
+        return String.valueOf(getWorkOrderId());
     }
     
     

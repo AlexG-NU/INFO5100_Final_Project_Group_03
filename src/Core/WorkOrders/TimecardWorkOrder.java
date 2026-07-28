@@ -22,7 +22,10 @@ public class TimecardWorkOrder extends WorkOrder{
         this.weekEndingDate = weekEndingDate;
         this.dailyHours = new double[7]; 
     }
-    
+    public TimecardWorkOrder() {
+        super();
+        this.dailyHours = new double[7];
+    }
     public double getTotalHours() {
         double total = 0.0;
         for (double hours : dailyHours) {

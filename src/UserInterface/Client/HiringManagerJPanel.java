@@ -4,7 +4,10 @@
  */
 package UserInterface.Client;
 
+import Business.Network;
+import Core.UserAccount;
 import UserInterface.WorkArea.*;
+import javax.swing.JPanel;
 
 /**
  *
@@ -15,8 +18,14 @@ public class HiringManagerJPanel extends javax.swing.JPanel {
     /**
      * Creates new form WorkAreaTemplatePanel
      */
-    public HiringManagerJPanel() {
+    private JPanel userProcessContainer;
+    private UserAccount account;
+    private Network network;
+    public HiringManagerJPanel(JPanel userProcessContainer, UserAccount account, Network network) {
         initComponents();
+        this.userProcessContainer = userProcessContainer;
+        this.account = account;
+        this.network = network;
     }
     public void setWorkAreaHeader(String title, String subtitle) {
         lblTitle.setText(title);
@@ -63,26 +72,37 @@ public class HiringManagerJPanel extends javax.swing.JPanel {
         btnReports = new javax.swing.JButton();
         jScrollPane1 = new javax.swing.JScrollPane();
         tblMain = new javax.swing.JTable();
+        btnViewRequests1 = new javax.swing.JButton();
 
         setBackground(new java.awt.Color(255, 255, 204));
 
         lblTitle.setFont(new java.awt.Font("Myanmar Sangam MN", 3, 18)); // NOI18N
-        lblTitle.setText("Payroll Specialist Work Area");
+        lblTitle.setText("HR Work Area");
 
         lblSubtitle.setFont(new java.awt.Font("Myanmar MN", 0, 13)); // NOI18N
         lblSubtitle.setForeground(new java.awt.Color(102, 102, 102));
-        lblSubtitle.setText("Payroll & Billing Enterprise - Payroll Processing Organization");
+        lblSubtitle.setText("Client Enterprise - HR Organization");
 
-        btnViewRequests.setText("View Request");
+        btnViewRequests.setText("View Candidates");
         btnViewRequests.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnViewRequestsActionPerformed(evt);
             }
         });
 
-        btnManageRecords.setText("Manage Records");
+        btnManageRecords.setText("Manage Contractors");
+        btnManageRecords.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnManageRecordsActionPerformed(evt);
+            }
+        });
 
-        btnPrimaryAction.setText("Primary Action");
+        btnPrimaryAction.setText("Staffing Requests");
+        btnPrimaryAction.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnPrimaryActionActionPerformed(evt);
+            }
+        });
 
         btnBack.setText("Back");
 
@@ -103,6 +123,13 @@ public class HiringManagerJPanel extends javax.swing.JPanel {
         ));
         jScrollPane1.setViewportView(tblMain);
 
+        btnViewRequests1.setText("View Invoices");
+        btnViewRequests1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnViewRequests1ActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -118,7 +145,8 @@ public class HiringManagerJPanel extends javax.swing.JPanel {
                                     .addGroup(layout.createSequentialGroup()
                                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                             .addComponent(btnViewRequests)
-                                            .addComponent(btnManageRecords))
+                                            .addComponent(btnManageRecords)
+                                            .addComponent(btnViewRequests1))
                                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                                             .addComponent(btnPrimaryAction)
@@ -149,7 +177,9 @@ public class HiringManagerJPanel extends javax.swing.JPanel {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(btnViewRequests)
                     .addComponent(btnPrimaryAction))
-                .addGap(45, 45, 45)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(btnViewRequests1)
+                .addGap(10, 10, 10)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(btnReports)
                     .addComponent(btnManageRecords))
@@ -167,6 +197,24 @@ public class HiringManagerJPanel extends javax.swing.JPanel {
         // TODO add your handling code here:
     }//GEN-LAST:event_btnViewRequestsActionPerformed
 
+    private void btnViewRequests1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnViewRequests1ActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_btnViewRequests1ActionPerformed
+
+    private void btnPrimaryActionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnPrimaryActionActionPerformed
+        HiringManagerStaffingReqsJPanel panel = new HiringManagerStaffingReqsJPanel(userProcessContainer, account, network);
+        userProcessContainer.add("HiringManagerStaffingReqsJPanel", panel);
+        java.awt.CardLayout layout = (java.awt.CardLayout) userProcessContainer.getLayout();
+        layout.next(userProcessContainer);
+    }//GEN-LAST:event_btnPrimaryActionActionPerformed
+
+    private void btnManageRecordsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnManageRecordsActionPerformed
+        HiringManagerContractorsJPanel panel = new HiringManagerContractorsJPanel(userProcessContainer, account, network);
+        userProcessContainer.add("HiringManagerContractorsJPanel", panel);
+        java.awt.CardLayout layout = (java.awt.CardLayout) userProcessContainer.getLayout();
+        layout.next(userProcessContainer);
+    }//GEN-LAST:event_btnManageRecordsActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnBack;
@@ -175,6 +223,7 @@ public class HiringManagerJPanel extends javax.swing.JPanel {
     private javax.swing.JButton btnRefresh;
     private javax.swing.JButton btnReports;
     private javax.swing.JButton btnViewRequests;
+    private javax.swing.JButton btnViewRequests1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JLabel lblSubtitle;
     private javax.swing.JLabel lblTitle;

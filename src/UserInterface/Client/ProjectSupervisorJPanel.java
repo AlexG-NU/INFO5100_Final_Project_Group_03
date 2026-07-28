@@ -4,7 +4,11 @@
  */
 package UserInterface.Client;
 
+import Business.Network;
+import Core.UserAccount;
 import UserInterface.WorkArea.*;
+import javax.swing.JPanel;
+import javax.swing.table.DefaultTableModel;
 
 /**
  *
@@ -15,8 +19,15 @@ public class ProjectSupervisorJPanel extends javax.swing.JPanel {
     /**
      * Creates new form WorkAreaTemplatePanel
      */
-    public ProjectSupervisorJPanel() {
+    private JPanel userProcessContainer;
+    private UserAccount account;
+    private Network network;
+    public ProjectSupervisorJPanel(JPanel userProcessContainer, UserAccount account, Network network) {
         initComponents();
+        this.userProcessContainer = userProcessContainer;
+        this.account = account;
+        this.network = network;
+        populateContractorTable();
     }
     public void setWorkAreaHeader(String title, String subtitle) {
         lblTitle.setText(title);
@@ -44,6 +55,28 @@ public class ProjectSupervisorJPanel extends javax.swing.JPanel {
         javax.swing.JOptionPane.showMessageDialog(this, message, "Error", javax.swing.JOptionPane.ERROR_MESSAGE);
     }
 
+    private final String[] CONTRACTOR_COLUMNS = {
+        "Username", "Full Name", "Role"
+    };
+    public void populateContractorTable() {
+        DefaultTableModel model = new DefaultTableModel(CONTRACTOR_COLUMNS, 0) {};
+
+        if (network != null && network.getUserAccountDirectory() != null) {
+            for (UserAccount ua : network.getUserAccountDirectory().getUserAccountList()) {
+                if (ua.getSupervisor() != null && ua.getSupervisor().equals(this.account)) {
+                    String fullName = (ua.getPerson() != null) ? ua.getPerson().getName() : "N/A";
+                    model.addRow(new Object[]{
+                        ua,        // Column 0: Stores the UserAccount object (displays username via toString)
+                        fullName,  // Column 1: Person's full name
+                        ua.getRole() // Column 2: Role
+                    });
+                }
+            }
+        }
+
+        tblMain.setModel(model);
+    }
+    
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -67,28 +100,46 @@ public class ProjectSupervisorJPanel extends javax.swing.JPanel {
         setBackground(new java.awt.Color(255, 255, 204));
 
         lblTitle.setFont(new java.awt.Font("Myanmar Sangam MN", 3, 18)); // NOI18N
-        lblTitle.setText("Payroll Specialist Work Area");
+        lblTitle.setText("Project Supervisor Work Area");
 
         lblSubtitle.setFont(new java.awt.Font("Myanmar MN", 0, 13)); // NOI18N
         lblSubtitle.setForeground(new java.awt.Color(102, 102, 102));
-        lblSubtitle.setText("Payroll & Billing Enterprise - Payroll Processing Organization");
+        lblSubtitle.setText("Client Enterprise - Operations Organization");
 
-        btnViewRequests.setText("View Request");
+        btnViewRequests.setText("View Contractors");
+        btnViewRequests.setEnabled(false);
         btnViewRequests.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnViewRequestsActionPerformed(evt);
             }
         });
 
-        btnManageRecords.setText("Manage Records");
+        btnManageRecords.setText("Manage Tasks");
+        btnManageRecords.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnManageRecordsActionPerformed(evt);
+            }
+        });
 
-        btnPrimaryAction.setText("Primary Action");
+        btnPrimaryAction.setText("Approve Timecards");
+        btnPrimaryAction.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnPrimaryActionActionPerformed(evt);
+            }
+        });
 
         btnBack.setText("Back");
+        btnBack.setEnabled(false);
 
         btnRefresh.setText("Refresh");
+        btnRefresh.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnRefreshActionPerformed(evt);
+            }
+        });
 
         btnReports.setText("Reports");
+        btnReports.setEnabled(false);
 
         tblMain.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
@@ -166,6 +217,24 @@ public class ProjectSupervisorJPanel extends javax.swing.JPanel {
     private void btnViewRequestsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnViewRequestsActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_btnViewRequestsActionPerformed
+
+    private void btnManageRecordsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnManageRecordsActionPerformed
+        ProjectSupervisorTasksJPanel panel = new ProjectSupervisorTasksJPanel(userProcessContainer, account, network);
+        userProcessContainer.add("ProjectSupervisorTasksJPanel", panel);
+        java.awt.CardLayout layout = (java.awt.CardLayout) userProcessContainer.getLayout();
+        layout.next(userProcessContainer);
+    }//GEN-LAST:event_btnManageRecordsActionPerformed
+
+    private void btnPrimaryActionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnPrimaryActionActionPerformed
+        ProjectSupervisorTimecardsJPanel panel = new ProjectSupervisorTimecardsJPanel(userProcessContainer, account, network);
+        userProcessContainer.add("ProjectSupervisorTimecardsJPanel", panel);
+        java.awt.CardLayout layout = (java.awt.CardLayout) userProcessContainer.getLayout();
+        layout.next(userProcessContainer);
+    }//GEN-LAST:event_btnPrimaryActionActionPerformed
+
+    private void btnRefreshActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnRefreshActionPerformed
+        populateContractorTable();
+    }//GEN-LAST:event_btnRefreshActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

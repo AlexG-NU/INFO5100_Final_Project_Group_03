@@ -1,6 +1,8 @@
 package UserInterface1;
 
 import Business.ConfigureABusiness;
+import Business.Network;
+import Core.UserAccount;
 import StaffingAgency.People.Candidate;
 import UserInterface1.StaffingAgency.RecruiterWorkAreaJPanel;
 import WorkOrders.StaffingRequest;
@@ -55,7 +57,8 @@ public class MainJFrame extends JFrame {
 
     private JButton btnLogin;
     private JButton btnLogout;
-
+    private Network network;
+    
     public MainJFrame() {
 
         initComponents();
@@ -65,6 +68,8 @@ public class MainJFrame extends JFrame {
          */
         masterRequestList =
                 ConfigureABusiness.populateStaffingRequests();
+        //this.network = ConfigureABusiness.configure();
+        
 
         /*
          * Leave candidateList empty for now.
@@ -75,6 +80,10 @@ public class MainJFrame extends JFrame {
          *         ConfigureABusiness.populateCandidates();
          */
         candidateList = new ArrayList<>();
+        this.network = ConfigureABusiness.configure(
+                masterRequestList,
+                candidateList,
+                submissionList);
 
         setTitle("Global Workforce Staffing Network");
         setSize(1100, 700);
@@ -177,14 +186,21 @@ public class MainJFrame extends JFrame {
 
             return;
         }
-
+        
+        UserAccount userAccount = network.getUserAccountDirectory().authenticateUser(username, password);
+        if (userAccount == null) {
+            JOptionPane.showMessageDialog(this, "Invalid credentials. Please try again.");
+            return;
+        }
+        JPanel workArea = userAccount.getRole().createWorkArea(contentPanel, userAccount, network);
+        showPanel(workArea);
         /*
          * Temporary recruiter authentication.
          *
          * Later, replace this with UserAccountDirectory
          * authentication and role-based routing.
          */
-        if (!username.equalsIgnoreCase("recruiter")
+        /*if (!username.equalsIgnoreCase("recruiter")
                 || !password.equals("password")) {
 
             JOptionPane.showMessageDialog(
@@ -195,12 +211,12 @@ public class MainJFrame extends JFrame {
             );
 
             return;
-        }
+        }*/
 
         /*
          * Open the Recruiter work area using the shared lists.
          */
-      RecruiterWorkAreaJPanel recruiterPanel =
+      /*RecruiterWorkAreaJPanel recruiterPanel =
         new RecruiterWorkAreaJPanel(
                 contentPanel,
                 masterRequestList,
@@ -209,7 +225,7 @@ public class MainJFrame extends JFrame {
         );
 
         showPanel(recruiterPanel);
-
+        */
         setLoginFieldsVisible(false);
         btnLogout.setVisible(true);
     }

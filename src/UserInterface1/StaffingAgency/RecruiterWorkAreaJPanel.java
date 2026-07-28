@@ -5,7 +5,7 @@
  package UserInterface1.StaffingAgency;
 
 import StaffingAgency.People.Candidate;
-import UserInterface.Client.ManageStaffingRequestsJPanel;
+//import UserInterface.Client.ManageStaffingRequestsJPanel;
 import UserInterface1.ManageCandidatesJPanel;
 import WorkOrders.StaffingRequest;
 import java.awt.BorderLayout;

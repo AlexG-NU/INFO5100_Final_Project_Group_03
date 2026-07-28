@@ -4,10 +4,12 @@
  */
 package Client.Roles;
 
+import Business.Network;
 import Core.Enterprise;
 import Core.Organization;
 import Core.Role;
 import Core.UserAccount;
+import UserInterface.Client.HiringManagerJPanel;
 import javax.swing.JPanel;
 // import UI.HiringManager.HiringManagerWorkAreaJPanel;
 
@@ -18,8 +20,8 @@ import javax.swing.JPanel;
 public class HiringManagerRole extends Role {
     
     @Override
-    public JPanel createWorkArea(JPanel userProcessContainer, UserAccount account, Organization organization, Enterprise enterprise) {
-        return new JPanel(); //new HiringManagerWorkAreaJPanel(userProcessContainer, organization, enterprise);
+    public JPanel createWorkArea(JPanel userProcessContainer, UserAccount account, Network network) {
+        return new HiringManagerJPanel(userProcessContainer, account, network);
     }
 
 }

@@ -6,14 +6,18 @@ package UserInterface.Client;
 
 import Business.Network;
 import Core.UserAccount;
+import Core.WorkOrder;
+import Core.WorkOrderStatus;
 import Core.WorkOrders.TimecardWorkOrder;
 import WorkOrders.StaffingRequest;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.Date;
 import java.util.List;
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JTextField;
 import javax.swing.table.DefaultTableModel;
 
 /**
@@ -37,7 +41,7 @@ public class ContractorTimecardsJPanel extends javax.swing.JPanel {
         this.container = container;
         this.userAccount = userAccount;
         this.network = network;
-        setupComboBox();
+        //setupComboBox();
         refreshTable();
     }
 
@@ -71,49 +75,71 @@ public class ContractorTimecardsJPanel extends javax.swing.JPanel {
     // Update an object with text fields
     private void updateObjectFromFields(TimecardWorkOrder item) throws NumberFormatException {
 
-        Date utilDate = (Date) spinnerWeekEnding.getValue();
+        Date utilDate = (Date) spinWeekEnding.getValue();
         if (utilDate != null) {
             LocalDate localDate = utilDate.toInstant()
                                           .atZone(ZoneId.systemDefault())
                                           .toLocalDate();
             item.setWeekEndingDate(localDate);
         }
-        item.setNumberOfPositions(Integer.parseInt(txtQuantity.getText().trim()));
-        
-        // Set Strings
-        item.setJobTitle(txtJobTitle.getText().trim());
-        item.setDescription(txtDescription.getText().trim());
-        item.setRequiredSkills(txtSkills.getText().trim());
-        item.setStartDate(LocalDate.parse(txtStartDate.getText().trim()));
-        
+        double[] hours = new double[7];
+        hours[0]=parseHours(txtSun);
+        hours[1]=parseHours(txtMon);
+        hours[2]=parseHours(txtTues);
+        hours[3]=parseHours(txtWed);
+        hours[4]=parseHours(txtThurs);
+        hours[5]=parseHours(txtFri);
+        hours[6]=parseHours(txtSat);
+        item.setDailyHours(hours);
+        item.setWorkSummary(txtareaDescription.getText().trim());
+        item.setStatus((WorkOrderStatus) cmbStatus.getSelectedItem());
         // Status and SubmittedDate are usually handled by system logic 
         
     }
 
     // Fill text fields when a table row is clicked
-    private void populateForm(StaffingRequest item) {
+    private void populateForm(TimecardWorkOrder item) {
         //txtId.setText(String.valueOf(item.getId()));
-        txtQuantity.setText(String.valueOf(item.getNumberOfPositions()));
-        
-        txtJobTitle.setText(item.getJobTitle());
-        txtDescription.setText(item.getDescription());
-        txtSkills.setText(item.getRequiredSkills());
-        txtStartDate.setText(item.getStartDate() != null ? item.getStartDate().toString() : "");
+        if (item.getWeekEndingDate() != null) {
+            Date utilDate = Date.from(item.getWeekEndingDate()
+                                          .atStartOfDay(ZoneId.systemDefault())
+                                          .toInstant());
+            spinWeekEnding.setValue(utilDate);
+        }
+        double[] hours = item.getDailyHours();
+        if (hours != null && hours.length == 7) {
+            txtSun.setText(String.valueOf(hours[0]));
+            txtMon.setText(String.valueOf(hours[1]));
+            txtTues.setText(String.valueOf(hours[2]));
+            txtWed.setText(String.valueOf(hours[3]));
+            txtThurs.setText(String.valueOf(hours[4]));
+            txtFri.setText(String.valueOf(hours[5]));
+            txtSat.setText(String.valueOf(hours[6]));
+        }
+        txtareaDescription.setText(item.getWorkSummary());
+        //cmbStatus.setSelectedItem(item.getStatus());
     }
 
     // Check for empty string fields before saving
     private boolean validateInput() {
-        //if (txtId.getText().trim().isEmpty() || 
-        if    (txtJobTitle.getText().trim().isEmpty() || 
-            txtQuantity.getText().trim().isEmpty() ||
-            txtStartDate.getText().trim().isEmpty()) {
-            
-            JOptionPane.showMessageDialog(this, "ID, Job Title, Number of Hires, and Start Date are required.", "Warning", JOptionPane.WARNING_MESSAGE);
-            return false;
-        }
+
         return true;
+
     }
     
+    /*private void setupComboBox() {
+        cmbStatus.removeAllItems();
+
+        WorkOrderStatus[] allowedStatuses = {
+            WorkOrderStatus.PENDING
+        };
+
+        cmbStatus.setModel(new DefaultComboBoxModel<>(allowedStatuses));
+    }*/
+    private double parseHours(JTextField field) {
+        String text = field.getText().trim();
+    return text.isEmpty() ? 0.0 : Double.parseDouble(text);
+}
     //-------------You should not need to edit below this line--------------------
 
     private void refreshTable() {
@@ -121,8 +147,11 @@ public class ContractorTimecardsJPanel extends javax.swing.JPanel {
             @Override
             public boolean isCellEditable(int row, int col) { return false; }
         };
-        for (int i = 0; i < dataList.size(); i++) {
-            model.addRow(mapObjectToRow(dataList.get(i)));
+        for (WorkOrder workOrder : userAccount.getWorkQueue().getWorkOrderList()) {
+            if (workOrder instanceof TimecardWorkOrder) {
+                TimecardWorkOrder timecard = (TimecardWorkOrder) workOrder;
+                model.addRow(mapObjectToRow(timecard));
+            }
         }
         tblData.setModel(model); 
     }
@@ -136,7 +165,8 @@ public class ContractorTimecardsJPanel extends javax.swing.JPanel {
                 ((javax.swing.JTextField) component).setText("");
             }
         }
-        
+        spinWeekEnding.setValue(new Date());
+        txtareaDescription.setText("");
         selectedRecord = null;
         tblData.clearSelection();
     }
@@ -178,6 +208,8 @@ public class ContractorTimecardsJPanel extends javax.swing.JPanel {
         txtSat = new javax.swing.JTextField();
         jLabel10 = new javax.swing.JLabel();
         spinWeekEnding = new javax.swing.JSpinner();
+        jLabel11 = new javax.swing.JLabel();
+        cmbStatus = new javax.swing.JComboBox<>();
 
         tblData.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
@@ -252,6 +284,8 @@ public class ContractorTimecardsJPanel extends javax.swing.JPanel {
 
         spinWeekEnding.setModel(new javax.swing.SpinnerDateModel());
 
+        jLabel11.setText("Status");
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -266,13 +300,6 @@ public class ContractorTimecardsJPanel extends javax.swing.JPanel {
                         .addComponent(btnBack)
                         .addGap(147, 147, 147)
                         .addComponent(jLabel6))
-                    .addGroup(layout.createSequentialGroup()
-                        .addGap(134, 134, 134)
-                        .addComponent(btnSave)
-                        .addGap(52, 52, 52)
-                        .addComponent(btnDelete)
-                        .addGap(80, 80, 80)
-                        .addComponent(btnClear))
                     .addGroup(layout.createSequentialGroup()
                         .addGap(79, 79, 79)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -311,15 +338,26 @@ public class ContractorTimecardsJPanel extends javax.swing.JPanel {
                                         .addComponent(jLabel9)
                                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
                             .addGroup(layout.createSequentialGroup()
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(jLabel2)
-                                    .addComponent(jLabel10))
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                                    .addComponent(jLabel11)
+                                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                        .addComponent(jLabel2)
+                                        .addComponent(jLabel10)))
                                 .addGap(18, 18, 18)
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                     .addComponent(spinWeekEnding, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                    .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(cmbStatus, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                                 .addGap(0, 0, Short.MAX_VALUE)))))
                 .addContainerGap(78, Short.MAX_VALUE))
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                .addGap(0, 0, Short.MAX_VALUE)
+                .addComponent(btnSave)
+                .addGap(52, 52, 52)
+                .addComponent(btnDelete)
+                .addGap(80, 80, 80)
+                .addComponent(btnClear)
+                .addGap(122, 122, 122))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -356,17 +394,23 @@ public class ContractorTimecardsJPanel extends javax.swing.JPanel {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel2))
-                .addGap(18, 18, 18)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 21, Short.MAX_VALUE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel11)
+                    .addComponent(cmbStatus, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(23, 23, 23)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(btnSave)
                     .addComponent(btnDelete)
                     .addComponent(btnClear))
-                .addContainerGap(90, Short.MAX_VALUE))
+                .addGap(42, 42, 42))
         );
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnBackActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnBackActionPerformed
-        // TODO add your handling code here:
+        container.remove(this);
+        java.awt.CardLayout layout = (java.awt.CardLayout) container.getLayout();
+        layout.previous(container);
     }//GEN-LAST:event_btnBackActionPerformed
 
     private void btnSaveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSaveActionPerformed
@@ -374,7 +418,8 @@ public class ContractorTimecardsJPanel extends javax.swing.JPanel {
 
         try {
             if (selectedRecord == null) {
-                dataList.add(buildObjectFromFields());
+                TimecardWorkOrder newTimecard = buildObjectFromFields();
+                userAccount.getWorkQueue().getWorkOrderList().add(newTimecard);
                 JOptionPane.showMessageDialog(this, "Record created successfully.");
             } else {
                 updateObjectFromFields(selectedRecord);
@@ -393,7 +438,7 @@ public class ContractorTimecardsJPanel extends javax.swing.JPanel {
         if (selectedRecord != null) {
             int confirm = JOptionPane.showConfirmDialog(this, "Are you sure you want to delete this record?", "Confirm Deletion", JOptionPane.YES_NO_OPTION);
             if (confirm == JOptionPane.YES_OPTION) {
-                dataList.remove(selectedRecord);
+                userAccount.getWorkQueue().getWorkOrderList().remove(selectedRecord);                
                 refreshTable();
                 clearFormAndSelection();
             }
@@ -413,7 +458,7 @@ public class ContractorTimecardsJPanel extends javax.swing.JPanel {
             
             // Suppress warning here as we strictly control column 0 insertion
             @SuppressWarnings("unchecked") 
-            StaffingRequest castRecord = (StaffingRequest) tblData.getValueAt(modelRow, 0);
+            TimecardWorkOrder castRecord = (TimecardWorkOrder) tblData.getValueAt(modelRow, 0);
             
             selectedRecord = castRecord;
             populateForm(selectedRecord);
@@ -426,8 +471,10 @@ public class ContractorTimecardsJPanel extends javax.swing.JPanel {
     private javax.swing.JButton btnClear;
     private javax.swing.JButton btnDelete;
     private javax.swing.JButton btnSave;
+    private javax.swing.JComboBox<String> cmbStatus;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel10;
+    private javax.swing.JLabel jLabel11;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;

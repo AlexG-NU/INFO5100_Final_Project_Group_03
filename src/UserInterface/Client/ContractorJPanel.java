@@ -89,6 +89,11 @@ public class ContractorJPanel extends javax.swing.JPanel {
         btnManageRecords.setText("Manage Records");
 
         btnPrimaryAction.setText("Submit Timecard");
+        btnPrimaryAction.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnPrimaryActionActionPerformed(evt);
+            }
+        });
 
         btnBack.setText("Back");
 
@@ -175,6 +180,13 @@ public class ContractorJPanel extends javax.swing.JPanel {
         java.awt.CardLayout layout = (java.awt.CardLayout) userProcessContainer.getLayout();
         layout.next(userProcessContainer);
     }//GEN-LAST:event_btnViewRequestsActionPerformed
+
+    private void btnPrimaryActionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnPrimaryActionActionPerformed
+        ContractorTimecardsJPanel panel = new ContractorTimecardsJPanel(userProcessContainer, account, network);
+        userProcessContainer.add("ContractorTimecardsJPanel", panel);
+        java.awt.CardLayout layout = (java.awt.CardLayout) userProcessContainer.getLayout();
+        layout.next(userProcessContainer);
+    }//GEN-LAST:event_btnPrimaryActionActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

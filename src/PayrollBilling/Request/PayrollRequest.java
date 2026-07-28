@@ -1,59 +1,68 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package PayrollBilling.Request;
 
+import Core.WorkOrder;
+import Core.WorkOrderStatus;
+import Core.WorkOrders.TimecardWorkOrder;
 import PayrollBilling.Record.PayrollRecord;
-import StaffingAgency.Enums.RequestStatus;
 import StaffingAgency.Request.ContractorAssignment;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.time.LocalDate;
 
-public class PayrollRequest {
+public class PayrollRequest extends WorkOrder {
 
-    private static final AtomicInteger ID_SEQUENCE = new AtomicInteger(8000);
-
-    private int requestId;
-    private RequestStatus status;
+    private TimecardWorkOrder timecard;
     private ContractorAssignment assignment;
-    private int hoursWorked;
     private PayrollRecord payrollRecord;
 
-    public PayrollRequest(ContractorAssignment assignment, int hoursWorked) {
-        this.requestId = ID_SEQUENCE.incrementAndGet();
+    public PayrollRequest(TimecardWorkOrder timecard, ContractorAssignment assignment) {
+        super();
+        this.timecard = timecard;
         this.assignment = assignment;
-        this.hoursWorked = hoursWorked;
-        this.status = RequestStatus.SUBMITTED;
+        setStatus(WorkOrderStatus.PENDING);
+    }
+
+    // Backward-compatible constructor in case older code still passes raw hours.
+    public PayrollRequest(ContractorAssignment assignment, double hoursWorked) {
+        super();
+        this.assignment = assignment;
+        setStatus(WorkOrderStatus.PENDING);
+
+        TimecardWorkOrder tempTimecard = new TimecardWorkOrder(LocalDate.now(), 0.0);
+        tempTimecard.setDailyHours(new double[]{hoursWorked, 0, 0, 0, 0, 0, 0});
+        this.timecard = tempTimecard;
     }
 
     public PayrollRecord processPayroll() {
-        if (assignment == null) {
-            throw new IllegalArgumentException("Assignment is required to process payroll.");
-        }
+        validateReadyToProcess();
 
-        if (hoursWorked <= 0) {
-            throw new IllegalArgumentException("Hours worked must be greater than zero.");
-        }
-
-        this.payrollRecord = new PayrollRecord(assignment, hoursWorked);
-        this.status = RequestStatus.COMPLETED;
+        this.payrollRecord = new PayrollRecord(assignment, timecard.getTotalHours());
+        setStatus(WorkOrderStatus.COMPLETED);
         return payrollRecord;
     }
 
-    public int getRequestId() {
-        return requestId;
+    private void validateReadyToProcess() {
+        if (timecard == null) {
+            throw new IllegalArgumentException("Timecard is required to process payroll.");
+        }
+
+        if (assignment == null) {
+            throw new IllegalArgumentException("Contractor assignment is required to process payroll.");
+        }
+
+        if (timecard.getTotalHours() <= 0) {
+            throw new IllegalArgumentException("Timecard must have more than zero hours.");
+        }
     }
 
-    public RequestStatus getStatus() {
-        return status;
+    public TimecardWorkOrder getTimecard() {
+        return timecard;
     }
 
     public ContractorAssignment getAssignment() {
         return assignment;
     }
 
-    public int getHoursWorked() {
-        return hoursWorked;
+    public double getHoursWorked() {
+        return timecard == null ? 0.0 : timecard.getTotalHours();
     }
 
     public PayrollRecord getPayrollRecord() {

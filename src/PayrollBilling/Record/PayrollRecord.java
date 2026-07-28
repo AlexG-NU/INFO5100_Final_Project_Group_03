@@ -1,7 +1,3 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package PayrollBilling.Record;
 
 import PayrollBilling.Enums.PaymentStatus;
@@ -15,15 +11,19 @@ public class PayrollRecord {
 
     private static final AtomicInteger ID_SEQUENCE = new AtomicInteger(7000);
 
-    private int payrollId;
+    private final int payrollId;
     private ContractorAssignment assignment;
-    private int hoursWorked;
+    private double hoursWorked;
     private BigDecimal payRate;
     private BigDecimal totalAmount;
     private LocalDate processedDate;
     private PaymentStatus paymentStatus;
 
-    public PayrollRecord(ContractorAssignment assignment, int hoursWorked) {
+    public PayrollRecord(ContractorAssignment assignment, double hoursWorked) {
+        if (hoursWorked <= 0) {
+            throw new IllegalArgumentException("Hours worked must be greater than zero.");
+        }
+
         this.payrollId = ID_SEQUENCE.incrementAndGet();
         this.assignment = assignment;
         this.hoursWorked = hoursWorked;
@@ -33,15 +33,23 @@ public class PayrollRecord {
         if (assignment != null && assignment.getContract() != null) {
             Contract contract = assignment.getContract();
             this.payRate = contract.getPayRate();
-            this.totalAmount = calculatePay();
         } else {
             this.payRate = BigDecimal.ZERO;
-            this.totalAmount = BigDecimal.ZERO;
         }
+
+        this.totalAmount = calculatePay();
     }
 
     public BigDecimal calculatePay() {
+        if (payRate == null) {
+            return BigDecimal.ZERO;
+        }
+
         return payRate.multiply(BigDecimal.valueOf(hoursWorked));
+    }
+
+    public void markAsProcessing() {
+        this.paymentStatus = PaymentStatus.PROCESSING;
     }
 
     public void markAsPaid() {
@@ -56,7 +64,7 @@ public class PayrollRecord {
         return assignment;
     }
 
-    public int getHoursWorked() {
+    public double getHoursWorked() {
         return hoursWorked;
     }
 
@@ -74,5 +82,10 @@ public class PayrollRecord {
 
     public PaymentStatus getPaymentStatus() {
         return paymentStatus;
+    }
+
+    @Override
+    public String toString() {
+        return String.valueOf(payrollId);
     }
 }

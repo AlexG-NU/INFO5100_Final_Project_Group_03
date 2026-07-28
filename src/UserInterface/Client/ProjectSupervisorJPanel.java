@@ -107,6 +107,7 @@ public class ProjectSupervisorJPanel extends javax.swing.JPanel {
         lblSubtitle.setText("Client Enterprise - Operations Organization");
 
         btnViewRequests.setText("View Contractors");
+        btnViewRequests.setEnabled(false);
         btnViewRequests.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnViewRequestsActionPerformed(evt);
@@ -128,6 +129,7 @@ public class ProjectSupervisorJPanel extends javax.swing.JPanel {
         });
 
         btnBack.setText("Back");
+        btnBack.setEnabled(false);
 
         btnRefresh.setText("Refresh");
         btnRefresh.addActionListener(new java.awt.event.ActionListener() {
@@ -137,6 +139,7 @@ public class ProjectSupervisorJPanel extends javax.swing.JPanel {
         });
 
         btnReports.setText("Reports");
+        btnReports.setEnabled(false);
 
         tblMain.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {

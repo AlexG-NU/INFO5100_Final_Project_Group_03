@@ -4,7 +4,15 @@
  */
 package UserInterface.Client;
 
-import WorkOrders.StaffingRequest;
+
+import Business.Network;
+import Core.NetworkUtils;
+import Core.Organization;
+import Core.UserAccount;
+import Core.WorkOrder;
+import Core.WorkOrderStatus;
+import Core.WorkOrders.StaffingReqWorkOrder;
+import java.awt.CardLayout;
 import java.time.LocalDate;
 import java.util.List;
 import javax.swing.JOptionPane;
@@ -15,26 +23,28 @@ import javax.swing.table.DefaultTableModel;
  *
  * @author Alex
  */
-public class ManageStaffingRequestsJPanel extends javax.swing.JPanel {
+public class HiringManagerStaffingReqsJPanel extends javax.swing.JPanel {
 
     private JPanel container;
-    private List<StaffingRequest> dataList;
-    private StaffingRequest selectedRecord = null; 
+    private UserAccount account;
+    private Network network;
+    private StaffingReqWorkOrder selectedRecord = null; 
 
     // Define the columns you actually want visible in the JTable
     private final String[] COLUMN_NAMES = {
         "Req ID", "Job Title", "Target Hires", "Start Date", "Status"
     };
 
-    public ManageStaffingRequestsJPanel(JPanel container, List<StaffingRequest> dataList) {
+    public HiringManagerStaffingReqsJPanel(JPanel container, UserAccount account, Network network) {
         initComponents(); 
         this.container = container;
-        this.dataList = dataList;
+        this.account = account;
+        this.network = network;
         refreshTable();
     }
 
     // Map object to the table row
-    private Object[] mapObjectToRow(StaffingRequest item) {
+    private Object[] mapObjectToRow(StaffingReqWorkOrder item) {
         return new Object[]{
             item,                      // Column 0: The object (displays ID via toString)
             item.getJobTitle(),        // Column 1
@@ -45,19 +55,21 @@ public class ManageStaffingRequestsJPanel extends javax.swing.JPanel {
     }
 
     // Create a new blank object and pass it to the update method
-    private StaffingRequest buildObjectFromFields() throws NumberFormatException {
-        StaffingRequest newItem = new StaffingRequest();
+    private StaffingReqWorkOrder buildObjectFromFields() throws NumberFormatException {
+        StaffingReqWorkOrder newItem = new StaffingReqWorkOrder();
         
         
-        //newItem.setStatus("Submitted");
-        //newItem.setSubmittedDate(java.time.LocalDate.now().toString()); 
+        newItem.setSender(account);                        
+        //newItem.setRequestDate(LocalDate.now());           
+        newItem.setStatus(WorkOrderStatus.PENDING);       
+        //newItem.setJobTitle(txtJobTitle.getText().trim()); 
         
         updateObjectFromFields(newItem);
         return newItem;
     }
 
     // Update an object with text fields
-    private void updateObjectFromFields(StaffingRequest item) throws NumberFormatException {
+    private void updateObjectFromFields(StaffingReqWorkOrder item) throws NumberFormatException {
         // Parse numbers
         //item.setId(Integer.parseInt(txtId.getText().trim()));
         item.setNumberOfPositions(Integer.parseInt(txtQuantity.getText().trim()));
@@ -66,31 +78,41 @@ public class ManageStaffingRequestsJPanel extends javax.swing.JPanel {
         item.setJobTitle(txtJobTitle.getText().trim());
         item.setDescription(txtDescription.getText().trim());
         item.setRequiredSkills(txtSkills.getText().trim());
-        item.setStartDate(LocalDate.parse(txtStartDate.getText().trim()));
+        
+        java.util.Date spinnerDate = (java.util.Date) spnStartDate.getValue();
+        LocalDate startDate = spinnerDate.toInstant()
+                                         .atZone(java.time.ZoneId.systemDefault())
+                                         .toLocalDate();
+        item.setStartDate(startDate);
         
         // Status and SubmittedDate are usually handled by system logic 
         
     }
 
     // Fill text fields when a table row is clicked
-    private void populateForm(StaffingRequest item) {
+    private void populateForm(StaffingReqWorkOrder item) {
         //txtId.setText(String.valueOf(item.getId()));
         txtQuantity.setText(String.valueOf(item.getNumberOfPositions()));
         
         txtJobTitle.setText(item.getJobTitle());
         txtDescription.setText(item.getDescription());
         txtSkills.setText(item.getRequiredSkills());
-        txtStartDate.setText(item.getStartDate() != null ? item.getStartDate().toString() : "");
+        
+        if (item.getStartDate() != null) {
+            java.util.Date spinnerDate = java.util.Date.from(
+                item.getStartDate().atStartOfDay(java.time.ZoneId.systemDefault()).toInstant()
+            );
+            spnStartDate.setValue(spinnerDate);
+        }
     }
 
     // Check for empty string fields before saving
     private boolean validateInput() {
         //if (txtId.getText().trim().isEmpty() || 
         if    (txtJobTitle.getText().trim().isEmpty() || 
-            txtQuantity.getText().trim().isEmpty() ||
-            txtStartDate.getText().trim().isEmpty()) {
+            txtQuantity.getText().trim().isEmpty()) {
             
-            JOptionPane.showMessageDialog(this, "ID, Job Title, Number of Hires, and Start Date are required.", "Warning", JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(this, "ID, Job Title, Number of Hires are required.", "Warning", JOptionPane.WARNING_MESSAGE);
             return false;
         }
         return true;
@@ -101,12 +123,20 @@ public class ManageStaffingRequestsJPanel extends javax.swing.JPanel {
     private void refreshTable() {
         DefaultTableModel model = new DefaultTableModel(COLUMN_NAMES, 0) {
             @Override
-            public boolean isCellEditable(int row, int col) { return false; }
+            public boolean isCellEditable(int row, int col) { 
+                return false; 
+            }
         };
-        for (int i = 0; i < dataList.size(); i++) {
-            model.addRow(mapObjectToRow(dataList.get(i)));
+        
+        // Populate directly from the manager's WorkQueue
+        if (account != null && account.getWorkQueue() != null) {
+            for (WorkOrder wo : account.getWorkQueue().getWorkOrderList()) {
+                if (wo instanceof StaffingReqWorkOrder) {
+                    model.addRow(mapObjectToRow((StaffingReqWorkOrder) wo));
+                }
+            }
         }
-        tblData.setModel(model); 
+        tblData.setModel(model);
     }
 
     private void clearFormAndSelection() {
@@ -118,7 +148,7 @@ public class ManageStaffingRequestsJPanel extends javax.swing.JPanel {
                 ((javax.swing.JTextField) component).setText("");
             }
         }
-        
+        spnStartDate.setValue(new java.util.Date());
         selectedRecord = null;
         tblData.clearSelection();
     }
@@ -143,13 +173,14 @@ public class ManageStaffingRequestsJPanel extends javax.swing.JPanel {
         jLabel2 = new javax.swing.JLabel();
         txtSkills = new javax.swing.JTextField();
         jLabel3 = new javax.swing.JLabel();
-        txtStartDate = new javax.swing.JTextField();
         jLabel4 = new javax.swing.JLabel();
         txtQuantity = new javax.swing.JTextField();
         jLabel5 = new javax.swing.JLabel();
-        btnSave = new javax.swing.JToggleButton();
-        btnDelete = new javax.swing.JToggleButton();
-        btnClear = new javax.swing.JToggleButton();
+        btnSave = new javax.swing.JButton();
+        btnDelete = new javax.swing.JButton();
+        btnClear = new javax.swing.JButton();
+        spnStartDate = new javax.swing.JSpinner();
+        jLabel6 = new javax.swing.JLabel();
 
         tblData.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
@@ -207,6 +238,11 @@ public class ManageStaffingRequestsJPanel extends javax.swing.JPanel {
             }
         });
 
+        spnStartDate.setModel(new javax.swing.SpinnerDateModel());
+
+        jLabel6.setFont(new java.awt.Font("Segoe UI", 0, 24)); // NOI18N
+        jLabel6.setText("Staffing Requests");
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -218,7 +254,9 @@ public class ManageStaffingRequestsJPanel extends javax.swing.JPanel {
                         .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(layout.createSequentialGroup()
                         .addGap(31, 31, 31)
-                        .addComponent(btnBack))
+                        .addComponent(btnBack)
+                        .addGap(144, 144, 144)
+                        .addComponent(jLabel6))
                     .addGroup(layout.createSequentialGroup()
                         .addGap(134, 134, 134)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
@@ -230,11 +268,6 @@ public class ManageStaffingRequestsJPanel extends javax.swing.JPanel {
                             .addComponent(btnSave, javax.swing.GroupLayout.Alignment.LEADING))
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(layout.createSequentialGroup()
-                                .addGap(18, 18, 18)
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                    .addComponent(txtStartDate)
-                                    .addComponent(txtQuantity, javax.swing.GroupLayout.PREFERRED_SIZE, 118, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                            .addGroup(layout.createSequentialGroup()
                                 .addGap(45, 45, 45)
                                 .addComponent(btnDelete)
                                 .addGap(80, 80, 80)
@@ -242,16 +275,21 @@ public class ManageStaffingRequestsJPanel extends javax.swing.JPanel {
                             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(txtJobTitle, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 228, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(txtDescription, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 228, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(txtSkills, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 228, javax.swing.GroupLayout.PREFERRED_SIZE))))))
+                                    .addComponent(spnStartDate, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                        .addComponent(txtJobTitle, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 228, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addComponent(txtDescription, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 228, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addComponent(txtSkills, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 228, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                    .addComponent(txtQuantity, javax.swing.GroupLayout.PREFERRED_SIZE, 118, javax.swing.GroupLayout.PREFERRED_SIZE))))))
                 .addContainerGap(78, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGap(18, 18, 18)
-                .addComponent(btnBack)
+                .addGap(8, 8, 8)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(btnBack)
+                    .addComponent(jLabel6))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 216, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, 18)
@@ -268,8 +306,8 @@ public class ManageStaffingRequestsJPanel extends javax.swing.JPanel {
                     .addComponent(jLabel3))
                 .addGap(18, 18, 18)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(txtStartDate, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel4))
+                    .addComponent(jLabel4)
+                    .addComponent(spnStartDate, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(18, 18, 18)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(txtQuantity, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -284,7 +322,9 @@ public class ManageStaffingRequestsJPanel extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnBackActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnBackActionPerformed
-        // TODO add your handling code here:
+        container.remove(this);
+        CardLayout layout = (CardLayout) container.getLayout();
+        layout.previous(container);
     }//GEN-LAST:event_btnBackActionPerformed
 
     private void btnSaveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSaveActionPerformed
@@ -292,16 +332,28 @@ public class ManageStaffingRequestsJPanel extends javax.swing.JPanel {
 
         try {
             if (selectedRecord == null) {
-                dataList.add(buildObjectFromFields());
-                JOptionPane.showMessageDialog(this, "Record created successfully.");
+                StaffingReqWorkOrder newWorkOrder = buildObjectFromFields();
+
+                account.getWorkQueue().getWorkOrderList().add(newWorkOrder);
+
+                Organization staffingOrg = NetworkUtils.findOrganizationByName(network, "Staffing Enterprise", "Recruiting");
+
+                if (staffingOrg != null) {
+                    staffingOrg.getWorkQueue().getWorkOrderList().add(newWorkOrder);
+                    JOptionPane.showMessageDialog(this, "Staffing Work Order #" + newWorkOrder.getWorkOrderId() + " submitted to Recruiting queue.");
+                } else {
+                    JOptionPane.showMessageDialog(this, "Work Order saved locally, but target Recruiting queue was not found.", "Routing Warning", JOptionPane.WARNING_MESSAGE);
+                }
             } else {
                 updateObjectFromFields(selectedRecord);
-                JOptionPane.showMessageDialog(this, "Record updated successfully.");
+                JOptionPane.showMessageDialog(this, "Work Order updated successfully.");
             }
+
             refreshTable();
             clearFormAndSelection();
+
         } catch (NumberFormatException ex) {
-            JOptionPane.showMessageDialog(this, "Please ensure numeric fields contain valid whole or decimal numbers.", "Input Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Please ensure Quantity is a valid integer.", "Input Error", JOptionPane.ERROR_MESSAGE);
         } catch (Exception ex) {
             JOptionPane.showMessageDialog(this, "An unexpected error occurred: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
@@ -309,14 +361,23 @@ public class ManageStaffingRequestsJPanel extends javax.swing.JPanel {
 
     private void btnDeleteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDeleteActionPerformed
         if (selectedRecord != null) {
-            int confirm = JOptionPane.showConfirmDialog(this, "Are you sure you want to delete this record?", "Confirm Deletion", JOptionPane.YES_NO_OPTION);
+            int confirm = JOptionPane.showConfirmDialog(this, "Are you sure you want to delete this work order?", "Confirm Deletion", JOptionPane.YES_NO_OPTION);
             if (confirm == JOptionPane.YES_OPTION) {
-                dataList.remove(selectedRecord);
+                
+                // Remove from Hiring Manager's local queue
+                account.getWorkQueue().getWorkOrderList().remove(selectedRecord);
+                
+                // Remove from target Staffing queue if not yet processed
+                Organization staffingOrg = NetworkUtils.findOrganizationByName(network, "Staffing Enterprise", "Recruiting");
+                if (staffingOrg != null) {
+                    staffingOrg.getWorkQueue().getWorkOrderList().remove(selectedRecord);
+                }
+                
                 refreshTable();
                 clearFormAndSelection();
             }
         } else {
-            JOptionPane.showMessageDialog(this, "Please select a row from the table first.", "Warning", JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Please select a work order from the table first.", "Warning", JOptionPane.WARNING_MESSAGE);
         }
     }//GEN-LAST:event_btnDeleteActionPerformed
 
@@ -331,7 +392,7 @@ public class ManageStaffingRequestsJPanel extends javax.swing.JPanel {
             
             // Suppress warning here as we strictly control column 0 insertion
             @SuppressWarnings("unchecked") 
-            StaffingRequest castRecord = (StaffingRequest) tblData.getValueAt(modelRow, 0);
+            StaffingReqWorkOrder castRecord = (StaffingReqWorkOrder) tblData.getValueAt(modelRow, 0);
             
             selectedRecord = castRecord;
             populateForm(selectedRecord);
@@ -341,20 +402,21 @@ public class ManageStaffingRequestsJPanel extends javax.swing.JPanel {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnBack;
-    private javax.swing.JToggleButton btnClear;
-    private javax.swing.JToggleButton btnDelete;
-    private javax.swing.JToggleButton btnSave;
+    private javax.swing.JButton btnClear;
+    private javax.swing.JButton btnDelete;
+    private javax.swing.JButton btnSave;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
+    private javax.swing.JLabel jLabel6;
     private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JSpinner spnStartDate;
     private javax.swing.JTable tblData;
     private javax.swing.JTextField txtDescription;
     private javax.swing.JTextField txtJobTitle;
     private javax.swing.JTextField txtQuantity;
     private javax.swing.JTextField txtSkills;
-    private javax.swing.JTextField txtStartDate;
     // End of variables declaration//GEN-END:variables
 }

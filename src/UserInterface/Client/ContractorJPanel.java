@@ -87,6 +87,7 @@ public class ContractorJPanel extends javax.swing.JPanel {
         });
 
         btnManageRecords.setText("Manage Records");
+        btnManageRecords.setEnabled(false);
 
         btnPrimaryAction.setText("Submit Timecard");
         btnPrimaryAction.addActionListener(new java.awt.event.ActionListener() {
@@ -96,10 +97,13 @@ public class ContractorJPanel extends javax.swing.JPanel {
         });
 
         btnBack.setText("Back");
+        btnBack.setEnabled(false);
 
         btnRefresh.setText("Refresh");
+        btnRefresh.setEnabled(false);
 
         btnReports.setText("Reports");
+        btnReports.setEnabled(false);
 
         tblMain.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
@@ -112,6 +116,7 @@ public class ContractorJPanel extends javax.swing.JPanel {
                 "ID", "Type", "Status", "Sender", "Receiver", "Date"
             }
         ));
+        tblMain.setEnabled(false);
         jScrollPane1.setViewportView(tblMain);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);

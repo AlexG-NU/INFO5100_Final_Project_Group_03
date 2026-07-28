@@ -118,6 +118,7 @@
     <Component class="javax.swing.JButton" name="btnViewRequests">
       <Properties>
         <Property name="text" type="java.lang.String" value="View Contractors"/>
+        <Property name="enabled" type="boolean" value="false"/>
       </Properties>
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnViewRequestsActionPerformed"/>
@@ -142,6 +143,7 @@
     <Component class="javax.swing.JButton" name="btnBack">
       <Properties>
         <Property name="text" type="java.lang.String" value="Back"/>
+        <Property name="enabled" type="boolean" value="false"/>
       </Properties>
     </Component>
     <Component class="javax.swing.JButton" name="btnRefresh">
@@ -155,6 +157,7 @@
     <Component class="javax.swing.JButton" name="btnReports">
       <Properties>
         <Property name="text" type="java.lang.String" value="Reports"/>
+        <Property name="enabled" type="boolean" value="false"/>
       </Properties>
     </Component>
     <Container class="javax.swing.JScrollPane" name="jScrollPane1">

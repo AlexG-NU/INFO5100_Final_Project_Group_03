@@ -33,6 +33,7 @@
                                       <Group type="103" groupAlignment="0" attributes="0">
                                           <Component id="btnViewRequests" alignment="0" min="-2" max="-2" attributes="0"/>
                                           <Component id="btnManageRecords" alignment="0" min="-2" max="-2" attributes="0"/>
+                                          <Component id="btnViewRequests1" alignment="0" min="-2" max="-2" attributes="0"/>
                                       </Group>
                                       <EmptySpace max="32767" attributes="0"/>
                                       <Group type="103" groupAlignment="1" attributes="0">
@@ -78,7 +79,9 @@
                   <Component id="btnViewRequests" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="btnPrimaryAction" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace min="-2" pref="45" max="-2" attributes="0"/>
+              <EmptySpace type="unrelated" max="-2" attributes="0"/>
+              <Component id="btnViewRequests1" min="-2" max="-2" attributes="0"/>
+              <EmptySpace min="-2" pref="10" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="btnReports" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="btnManageRecords" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -117,7 +120,7 @@
     </Component>
     <Component class="javax.swing.JButton" name="btnViewRequests">
       <Properties>
-        <Property name="text" type="java.lang.String" value="View Request"/>
+        <Property name="text" type="java.lang.String" value="View Candidates"/>
       </Properties>
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnViewRequestsActionPerformed"/>
@@ -125,13 +128,19 @@
     </Component>
     <Component class="javax.swing.JButton" name="btnManageRecords">
       <Properties>
-        <Property name="text" type="java.lang.String" value="Manage Records"/>
+        <Property name="text" type="java.lang.String" value="Manage Contractors"/>
       </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnManageRecordsActionPerformed"/>
+      </Events>
     </Component>
     <Component class="javax.swing.JButton" name="btnPrimaryAction">
       <Properties>
-        <Property name="text" type="java.lang.String" value="Primary Action"/>
+        <Property name="text" type="java.lang.String" value="Staffing Requests"/>
       </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnPrimaryActionActionPerformed"/>
+      </Events>
     </Component>
     <Component class="javax.swing.JButton" name="btnBack">
       <Properties>
@@ -205,5 +214,13 @@
         </Component>
       </SubComponents>
     </Container>
+    <Component class="javax.swing.JButton" name="btnViewRequests1">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="View Invoices"/>
+      </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnViewRequests1ActionPerformed"/>
+      </Events>
+    </Component>
   </SubComponents>
 </Form>

@@ -1,12 +1,25 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package PayrollBilling.Organization;
 
-public class ClientBillingOrganization {
+import Core.Organization;
+import Core.Role;
+import PayrollBilling.Role.BillingAnalystRole;
+import java.util.ArrayList;
+import java.util.List;
+
+public class ClientBillingOrganization extends Organization {
+
+    public ClientBillingOrganization() {
+        super("Client Billing Organization");
+    }
 
     public void generateClientInvoice() {
         System.out.println("Generating client invoice...");
+    }
+
+    @Override
+    public List<Role> getSupportedRoles() {
+        List<Role> roles = new ArrayList<>();
+        roles.add(new BillingAnalystRole());
+        return roles;
     }
 }

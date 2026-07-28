@@ -20,7 +20,16 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 
 public class ConfigurePayrollBilling {
+    
+    private static PayrollBillingModule sharedPayrollBillingModule;
 
+    public static PayrollBillingModule getSharedPayrollBillingModule() {
+        if (sharedPayrollBillingModule == null) {
+            sharedPayrollBillingModule = configurePayrollBillingModule();
+        }
+        return sharedPayrollBillingModule;
+    }
+    
     public static PayrollBillingModule configurePayrollBillingModule() {
 
         PayrollBillingModule module = new PayrollBillingModule();
@@ -92,7 +101,7 @@ public class ConfigurePayrollBilling {
 
     public static PayrollBillingModule populatePayrollBillingData(Network network) {
 
-        PayrollBillingModule module = configurePayrollBillingModule();
+        PayrollBillingModule module = getSharedPayrollBillingModule();
 
         PayrollBillingEnterprise payrollBillingEnterprise =
                 new PayrollBillingEnterprise("PayrollBilling");

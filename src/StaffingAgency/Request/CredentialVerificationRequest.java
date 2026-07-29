@@ -28,13 +28,20 @@ public class CredentialVerificationRequest {
     private final ContractorAssignment assignment;
 
     public CredentialVerificationRequest(ContractorAssignment assignment, String verificationType, String notes) {
+        if (assignment == null) {
+            throw new IllegalArgumentException("Contractor assignment is required.");
+        }
+        if (verificationType == null || verificationType.trim().isEmpty()) {
+            throw new IllegalArgumentException("Verification type is required.");
+        }
         this.verificationRequestId = ID_SEQUENCE.incrementAndGet();
         this.assignment = assignment;
-        this.verificationType = verificationType;
-        this.notes = notes;
+        this.verificationType = verificationType.trim();
+        this.notes = notes == null ? "" : notes.trim();
         this.requestDate = LocalDate.now();
         this.status = RequestStatus.SUBMITTED;
         assignment.addVerificationRequest(this);
+        assignment.submitForCompliance();
     }
 
     public int getVerificationRequestId() {
@@ -75,6 +82,7 @@ public class CredentialVerificationRequest {
 
     public void rejectRequest() {
         this.status = RequestStatus.REJECTED;
+        assignment.rejectForCompliance();
     }
 
     /**
@@ -89,6 +97,6 @@ public class CredentialVerificationRequest {
             throw new IllegalStateException("Cannot apply a verification that has not been approved");
         }
         this.status = RequestStatus.COMPLETED;
+        assignment.clearForWork();
     }
 }
-

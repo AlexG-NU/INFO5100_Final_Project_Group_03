@@ -35,6 +35,7 @@ public class CredentialSpecialistWorkAreaJPanel extends javax.swing.JPanel {
         this.specialist = specialist;
         this.contractorList = contractorList;
         initComponents();
+        btnBack.setVisible(previousPanel != null);
         populateTable(false);
     }
 

@@ -1,5 +1,6 @@
 package ComplianceEnterprise.Model;
 
+import com.github.javafaker.Faker;
 import ComplianceEnterprise.Enums.ComplianceDecision;
 import ComplianceEnterprise.Enums.CredentialStatus;
 import ComplianceEnterprise.Role.ComplianceAnalyst;
@@ -8,32 +9,21 @@ import ComplianceEnterprise.Role.CredentialSpecialist;
 import StaffingAgency.People.Contractor;
 import StaffingAgency.Request.ContractorAssignment;
 import StaffingAgency.Request.CredentialVerificationRequest;
-import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 /**
  * Creates the demonstration data used by the Compliance Enterprise.
  *
- * If Java Faker is added to the project libraries, names, emails, and phone
- * numbers are generated through Faker. The fallback values keep the project
- * runnable when a teammate does not have the Faker JAR installed.
+ * Java Faker creates the contractor names, emails, and phone numbers used in
+ * the Compliance demonstration records.
  *
  * @author janet
  */
 public class ComplianceDataGenerator {
-
-    private static final String[] FIRST_NAMES = {
-        "Maya", "Daniel", "Sofia", "Ethan", "Olivia", "Marcus",
-        "Nina", "Jordan", "Priya", "Lucas", "Avery", "Noah"
-    };
-
-    private static final String[] LAST_NAMES = {
-        "Chen", "Martinez", "Patel", "Williams", "Kim", "Johnson",
-        "Nguyen", "Taylor", "Shah", "Brown", "Davis", "Wilson"
-    };
 
     private static final String[] SKILLS = {
         "Java Development", "Quality Assurance", "Project Management",
@@ -66,18 +56,14 @@ public class ComplianceDataGenerator {
         directory.addUser(analyst);
         directory.addUser(specialist);
 
-        Object faker = createFaker();
+        // A fixed seed keeps the classroom demonstration consistent.
+        Faker faker = new Faker(new Random(5100));
 
         for (int index = 0; index < 12; index++) {
-            String firstName = fakeValue(faker, "name", "firstName",
-                    FIRST_NAMES[index]);
-            String lastName = fakeValue(faker, "name", "lastName",
-                    LAST_NAMES[index]);
-            String email = fakeValue(faker, "internet", "emailAddress",
-                    firstName.toLowerCase() + "." + lastName.toLowerCase()
-                    + "@example.com");
-            String phone = fakeValue(faker, "phoneNumber", "cellPhone",
-                    String.format("949-555-%04d", 1000 + index));
+            String firstName = faker.name().firstName();
+            String lastName = faker.name().lastName();
+            String email = faker.internet().emailAddress();
+            String phone = faker.phoneNumber().cellPhone();
 
             Contractor contractor = new Contractor(
                     firstName, lastName, email, phone,
@@ -149,29 +135,4 @@ public class ComplianceDataGenerator {
         return CredentialStatus.SUBMITTED;
     }
 
-    private static Object createFaker() {
-        try {
-            Class<?> fakerClass = Class.forName("com.github.javafaker.Faker");
-            return fakerClass.getDeclaredConstructor().newInstance();
-        } catch (ReflectiveOperationException ex) {
-            return null;
-        }
-    }
-
-    private static String fakeValue(Object faker, String providerMethod,
-            String valueMethod, String fallback) {
-        if (faker == null) {
-            return fallback;
-        }
-        try {
-            Method provider = faker.getClass().getMethod(providerMethod);
-            Object providerObject = provider.invoke(faker);
-            Method value = providerObject.getClass().getMethod(valueMethod);
-            String generatedValue = String.valueOf(value.invoke(providerObject));
-            return generatedValue == null || generatedValue.trim().isEmpty()
-                    ? fallback : generatedValue.trim();
-        } catch (ReflectiveOperationException ex) {
-            return fallback;
-        }
-    }
 }

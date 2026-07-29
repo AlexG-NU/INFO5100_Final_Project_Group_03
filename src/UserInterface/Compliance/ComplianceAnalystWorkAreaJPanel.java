@@ -25,7 +25,10 @@ public class ComplianceAnalystWorkAreaJPanel extends javax.swing.JPanel {
             ComplianceDirectory complianceDirectory, ComplianceAnalyst analyst,
             javax.swing.JPanel previousPanel) {
         this.container = container; this.previousPanel = previousPanel;
-        this.complianceDirectory = complianceDirectory; this.analyst = analyst; initComponents(); populateTable();
+        this.complianceDirectory = complianceDirectory; this.analyst = analyst;
+        initComponents();
+        btnBack.setVisible(previousPanel != null);
+        populateTable();
     }
 
     private void populateTable() {
@@ -77,7 +80,8 @@ public class ComplianceAnalystWorkAreaJPanel extends javax.swing.JPanel {
         ((java.awt.CardLayout) container.getLayout()).show(container, "VerificationQueue"); container.revalidate(); container.repaint();
     }
     private void btnAssignedActionPerformed(java.awt.event.ActionEvent evt) {
-        javax.swing.JPanel nextPanel = new VerificationQueueJPanel(container, complianceDirectory, analyst, this);
+        javax.swing.JPanel nextPanel = new VerificationQueueJPanel(
+                container, complianceDirectory, analyst, this, true);
         if (container == null) { JOptionPane.showMessageDialog(this, nextPanel, "Assigned Verification Queue", JOptionPane.PLAIN_MESSAGE); return; }
         container.removeAll(); container.setLayout(new java.awt.CardLayout()); container.add(nextPanel, "AssignedVerificationQueue");
         ((java.awt.CardLayout) container.getLayout()).show(container, "AssignedVerificationQueue"); container.revalidate(); container.repaint();

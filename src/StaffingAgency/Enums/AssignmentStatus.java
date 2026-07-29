@@ -9,7 +9,10 @@ package StaffingAgency.Enums;
  * @author abhit
  */
 public enum AssignmentStatus {
-  PENDING,
+    PENDING,
+    IN_COMPLIANCE,
+    CLEARED,
+    COMPLIANCE_REJECTED,
     ACTIVE,
     COMPLETED,
     TERMINATED  

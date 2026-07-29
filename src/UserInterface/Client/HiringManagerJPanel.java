@@ -6,6 +6,8 @@ package UserInterface.Client;
 
 import Business.Network;
 import Core.UserAccount;
+import Core.WorkOrder;
+import Core.WorkOrders.CrossEnterpriseWorkOrder;
 import UserInterface.WorkArea.*;
 import javax.swing.JPanel;
 
@@ -21,11 +23,17 @@ public class HiringManagerJPanel extends javax.swing.JPanel {
     private JPanel userProcessContainer;
     private UserAccount account;
     private Network network;
+    private String currentRequestType = "Candidate Submission";
     public HiringManagerJPanel(JPanel userProcessContainer, UserAccount account, Network network) {
         initComponents();
         this.userProcessContainer = userProcessContainer;
         this.account = account;
         this.network = network;
+        btnBack.setVisible(false);
+        btnRefresh.addActionListener(event ->
+                populateRequestTable(currentRequestType));
+        btnReports.addActionListener(event -> showHiringSummary());
+        populateRequestTable(currentRequestType);
     }
     public void setWorkAreaHeader(String title, String subtitle) {
         lblTitle.setText(title);
@@ -194,11 +202,13 @@ public class HiringManagerJPanel extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnViewRequestsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnViewRequestsActionPerformed
-        // TODO add your handling code here:
+        currentRequestType = "Candidate Submission";
+        populateRequestTable(currentRequestType);
     }//GEN-LAST:event_btnViewRequestsActionPerformed
 
     private void btnViewRequests1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnViewRequests1ActionPerformed
-        // TODO add your handling code here:
+        currentRequestType = "Client Invoice";
+        populateRequestTable(currentRequestType);
     }//GEN-LAST:event_btnViewRequests1ActionPerformed
 
     private void btnPrimaryActionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnPrimaryActionActionPerformed
@@ -214,6 +224,68 @@ public class HiringManagerJPanel extends javax.swing.JPanel {
         java.awt.CardLayout layout = (java.awt.CardLayout) userProcessContainer.getLayout();
         layout.next(userProcessContainer);
     }//GEN-LAST:event_btnManageRecordsActionPerformed
+
+    private void populateRequestTable(String requestType) {
+        javax.swing.table.DefaultTableModel model =
+                new javax.swing.table.DefaultTableModel(
+                        new String[]{
+                            "ID", "Type", "Status",
+                            "Sender", "Receiver", "Date"
+                        }, 0) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
+        };
+        if (network != null) {
+            for (WorkOrder order :
+                    network.getWorkOrderQueue().getWorkOrderList()) {
+                if (order instanceof CrossEnterpriseWorkOrder) {
+                    CrossEnterpriseWorkOrder request =
+                            (CrossEnterpriseWorkOrder) order;
+                    if (requestType.equalsIgnoreCase(
+                            request.getRequestType())) {
+                        model.addRow(new Object[]{
+                            request,
+                            request.getRequestType(),
+                            request.getStatus(),
+                            request.getSender(),
+                            request.getReceiver(),
+                            request.getRequestDate()
+                        });
+                    }
+                }
+            }
+        }
+        tblMain.setModel(model);
+    }
+
+    private void showHiringSummary() {
+        int candidateRequests = 0;
+        int invoices = 0;
+        int extensions = 0;
+        for (WorkOrder order :
+                network.getWorkOrderQueue().getWorkOrderList()) {
+            if (order instanceof CrossEnterpriseWorkOrder) {
+                String type = ((CrossEnterpriseWorkOrder) order)
+                        .getRequestType();
+                if ("Candidate Submission".equals(type)) {
+                    candidateRequests++;
+                } else if ("Client Invoice".equals(type)) {
+                    invoices++;
+                } else if ("Contract Extension".equals(type)) {
+                    extensions++;
+                }
+            }
+        }
+        javax.swing.JOptionPane.showMessageDialog(
+                this,
+                "Candidate Submissions: " + candidateRequests
+                + "\nClient Invoices: " + invoices
+                + "\nContract Extensions: " + extensions,
+                "Hiring Manager Summary",
+                javax.swing.JOptionPane.INFORMATION_MESSAGE);
+    }
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

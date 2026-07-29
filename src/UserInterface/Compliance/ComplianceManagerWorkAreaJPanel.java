@@ -30,7 +30,10 @@ public class ComplianceManagerWorkAreaJPanel extends javax.swing.JPanel {
         this.container = container;
         this.previousPanel = previousPanel;
         this.complianceDirectory = complianceDirectory; this.manager = manager; this.contractorList = contractorList;
-        initComponents(); lblOrganization.setText("Compliance Enterprise - Credential Management Organization"); populateTable();
+        initComponents();
+        btnBack.setVisible(previousPanel != null);
+        lblOrganization.setText("Compliance Enterprise - Credential Management Organization");
+        populateTable();
     }
 
     private void populateTable() {

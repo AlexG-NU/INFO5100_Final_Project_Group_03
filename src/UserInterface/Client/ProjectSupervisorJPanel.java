@@ -27,6 +27,10 @@ public class ProjectSupervisorJPanel extends javax.swing.JPanel {
         this.userProcessContainer = userProcessContainer;
         this.account = account;
         this.network = network;
+        btnViewRequests.setEnabled(true);
+        btnBack.setVisible(false);
+        btnReports.setEnabled(true);
+        btnReports.addActionListener(event -> showSupervisorReport());
         populateContractorTable();
     }
     public void setWorkAreaHeader(String title, String subtitle) {
@@ -215,7 +219,8 @@ public class ProjectSupervisorJPanel extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnViewRequestsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnViewRequestsActionPerformed
-        // TODO add your handling code here:
+        populateContractorTable();
+        tblMain.clearSelection();
     }//GEN-LAST:event_btnViewRequestsActionPerformed
 
     private void btnManageRecordsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnManageRecordsActionPerformed
@@ -235,6 +240,18 @@ public class ProjectSupervisorJPanel extends javax.swing.JPanel {
     private void btnRefreshActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnRefreshActionPerformed
         populateContractorTable();
     }//GEN-LAST:event_btnRefreshActionPerformed
+
+    private void showSupervisorReport() {
+        int contractorCount = tblMain.getRowCount();
+        int workRequestCount = account == null
+                ? 0 : account.getWorkQueue().getWorkOrderList().size();
+        javax.swing.JOptionPane.showMessageDialog(
+                this,
+                "Assigned Contractors: " + contractorCount
+                + "\nSupervisor Work Requests: " + workRequestCount,
+                "Supervisor Summary",
+                javax.swing.JOptionPane.INFORMATION_MESSAGE);
+    }
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

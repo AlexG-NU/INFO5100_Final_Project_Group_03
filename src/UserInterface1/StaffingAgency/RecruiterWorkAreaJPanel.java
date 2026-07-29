@@ -4,6 +4,7 @@
  */
  package UserInterface1.StaffingAgency;
 
+import Business.Network;
 import StaffingAgency.People.Candidate;
 //import UserInterface.Client.ManageStaffingRequestsJPanel;
 import UserInterface1.ManageCandidatesJPanel;
@@ -31,6 +32,7 @@ public class RecruiterWorkAreaJPanel extends JPanel {
     private final List<StaffingRequest> masterRequestList;
     private final List<Candidate> candidateList;
     private final List<CandidateSubmission> submissionList;
+    private final Network network; // @janet - shared enterprise network
 
     private JTable tblMain;
     private DefaultTableModel tableModel;
@@ -45,7 +47,8 @@ public class RecruiterWorkAreaJPanel extends JPanel {
         JPanel mainContentPanel,
         List<StaffingRequest> masterRequestList,
         List<Candidate> candidateList,
-        List<CandidateSubmission> submissionList
+        List<CandidateSubmission> submissionList,
+        Network network
 ) {
     if (mainContentPanel == null) {
         throw new IllegalArgumentException(
@@ -70,11 +73,17 @@ public class RecruiterWorkAreaJPanel extends JPanel {
                 "Submission list cannot be null."
         );
     }
+    if (network == null) {
+        throw new IllegalArgumentException(
+                "Network cannot be null."
+        );
+    }
 
     this.mainContentPanel = mainContentPanel;
     this.masterRequestList = masterRequestList;
     this.candidateList = candidateList;
     this.submissionList = submissionList;
+    this.network = network;
 
     initComponents();
     populateDashboardTable();
@@ -367,7 +376,8 @@ public class RecruiterWorkAreaJPanel extends JPanel {
             new CandidateSubmissionsJPanel(
                     candidateList,
                     masterRequestList,
-                    submissionList
+                    submissionList,
+                    network // @janet - send the same assignment to Compliance
             );
 
     displayPanel(submissionPanel);

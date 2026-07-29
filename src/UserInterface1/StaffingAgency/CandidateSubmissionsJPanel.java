@@ -4,6 +4,8 @@
  */
 package UserInterface1.StaffingAgency;
 
+import Business.Network;
+import ComplianceEnterprise.ComplianceIntegrationService;
 /**
  *
  * @author abhit
@@ -37,6 +39,7 @@ public class CandidateSubmissionsJPanel extends JPanel {
     private final List<Candidate> candidateList;
     private final List<StaffingRequest> staffingRequestList;
     private final List<CandidateSubmission> submissionList;
+    private final Network network; // @janet - shared enterprise network
 
     private JTable tblSubmissions;
     private DefaultTableModel tableModel;
@@ -48,13 +51,15 @@ public class CandidateSubmissionsJPanel extends JPanel {
     private JButton btnSubmit;
     private JButton btnSendToClient;
     private JButton btnWithdraw;
+    private JButton btnSendToCompliance;
     private JButton btnRefresh;
     private JButton btnClear;
 
     public CandidateSubmissionsJPanel(
             List<Candidate> candidateList,
             List<StaffingRequest> staffingRequestList,
-            List<CandidateSubmission> submissionList
+            List<CandidateSubmission> submissionList,
+            Network network
     ) {
         if (candidateList == null) {
             throw new IllegalArgumentException(
@@ -73,10 +78,16 @@ public class CandidateSubmissionsJPanel extends JPanel {
                     "Submission list cannot be null."
             );
         }
+        if (network == null) {
+            throw new IllegalArgumentException(
+                    "Network cannot be null."
+            );
+        }
 
         this.candidateList = candidateList;
         this.staffingRequestList = staffingRequestList;
         this.submissionList = submissionList;
+        this.network = network;
 
         initComponents();
         loadComboBoxes();
@@ -251,12 +262,14 @@ public class CandidateSubmissionsJPanel extends JPanel {
         btnSubmit = new JButton("Create Submission");
         btnSendToClient = new JButton("Send to Client");
         btnWithdraw = new JButton("Withdraw");
+        btnSendToCompliance = new JButton("Send to Compliance");
         btnRefresh = new JButton("Refresh");
         btnClear = new JButton("Clear");
 
         buttonPanel.add(btnSubmit);
         buttonPanel.add(btnSendToClient);
         buttonPanel.add(btnWithdraw);
+        buttonPanel.add(btnSendToCompliance);
         buttonPanel.add(btnRefresh);
         buttonPanel.add(btnClear);
 
@@ -270,6 +283,11 @@ public class CandidateSubmissionsJPanel extends JPanel {
 
         btnWithdraw.addActionListener(
                 event -> withdrawSelectedSubmission()
+        );
+
+        // @janet - Staffing sends its existing assignment to Compliance.
+        btnSendToCompliance.addActionListener(
+                event -> sendSelectedToCompliance()
         );
 
         btnRefresh.addActionListener(
@@ -530,6 +548,43 @@ public class CandidateSubmissionsJPanel extends JPanel {
         );
     }
 
+    // @janet - This is the cross-enterprise handoff. No duplicate
+    // contractor or assignment record is created here.
+    private void sendSelectedToCompliance() {
+        CandidateSubmission submission = getSelectedSubmission();
+        if (submission == null) {
+            return;
+        }
+        if (submission.getStatus() != RequestStatus.APPROVED
+                || submission.getResultingAssignment() == null) {
+            showError(
+                    "The client must approve the submission and create "
+                    + "the assignment before it can be sent to Compliance."
+            );
+            return;
+        }
+        if (!submission.getResultingAssignment()
+                .getVerificationRequests().isEmpty()) {
+            showError("This assignment has already been sent to Compliance.");
+            return;
+        }
+        try {
+            ComplianceIntegrationService.submitForVerification(
+                    network,
+                    submission.getResultingAssignment(),
+                    "Background and Credential Verification",
+                    "Verify contractor before the assignment start date."
+            );
+            populateTable();
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Assignment sent to the Compliance queue."
+            );
+        } catch (IllegalArgumentException | IllegalStateException ex) {
+            showError(ex.getMessage());
+        }
+    }
+
     private CandidateSubmission getSelectedSubmission() {
 
         int selectedRow =
@@ -569,4 +624,3 @@ public class CandidateSubmissionsJPanel extends JPanel {
         );
     }
 }    
-

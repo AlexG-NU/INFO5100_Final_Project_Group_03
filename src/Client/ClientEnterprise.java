@@ -20,6 +20,10 @@ public class ClientEnterprise extends Enterprise {
     
     public ClientEnterprise(String name) {
         super(name);
+        getOrganizationDirectory().addOrganization(
+                new HROrganization("Human Resources Organization"));
+        getOrganizationDirectory().addOrganization(
+                new OperationsOrganization("Operations Organization"));
     }
     
     @Override

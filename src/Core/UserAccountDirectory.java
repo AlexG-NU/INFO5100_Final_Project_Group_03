@@ -34,12 +34,25 @@ public class UserAccountDirectory {
     }
     
     public UserAccount createUserAccount(String username, String password, Person person, Role role) {
+        if (username == null
+                || !username.trim().matches("[A-Za-z0-9._-]{2,30}")) {
+            throw new IllegalArgumentException(
+                    "Username must be 2-30 letters, numbers, periods, "
+                    + "underscores, or hyphens.");
+        }
+        PasswordPolicy.validate(password);
+        if (person == null || role == null) {
+            throw new IllegalArgumentException(
+                    "A person and role are required for every account.");
+        }
         // Enforce uniqueness before creation
-        if (!uniqueUsername(username)) {
+        String cleanedUsername = username.trim();
+        if (!uniqueUsername(cleanedUsername)) {
             return null;
         }
         
-        UserAccount userAccount = new UserAccount(username, password, role);
+        UserAccount userAccount =
+                new UserAccount(cleanedUsername, password, role);
         userAccount.setPerson(person);
         userAccountList.add(userAccount);
         return userAccount;

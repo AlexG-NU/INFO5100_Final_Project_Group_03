@@ -23,6 +23,10 @@ public class ContractorJPanel extends javax.swing.JPanel {
         this.userProcessContainer = userProcessContainer;
         this.account = account;
         this.network = network;
+        btnManageRecords.setVisible(false);
+        btnBack.setVisible(false);
+        btnRefresh.setVisible(false);
+        btnReports.setVisible(false);
     }
     public void setWorkAreaHeader(String title, String subtitle) {
         lblTitle.setText(title);

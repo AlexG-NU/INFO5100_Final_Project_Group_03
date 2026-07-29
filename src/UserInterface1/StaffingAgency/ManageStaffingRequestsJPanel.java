@@ -284,7 +284,12 @@ public class ManageStaffingRequestsJPanel extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnBackActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnBackActionPerformed
-        // TODO add your handling code here:
+        if (container != null && container.getComponentCount() > 1) {
+            container.remove(this);
+            java.awt.CardLayout layout =
+                    (java.awt.CardLayout) container.getLayout();
+            layout.previous(container);
+        }
     }//GEN-LAST:event_btnBackActionPerformed
 
     private void btnSaveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSaveActionPerformed

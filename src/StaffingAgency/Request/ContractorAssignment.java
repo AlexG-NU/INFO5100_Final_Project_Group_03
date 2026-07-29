@@ -66,7 +66,36 @@ public class ContractorAssignment {
     }
 
     public void activateAssignment() {
+        if (status != AssignmentStatus.CLEARED) {
+            throw new IllegalStateException(
+                    "The assignment must be cleared by Compliance before activation.");
+        }
         this.status = AssignmentStatus.ACTIVE;
+    }
+
+    public void submitForCompliance() {
+        if (status != AssignmentStatus.PENDING
+                && status != AssignmentStatus.COMPLIANCE_REJECTED) {
+            throw new IllegalStateException(
+                    "Only a pending or rejected assignment can be submitted to Compliance.");
+        }
+        this.status = AssignmentStatus.IN_COMPLIANCE;
+    }
+
+    public void clearForWork() {
+        if (status != AssignmentStatus.IN_COMPLIANCE) {
+            throw new IllegalStateException(
+                    "The assignment must be under Compliance review before it can be cleared.");
+        }
+        this.status = AssignmentStatus.CLEARED;
+    }
+
+    public void rejectForCompliance() {
+        if (status != AssignmentStatus.IN_COMPLIANCE) {
+            throw new IllegalStateException(
+                    "The assignment must be under Compliance review before it can be rejected.");
+        }
+        this.status = AssignmentStatus.COMPLIANCE_REJECTED;
     }
 
     public void completeAssignment() {
@@ -92,4 +121,3 @@ public class ContractorAssignment {
         return List.copyOf(verificationRequests);
     }
 }
-

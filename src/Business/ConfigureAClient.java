@@ -29,7 +29,7 @@ public class ConfigureAClient {
         //StaffingEnterprise staffing = new StaffingEnterprise("Staffing Enterprise");
         //ComplianceEnterprise compliance = new ComplianceEnterprise("Compliance Enterprise");
     
-        network.getEnterpriseList().add(client);
+        network.addEnterprise(client);
         //network.getEnterpriseList().add(payroll);
         //network.getEnterpriseList().add(staffing);
         //network.getEnterpriseList().add(compliance);

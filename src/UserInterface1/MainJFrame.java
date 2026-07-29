@@ -319,7 +319,7 @@ public class MainJFrame extends JFrame {
                 new Font(
                         "Arial",
                         Font.BOLD,
-                        20
+                        18
                 )
         );
 
@@ -334,7 +334,7 @@ public class MainJFrame extends JFrame {
         lblPortalTitle.setText(
                 "<html>"
                 + "<center>"
-                + "Staffing Agency"
+                + "Global Workfoce Staffing Network"
                 + "<br>"
                 + "Portal"
                 + "</center>"
@@ -369,11 +369,11 @@ public class MainJFrame extends JFrame {
         );
 
         /*
-         * Temporary default username.
-         * You can remove this later.
+         * //janet - I removed the default username.
+         * 
          */
         txtUsername.setText(
-                "recruiter"
+                ""
         );
 
         /*
@@ -404,14 +404,6 @@ public class MainJFrame extends JFrame {
         );
 
         /*
-         * Temporary default password.
-         * You can remove this later.
-         */
-        txtPassword.setText(
-                "password"
-        );
-
-        /*
          * Pressing Enter in the password field
          * will attempt login.
          */
@@ -438,6 +430,7 @@ public class MainJFrame extends JFrame {
                 event -> login()
         );
 
+        
         /*
          * Logout button.
          */
@@ -514,7 +507,7 @@ public class MainJFrame extends JFrame {
                                                         .addComponent(
                                                                 btnLogin,
                                                                 javax.swing.GroupLayout.PREFERRED_SIZE,
-                                                                100,
+                                                                180,
                                                                 javax.swing.GroupLayout.PREFERRED_SIZE
                                                         )
                                                         .addComponent(

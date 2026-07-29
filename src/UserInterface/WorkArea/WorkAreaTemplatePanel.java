@@ -15,6 +15,11 @@ public class WorkAreaTemplatePanel extends javax.swing.JPanel {
      */
     public WorkAreaTemplatePanel() {
         initComponents();
+        btnBack.setVisible(false);
+        btnManageRecords.setVisible(false);
+        btnPrimaryAction.setVisible(false);
+        btnRefresh.setVisible(false);
+        btnReports.setVisible(false);
     }
     public void setWorkAreaHeader(String title, String subtitle) {
         lblTitle.setText(title);
@@ -162,7 +167,7 @@ public class WorkAreaTemplatePanel extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnViewRequestsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnViewRequestsActionPerformed
-        // TODO add your handling code here:
+        showMessage("This is a reusable work-area layout template.");
     }//GEN-LAST:event_btnViewRequestsActionPerformed
 
 

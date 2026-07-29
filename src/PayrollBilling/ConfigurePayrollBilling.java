@@ -104,9 +104,9 @@ public class ConfigurePayrollBilling {
         PayrollBillingModule module = getSharedPayrollBillingModule();
 
         PayrollBillingEnterprise payrollBillingEnterprise =
-                new PayrollBillingEnterprise("PayrollBilling");
+                new PayrollBillingEnterprise("Payroll and Billing Enterprise");
 
-        network.getEnterpriseList().add(payrollBillingEnterprise);
+        network.addEnterprise(payrollBillingEnterprise);
 
         Person payrollPerson = new Person("Payroll Specialist");
 

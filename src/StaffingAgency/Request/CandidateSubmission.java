@@ -4,6 +4,8 @@
  */
 package StaffingAgency.Request;
 
+import Business.Network;
+import ComplianceEnterprise.ComplianceIntegrationService;
 /**
  *
  * @author abhit
@@ -220,6 +222,23 @@ public class CandidateSubmission {
 
         resultingAssignment = assignment;
         status = RequestStatus.APPROVED;
+    }
+
+    /**
+     * Links the client-approved assignment and immediately sends that same
+     * object to the Compliance queue.
+     *
+     * @author janet
+     */
+    public void linkAssignmentAndSendToCompliance(
+            ContractorAssignment assignment, Network network) {
+        linkAssignment(assignment);
+        // @janet - cross-enterprise handoff using the same assignment object.
+        ComplianceIntegrationService.submitForVerification(
+                network,
+                assignment,
+                "Background and Credential Verification",
+                "Verify contractor before the assignment start date.");
     }
 
     @Override

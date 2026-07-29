@@ -4,6 +4,7 @@ import ComplianceEnterprise.Role.ComplianceAnalyst;
 import ComplianceEnterprise.Role.ComplianceManager;
 import ComplianceEnterprise.Role.CredentialSpecialist;
 import StaffingAgency.People.Contractor;
+import StaffingAgency.Request.CredentialVerificationRequest;
 import java.util.List;
 
 /**
@@ -46,5 +47,14 @@ public class ComplianceData {
 
     public CredentialSpecialist getSpecialist() {
         return specialist;
+    }
+
+    public VerificationReview receiveVerificationRequest(
+            CredentialVerificationRequest request) {
+        Contractor contractor = request.getAssignment().getContractor();
+        if (!contractorList.contains(contractor)) {
+            contractorList.add(contractor);
+        }
+        return complianceDirectory.addVerificationRequest(request);
     }
 }

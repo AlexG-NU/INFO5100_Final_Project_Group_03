@@ -17,20 +17,31 @@ public class VerificationQueueJPanel extends javax.swing.JPanel {
     private final ComplianceAnalyst analyst;
     private final javax.swing.JPanel container;
     private final javax.swing.JPanel previousPanel;
+    private final boolean assignedOnly;
 
     public VerificationQueueJPanel(ComplianceDirectory complianceDirectory,
             ComplianceAnalyst analyst) {
-        this(null, complianceDirectory, analyst, null);
+        this(null, complianceDirectory, analyst, null, false);
     }
 
     public VerificationQueueJPanel(javax.swing.JPanel container,
             ComplianceDirectory complianceDirectory, ComplianceAnalyst analyst,
             javax.swing.JPanel previousPanel) {
+        this(container, complianceDirectory, analyst, previousPanel, false);
+    }
+
+    public VerificationQueueJPanel(javax.swing.JPanel container,
+            ComplianceDirectory complianceDirectory, ComplianceAnalyst analyst,
+            javax.swing.JPanel previousPanel, boolean assignedOnly) {
         this.container = container;
         this.complianceDirectory = complianceDirectory;
         this.analyst = analyst;
         this.previousPanel = previousPanel;
+        this.assignedOnly = assignedOnly;
         initComponents();
+        if (assignedOnly) {
+            lblTitle.setText("My Assigned Verification Requests");
+        }
         populateTable();
     }
 
@@ -39,6 +50,9 @@ public class VerificationQueueJPanel extends javax.swing.JPanel {
         model.setRowCount(0);
 
         for (VerificationReview review : complianceDirectory.getReviewList()) {
+            if (assignedOnly && review.getAssignedAnalyst() != analyst) {
+                continue;
+            }
             Object[] row = new Object[8];
             row[0] = review;
             row[1] = review.getRequest().getVerificationRequestId();

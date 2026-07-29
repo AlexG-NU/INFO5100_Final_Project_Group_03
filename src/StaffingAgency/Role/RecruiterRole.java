@@ -34,6 +34,7 @@ public class RecruiterRole extends Role {
                 userProcessContainer,
                 staffingRequestList,
                 candidateList,
-                submissionList);
+                submissionList,
+                network); // @janet - shared handoff to Compliance
     }
 }

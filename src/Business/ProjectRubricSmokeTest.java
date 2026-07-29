@@ -1,0 +1,198 @@
+package Business;
+
+import ComplianceEnterprise.ComplianceIntegrationService;
+import ComplianceEnterprise.Enums.ComplianceDecision;
+import ComplianceEnterprise.Model.VerificationReview;
+import Core.Enterprise;
+import Core.EnterpriseAdminRole;
+import Core.NetworkAdminRole;
+import Core.Person;
+import Core.Role;
+import Core.UserAccount;
+import Core.WorkOrder;
+import Core.WorkOrders.CrossEnterpriseWorkOrder;
+import StaffingAgency.People.Candidate;
+import StaffingAgency.Enums.AssignmentStatus;
+import StaffingAgency.Request.CandidateSubmission;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.awt.Component;
+import java.awt.Container;
+import javax.swing.JButton;
+import javax.swing.JPanel;
+
+/**
+ * Configuration checks used before the final project demonstration.
+ *
+ * @author janet
+ */
+public class ProjectRubricSmokeTest {
+
+    public static void main(String[] args) {
+        System.setProperty("java.awt.headless", "true");
+
+        List<Candidate> candidates = new ArrayList<>();
+        List<CandidateSubmission> submissions = new ArrayList<>();
+        Network network = ConfigureABusiness.configure(
+                ConfigureABusiness.populateStaffingRequests(),
+                candidates, submissions);
+
+        require(network.getEnterpriseList().size() == 4,
+                "Expected 4 enterprises.");
+
+        int organizationCount = 0;
+        for (Enterprise enterprise : network.getEnterpriseList()) {
+            organizationCount += enterprise.getOrganizationDirectory()
+                    .getOrganizationList().size();
+        }
+        require(organizationCount == 8, "Expected 8 organizations.");
+
+        Set<Class<?>> roleTypes = new HashSet<>();
+        int workAreaCount = 0;
+        JPanel container = new JPanel();
+        for (UserAccount account : network.getUserAccountDirectory()
+                .getUserAccountList()) {
+            Role role = account.getRole();
+            if (!(role instanceof NetworkAdminRole)
+                    && !(role instanceof EnterpriseAdminRole)) {
+                roleTypes.add(role.getClass());
+                JPanel workArea = role.createWorkArea(
+                        container, account, network);
+                require(workArea != null,
+                        "Every role must open a work area.");
+                verifyEnabledButtons(workArea);
+                workAreaCount++;
+            }
+        }
+        require(roleTypes.size() == 9,
+                "Expected 9 configured non-admin roles before the teammate's "
+                        + "missing Staffing role is merged.");
+        require(workAreaCount >= 9,
+                "Expected a configured account for every current role.");
+
+        List<WorkOrder> requests =
+                network.getWorkOrderQueue().getWorkOrderList();
+        require(requests.size() >= 8,
+                "Expected at least 8 network work requests.");
+        for (WorkOrder order : requests) {
+            require(order instanceof CrossEnterpriseWorkOrder,
+                    "Network requests must record cross-enterprise routing.");
+            CrossEnterpriseWorkOrder request =
+                    (CrossEnterpriseWorkOrder) order;
+            require(!request.getSourceEnterprise().equalsIgnoreCase(
+                    request.getDestinationEnterprise()),
+                    "Every network request must cross enterprises.");
+            require(order.getSender() != null && order.getReceiver() != null,
+                    "Every request must have sender and receiver accounts.");
+            require(order.getStatus() != null,
+                    "Every request must have a status.");
+        }
+
+        require(network.getComplianceData() != null
+                && network.getComplianceData().getContractorList().size() >= 12,
+                "Expected Java Faker compliance demo records.");
+
+        require(!submissions.isEmpty()
+                && submissions.get(0).getResultingAssignment() != null,
+                "Expected a shared Staffing assignment.");
+        VerificationReview review =
+                ComplianceIntegrationService.submitForVerification(
+                        network,
+                        submissions.get(0).getResultingAssignment(),
+                        "Final Integration Test",
+                        "Confirm the shared assignment can be cleared.");
+        review.assignAnalyst(network.getComplianceData().getAnalyst());
+        review.completeReview(
+                ComplianceDecision.APPROVED,
+                "All background and credential requirements were verified.");
+        require(submissions.get(0).getResultingAssignment()
+                .getStatus() == AssignmentStatus.CLEARED,
+                "Compliance must clear the same Staffing assignment.");
+
+        require(network.getUserAccountDirectory()
+                .authenticateUser("network.admin", "password") != null,
+                "Network Admin authentication failed.");
+        require(network.getUserAccountDirectory()
+                .authenticateUser("C.analyst", "password") != null,
+                "Role-based authentication failed.");
+        verifyAllDemoAccounts(network);
+
+        boolean shortPasswordRejected = false;
+        try {
+            network.getUserAccountDirectory().createUserAccount(
+                    "short.password.user", "short",
+                    new Person("Short Password User"),
+                    roleTypes.isEmpty() ? null
+                            : network.getUserAccountDirectory()
+                                    .getUserAccountList().get(0).getRole());
+        } catch (IllegalArgumentException ex) {
+            shortPasswordRejected = true;
+        }
+        require(shortPasswordRejected,
+                "Passwords shorter than eight characters must be rejected.");
+
+        System.out.println("PROJECT RUBRIC SMOKE TEST PASSED");
+        System.out.println("Enterprises: 4");
+        System.out.println("Organizations: 8");
+        System.out.println("Non-admin roles: " + roleTypes.size());
+        System.out.println("Role work areas opened: " + workAreaCount);
+        System.out.println("Cross-enterprise requests: " + requests.size());
+        System.out.println("Faker compliance contractors: "
+                + network.getComplianceData().getContractorList().size());
+        System.out.println("Demo accounts authenticated: 14");
+    }
+
+    private static void require(boolean condition, String message) {
+        if (!condition) {
+            throw new IllegalStateException(message);
+        }
+    }
+
+    private static void verifyEnabledButtons(Container container) {
+        for (Component component : container.getComponents()) {
+            if (component.getClass() == JButton.class) {
+                JButton button = (JButton) component;
+                require(!button.isVisible() || !button.isEnabled()
+                        || button.getActionListeners().length > 0,
+                        "Enabled button has no action: " + button.getText());
+            }
+            if (component instanceof Container) {
+                verifyEnabledButtons((Container) component);
+            }
+        }
+    }
+
+    private static void verifyAllDemoAccounts(Network network) {
+        String[] usernames = {
+            "network.admin",
+            "staffing.admin",
+            "compliance.admin",
+            "client.admin",
+            "payroll.admin",
+            "recruiter",
+            "C.manager",
+            "C.analyst",
+            "C.specialist",
+            "HR",
+            "Contractor",
+            "Sup",
+            "p.specialist",
+            "b.analyst"
+        };
+
+        for (String username : usernames) {
+            UserAccount account = network.getUserAccountDirectory()
+                    .authenticateUser(username, "password");
+            require(account != null,
+                    "Authentication failed for demo account: " + username);
+            require(account.getRole() != null,
+                    "Demo account has no assigned role: " + username);
+        }
+
+        require(network.getUserAccountDirectory()
+                .authenticateUser("account.manager", "password") == null,
+                "Removed Staffing Account Manager must not be configured.");
+    }
+}

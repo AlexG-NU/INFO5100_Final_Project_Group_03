@@ -222,7 +222,6 @@ public class PayrollSpecialistWorkAreaJPanel extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void wireButtonActions() {
-        btnViewRequests.addActionListener(e -> showIncomingTimecards());
         btnPrimaryAction.addActionListener(e -> processSelected());
         btnManageRecords.addActionListener(e -> showPayrollRecords());
         btnReports.addActionListener(e -> showPayrollReport());
@@ -448,7 +447,7 @@ public class PayrollSpecialistWorkAreaJPanel extends javax.swing.JPanel {
     }
     
     private void btnViewRequestsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnViewRequestsActionPerformed
-        // TODO add your handling code here:
+        showIncomingTimecards();
     }//GEN-LAST:event_btnViewRequestsActionPerformed
 
     private Organization getPayrollProcessingOrganization() {
@@ -533,4 +532,3 @@ public class PayrollSpecialistWorkAreaJPanel extends javax.swing.JPanel {
     private javax.swing.JTable tblMain;
     // End of variables declaration//GEN-END:variables
 }
-

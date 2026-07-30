@@ -444,9 +444,9 @@ public class RecruiterStaffingQueueJPanel extends JPanel {
             RecruiterWorkAreaJPanel recruiterPanel =
                     (RecruiterWorkAreaJPanel)
                             recruiterDashboardPanel;
-/*
+
             recruiterPanel.refreshDashboard(); 
-          */
+          
         }
     }
 }

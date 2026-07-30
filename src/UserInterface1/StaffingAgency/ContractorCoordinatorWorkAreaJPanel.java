@@ -281,10 +281,8 @@ public class ContractorCoordinatorWorkAreaJPanel
     private void addButtonActions() {
 
         btnManageContractors.addActionListener(
-                event -> showComingNext(
-                        "Manage Contractors"
-                )
-        );
+        event -> openManageContractors()
+);
 
         btnManageAssignments.addActionListener(
                 event -> showComingNext(
@@ -304,7 +302,38 @@ public class ContractorCoordinatorWorkAreaJPanel
                 )
         );
     }
+private void openManageContractors() {
 
+    ManageContractorsJPanel contractorPanel =
+            new ManageContractorsJPanel(
+                    mainContentPanel,
+                    this,
+                    submissionList
+            );
+
+    displayPanel(contractorPanel);
+}
+
+private void displayPanel(JPanel panel) {
+
+    mainContentPanel.removeAll();
+
+    mainContentPanel.setLayout(
+            new BorderLayout()
+    );
+
+    mainContentPanel.add(
+            panel,
+            BorderLayout.CENTER
+    );
+
+    mainContentPanel.revalidate();
+    mainContentPanel.repaint();
+}
+
+public void refreshDashboard() {
+    populateDashboardTable();
+}
     private void showComingNext(String moduleName) {
 
         JOptionPane.showMessageDialog(

@@ -394,5 +394,9 @@ public class RecruiterWorkAreaJPanel extends JPanel {
             );
 
     displayPanel(submissionPanel);
+    
+}
+    public void refreshDashboard() {
+    populateDashboardTable();
 }
 }

@@ -35,7 +35,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import StaffingAgency.Role.ContractorCoordinatorRole;
-
+import Core.WorkOrders.StaffingReqWorkOrder;
 /**
  *
  * @author Alex
@@ -313,13 +313,40 @@ staffing.getUserAccountDirectory()
         candidate.setCandidateStatus(CandidateStatus.PLACED);
         candidateList.add(candidate);
 
-        StaffingRequest request = staffingRequestList.get(0);
-        CandidateSubmission submission = new CandidateSubmission(
+       StaffingRequest legacyRequest =
+        staffingRequestList.get(0);
+
+StaffingReqWorkOrder request =
+        new StaffingReqWorkOrder();
+
+request.setJobTitle(
+        legacyRequest.getJobTitle()
+);
+
+request.setDescription(
+        legacyRequest.getDescription()
+);
+
+request.setRequiredSkills(
+        legacyRequest.getRequiredSkills()
+);
+
+request.setNumberOfPositions(
+        legacyRequest.getNumberOfPositions()
+);
+
+request.setStartDate(
+        legacyRequest.getStartDate()
+);
+
+CandidateSubmission submission =
+        new CandidateSubmission(
                 candidate,
                 request,
-                "Qualified candidate approved for integration testing.");
-        request.addSubmission(submission);
-        submission.submitToClient();
+                "Qualified candidate approved for integration testing."
+        );
+
+submission.submitToClient();
 
         Contractor contractor = new Contractor(
                 candidate.getFirstName(),

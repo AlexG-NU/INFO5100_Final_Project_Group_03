@@ -202,13 +202,17 @@ public class HiringManagerJPanel extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnViewRequestsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnViewRequestsActionPerformed
-        currentRequestType = "Candidate Submission";
-        populateRequestTable(currentRequestType);
+        HiringManagerCandidateApprovalJPanel panel = new HiringManagerCandidateApprovalJPanel(userProcessContainer, account, network);
+        userProcessContainer.add("HiringManagerCandidateApprovalJPanel", panel);
+        java.awt.CardLayout layout = (java.awt.CardLayout) userProcessContainer.getLayout();
+        layout.next(userProcessContainer);
     }//GEN-LAST:event_btnViewRequestsActionPerformed
 
     private void btnViewRequests1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnViewRequests1ActionPerformed
-        currentRequestType = "Client Invoice";
-        populateRequestTable(currentRequestType);
+        HiringManagerInvoiceJPanel panel = new HiringManagerInvoiceJPanel(userProcessContainer, account, network);
+        userProcessContainer.add("HiringManagerInvoiceJPanel", panel);
+        java.awt.CardLayout layout = (java.awt.CardLayout) userProcessContainer.getLayout();
+        layout.next(userProcessContainer);
     }//GEN-LAST:event_btnViewRequests1ActionPerformed
 
     private void btnPrimaryActionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnPrimaryActionActionPerformed

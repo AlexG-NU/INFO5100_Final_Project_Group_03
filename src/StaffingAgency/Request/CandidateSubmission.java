@@ -6,46 +6,33 @@ package StaffingAgency.Request;
 
 import Business.Network;
 import ComplianceEnterprise.ComplianceIntegrationService;
-/**
- *
- * @author abhit
- */
-   
-import StaffingAgency.Enums.RequestStatus;
+import Core.WorkOrder;
+import Core.WorkOrderStatus;
+import Core.WorkOrders.StaffingReqWorkOrder;
 import StaffingAgency.People.Candidate;
 import java.time.LocalDate;
-import java.util.concurrent.atomic.AtomicInteger;
 
-public class CandidateSubmission {
-
-    private static final AtomicInteger ID_SEQUENCE =
-            new AtomicInteger(4000);
-
-    private final int submissionId;
-    private final LocalDate submissionDate;
-
-    private RequestStatus status;
-    private String recruiterNotes;
-    private String clientFeedback;
+/**
+ * Candidate submission routed from the Staffing Agency
+ * to the Client Human Resources Organization.
+ */
+public class CandidateSubmission extends WorkOrder {
 
     private final Candidate candidate;
+    private final StaffingReqWorkOrder staffingRequest;
 
-    /*
-     * Fully qualified name is required because this class is inside
-     * StaffingAgency.Request, which also contains another class named
-     * StaffingRequest.
-     *
-     * The current working application uses WorkOrders.StaffingRequest.
-     */
-    private final WorkOrders.StaffingRequest staffingRequest;
+    private String recruiterNotes;
+    private String clientFeedback;
 
     private ContractorAssignment resultingAssignment;
 
     public CandidateSubmission(
             Candidate candidate,
-            WorkOrders.StaffingRequest staffingRequest,
+            StaffingReqWorkOrder staffingRequest,
             String recruiterNotes
     ) {
+        super();
+
         if (candidate == null) {
             throw new IllegalArgumentException(
                     "Candidate is required."
@@ -54,42 +41,50 @@ public class CandidateSubmission {
 
         if (staffingRequest == null) {
             throw new IllegalArgumentException(
-                    "Staffing request is required."
+                    "Staffing request work order is required."
             );
         }
 
         if (recruiterNotes == null
                 || recruiterNotes.trim().isEmpty()) {
+
             throw new IllegalArgumentException(
                     "Recruiter notes are required."
             );
         }
 
-        this.submissionId =
-                ID_SEQUENCE.incrementAndGet();
-
         this.candidate = candidate;
         this.staffingRequest = staffingRequest;
-        this.recruiterNotes =
-                recruiterNotes.trim();
+        this.recruiterNotes = recruiterNotes.trim();
 
-        this.submissionDate =
-                LocalDate.now();
-
-        this.status =
-                RequestStatus.SUBMITTED;
+        setMessage(
+                "Candidate "
+                + candidate.getFullName()
+                + " submitted for "
+                + staffingRequest.getJobTitle()
+        );
     }
 
+    /**
+     * Keeps compatibility with the existing submission UI.
+     */
     public int getSubmissionId() {
-        return submissionId;
+        return getWorkOrderId();
     }
 
+    /**
+     * Keeps compatibility with the existing submission UI.
+     */
     public LocalDate getSubmissionDate() {
-        return submissionDate;
+        return getRequestDate().toLocalDate();
     }
 
-    public RequestStatus getStatus() {
-        return status;
+    public Candidate getCandidate() {
+        return candidate;
+    }
+
+    public StaffingReqWorkOrder getStaffingRequest() {
+        return staffingRequest;
     }
 
     public String getRecruiterNotes() {
@@ -101,6 +96,7 @@ public class CandidateSubmission {
     ) {
         if (recruiterNotes == null
                 || recruiterNotes.trim().isEmpty()) {
+
             throw new IllegalArgumentException(
                     "Recruiter notes are required."
             );
@@ -114,42 +110,29 @@ public class CandidateSubmission {
         return clientFeedback;
     }
 
-    public Candidate getCandidate() {
-        return candidate;
-    }
-
-    public WorkOrders.StaffingRequest
-            getStaffingRequest() {
-
-        return staffingRequest;
-    }
-
-    public ContractorAssignment
-            getResultingAssignment() {
-
+    public ContractorAssignment getResultingAssignment() {
         return resultingAssignment;
     }
 
     /**
-     * Sends the newly created submission to the client.
+     * Marks the work order as sent to Client HR.
      */
     public void submitToClient() {
 
-        if (status != RequestStatus.SUBMITTED) {
+        if (getStatus() != WorkOrderStatus.PENDING) {
             throw new IllegalStateException(
-                    "Only a newly created submission "
-                    + "can be sent to the client."
+                    "Only a pending submission can be sent "
+                    + "to the client."
             );
         }
 
-        status = RequestStatus.IN_REVIEW;
+        setStatus(
+                WorkOrderStatus.UNDER_REVIEW
+        );
     }
 
-    /**
-     * Updates the submission status.
-     */
     public void updateStatus(
-            RequestStatus newStatus
+            WorkOrderStatus newStatus
     ) {
         if (newStatus == null) {
             throw new IllegalArgumentException(
@@ -157,17 +140,15 @@ public class CandidateSubmission {
             );
         }
 
-        status = newStatus;
+        setStatus(newStatus);
     }
 
-    /**
-     * Adds feedback from the client company.
-     */
     public void addClientFeedback(
             String feedback
     ) {
         if (feedback == null
                 || feedback.trim().isEmpty()) {
+
             throw new IllegalArgumentException(
                     "Client feedback cannot be blank."
             );
@@ -176,14 +157,11 @@ public class CandidateSubmission {
         clientFeedback = feedback.trim();
     }
 
-    /**
-     * Withdraws a submission that has not already been
-     * approved or completed.
-     */
     public void withdrawSubmission() {
 
-        if (status == RequestStatus.APPROVED
-                || status == RequestStatus.COMPLETED) {
+        if (getStatus() == WorkOrderStatus.APPROVED
+                || getStatus()
+                == WorkOrderStatus.COMPLETED) {
 
             throw new IllegalStateException(
                     "An approved or completed submission "
@@ -191,7 +169,9 @@ public class CandidateSubmission {
             );
         }
 
-        status = RequestStatus.REJECTED;
+        setStatus(
+                WorkOrderStatus.CANCELLED
+        );
 
         if (clientFeedback == null
                 || clientFeedback.isBlank()) {
@@ -201,14 +181,13 @@ public class CandidateSubmission {
 
         } else {
 
-            clientFeedback =
-                    clientFeedback
-                    + " [Withdrawn by recruiter]";
+            clientFeedback +=
+                    " [Withdrawn by recruiter]";
         }
     }
 
     /**
-     * Links the approved submission to the resulting
+     * Links the client-approved submission to the
      * contractor assignment.
      */
     public void linkAssignment(
@@ -221,29 +200,31 @@ public class CandidateSubmission {
         }
 
         resultingAssignment = assignment;
-        status = RequestStatus.APPROVED;
+
+        setStatus(
+                WorkOrderStatus.APPROVED
+        );
     }
 
-    /**
-     * Links the client-approved assignment and immediately sends that same
-     * object to the Compliance queue.
-     *
-     * @author janet
-     */
     public void linkAssignmentAndSendToCompliance(
-            ContractorAssignment assignment, Network network) {
+            ContractorAssignment assignment,
+            Network network
+    ) {
         linkAssignment(assignment);
-        // @janet - cross-enterprise handoff using the same assignment object.
-        ComplianceIntegrationService.submitForVerification(
-                network,
-                assignment,
-                "Background and Credential Verification",
-                "Verify contractor before the assignment start date.");
+
+        ComplianceIntegrationService
+                .submitForVerification(
+                        network,
+                        assignment,
+                        "Background and Credential Verification",
+                        "Verify contractor before the "
+                        + "assignment start date."
+                );
     }
 
     @Override
     public String toString() {
-        return submissionId
+        return getWorkOrderId()
                 + " - "
                 + candidate.getFullName();
     }

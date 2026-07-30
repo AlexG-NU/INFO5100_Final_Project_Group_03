@@ -388,9 +388,9 @@ public class RecruiterWorkAreaJPanel extends JPanel {
     CandidateSubmissionsJPanel submissionPanel =
             new CandidateSubmissionsJPanel(
                     candidateList,
-                    masterRequestList,
                     submissionList,
-                    network // @janet - send the same assignment to Compliance
+                    recruiterAccount,
+                    network
             );
 
     displayPanel(submissionPanel);

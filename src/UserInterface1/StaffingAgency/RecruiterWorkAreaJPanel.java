@@ -25,6 +25,11 @@ import javax.swing.JTable;
 import javax.swing.SwingConstants;
 import javax.swing.table.DefaultTableModel;
  import StaffingAgency.Request.CandidateSubmission;
+ import Core.NetworkUtils;
+import Core.Organization;
+import Core.UserAccount;
+import Core.WorkOrder;
+import Core.WorkOrders.StaffingReqWorkOrder;
 
 public class RecruiterWorkAreaJPanel extends JPanel {
 
@@ -33,6 +38,7 @@ public class RecruiterWorkAreaJPanel extends JPanel {
     private final List<Candidate> candidateList;
     private final List<CandidateSubmission> submissionList;
     private final Network network; // @janet - shared enterprise network
+    private final UserAccount recruiterAccount;
 
     private JTable tblMain;
     private DefaultTableModel tableModel;
@@ -43,11 +49,12 @@ public class RecruiterWorkAreaJPanel extends JPanel {
     private JButton btnReports;
     private JButton btnRefresh;
 
-    public RecruiterWorkAreaJPanel(
+   public RecruiterWorkAreaJPanel(
         JPanel mainContentPanel,
         List<StaffingRequest> masterRequestList,
         List<Candidate> candidateList,
         List<CandidateSubmission> submissionList,
+        UserAccount recruiterAccount,
         Network network
 ) {
     if (mainContentPanel == null) {
@@ -78,12 +85,18 @@ public class RecruiterWorkAreaJPanel extends JPanel {
                 "Network cannot be null."
         );
     }
+    if (recruiterAccount == null) {
+    throw new IllegalArgumentException(
+            "Recruiter account cannot be null."
+    );
+}
 
     this.mainContentPanel = mainContentPanel;
     this.masterRequestList = masterRequestList;
     this.candidateList = candidateList;
     this.submissionList = submissionList;
     this.network = network;
+    this.recruiterAccount = recruiterAccount;
 
     initComponents();
     populateDashboardTable();

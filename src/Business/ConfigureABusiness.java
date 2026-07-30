@@ -34,6 +34,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import StaffingAgency.Role.ContractorCoordinatorRole;
 
 /**
  *
@@ -73,6 +74,23 @@ public class ConfigureABusiness {
                         candidateList,
                         submissionList)
         );
+        Person coordinatorPerson =
+        new Person("Contractor Coordinator");
+
+UserAccount coordinatorAccount =
+        network.getUserAccountDirectory()
+                .createUserAccount(
+                        "coordinator",
+                        "password",
+                        coordinatorPerson,
+                        new ContractorCoordinatorRole(
+                                submissionList
+                        )
+                );
+
+staffing.getUserAccountDirectory()
+        .getUserAccountList()
+        .add(coordinatorAccount);
         staffing.getUserAccountDirectory()
                 .getUserAccountList().add(recruiterAccount);
 

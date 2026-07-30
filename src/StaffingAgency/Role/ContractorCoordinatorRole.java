@@ -10,30 +10,30 @@ package StaffingAgency.Role;
  */
 
 
+
+
 import Business.Network;
 import Core.Role;
 import Core.UserAccount;
-import StaffingAgency.People.Contractor;
-import StaffingAgency.Request.ContractExtensionRequest;
-import StaffingAgency.Request.ContractorAssignment;
-import UserInterface1.ContractorCoordinatorWorkAreaJPanel;
+import StaffingAgency.Request.CandidateSubmission;
+import UserInterface1.StaffingAgency.ContractorCoordinatorWorkAreaJPanel;
 import java.util.List;
 import javax.swing.JPanel;
 
 public class ContractorCoordinatorRole extends Role {
 
-    private final List<Contractor> contractorList;
-    private final List<ContractorAssignment> assignmentList;
-    private final List<ContractExtensionRequest> extensionRequestList;
+    private final List<CandidateSubmission> submissionList;
 
     public ContractorCoordinatorRole(
-            List<Contractor> contractorList,
-            List<ContractorAssignment> assignmentList,
-            List<ContractExtensionRequest> extensionRequestList
+            List<CandidateSubmission> submissionList
     ) {
-        this.contractorList = contractorList;
-        this.assignmentList = assignmentList;
-        this.extensionRequestList = extensionRequestList;
+        if (submissionList == null) {
+            throw new IllegalArgumentException(
+                    "Submission list cannot be null."
+            );
+        }
+
+        this.submissionList = submissionList;
     }
 
     @Override
@@ -44,9 +44,8 @@ public class ContractorCoordinatorRole extends Role {
     ) {
         return new ContractorCoordinatorWorkAreaJPanel(
                 userProcessContainer,
-                contractorList,
-                assignmentList,
-                extensionRequestList,
+                submissionList,
+                account,
                 network
         );
     }

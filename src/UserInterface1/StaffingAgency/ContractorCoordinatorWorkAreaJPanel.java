@@ -2,19 +2,19 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-package UserInterface1;
+package UserInterface1.StaffingAgency;
 
 /**
  *
  * @author abhit
  */
 
-
 import Business.Network;
+import Core.UserAccount;
 import StaffingAgency.Enums.AssignmentStatus;
 import StaffingAgency.Enums.AvailabilityStatus;
-import StaffingAgency.Enums.EmploymentStatus;
 import StaffingAgency.People.Contractor;
+import StaffingAgency.Request.CandidateSubmission;
 import StaffingAgency.Request.ContractExtensionRequest;
 import StaffingAgency.Request.ContractorAssignment;
 import java.awt.BorderLayout;
@@ -22,7 +22,10 @@ import java.awt.Color;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.GridLayout;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JLabel;
@@ -33,12 +36,12 @@ import javax.swing.JTable;
 import javax.swing.SwingConstants;
 import javax.swing.table.DefaultTableModel;
 
-public class ContractorCoordinatorWorkAreaJPanel extends JPanel {
+public class ContractorCoordinatorWorkAreaJPanel
+        extends JPanel {
 
     private final JPanel mainContentPanel;
-    private final List<Contractor> contractorList;
-    private final List<ContractorAssignment> assignmentList;
-    private final List<ContractExtensionRequest> extensionRequestList;
+    private final List<CandidateSubmission> submissionList;
+    private final UserAccount coordinatorAccount;
     private final Network network;
 
     private JTable tblMain;
@@ -52,9 +55,8 @@ public class ContractorCoordinatorWorkAreaJPanel extends JPanel {
 
     public ContractorCoordinatorWorkAreaJPanel(
             JPanel mainContentPanel,
-            List<Contractor> contractorList,
-            List<ContractorAssignment> assignmentList,
-            List<ContractExtensionRequest> extensionRequestList,
+            List<CandidateSubmission> submissionList,
+            UserAccount coordinatorAccount,
             Network network
     ) {
         if (mainContentPanel == null) {
@@ -63,21 +65,15 @@ public class ContractorCoordinatorWorkAreaJPanel extends JPanel {
             );
         }
 
-        if (contractorList == null) {
+        if (submissionList == null) {
             throw new IllegalArgumentException(
-                    "Contractor list cannot be null."
+                    "Submission list cannot be null."
             );
         }
 
-        if (assignmentList == null) {
+        if (coordinatorAccount == null) {
             throw new IllegalArgumentException(
-                    "Assignment list cannot be null."
-            );
-        }
-
-        if (extensionRequestList == null) {
-            throw new IllegalArgumentException(
-                    "Extension request list cannot be null."
+                    "Coordinator account cannot be null."
             );
         }
 
@@ -88,9 +84,8 @@ public class ContractorCoordinatorWorkAreaJPanel extends JPanel {
         }
 
         this.mainContentPanel = mainContentPanel;
-        this.contractorList = contractorList;
-        this.assignmentList = assignmentList;
-        this.extensionRequestList = extensionRequestList;
+        this.submissionList = submissionList;
+        this.coordinatorAccount = coordinatorAccount;
         this.network = network;
 
         initComponents();
@@ -129,7 +124,9 @@ public class ContractorCoordinatorWorkAreaJPanel extends JPanel {
         titlePanel.setOpaque(false);
 
         JLabel lblTitle =
-                new JLabel("Contractor Coordinator Work Area");
+                new JLabel(
+                        "Contractor Coordinator Work Area"
+                );
 
         lblTitle.setFont(
                 new Font(
@@ -242,7 +239,9 @@ public class ContractorCoordinatorWorkAreaJPanel extends JPanel {
 
         tblMain = new JTable(tableModel);
         tblMain.setRowHeight(28);
-        tblMain.getTableHeader().setReorderingAllowed(false);
+
+        tblMain.getTableHeader()
+                .setReorderingAllowed(false);
 
         centerPanel.add(
                 lblSummary,
@@ -260,7 +259,11 @@ public class ContractorCoordinatorWorkAreaJPanel extends JPanel {
     private JPanel createBottomPanel() {
 
         JPanel bottomPanel =
-                new JPanel(new FlowLayout(FlowLayout.RIGHT));
+                new JPanel(
+                        new FlowLayout(
+                                FlowLayout.RIGHT
+                        )
+                );
 
         bottomPanel.setOpaque(false);
 
@@ -278,33 +281,35 @@ public class ContractorCoordinatorWorkAreaJPanel extends JPanel {
     private void addButtonActions() {
 
         btnManageContractors.addActionListener(
-                event -> JOptionPane.showMessageDialog(
-                        this,
-                        "Manage Contractors will be built next."
+                event -> showComingNext(
+                        "Manage Contractors"
                 )
         );
 
         btnManageAssignments.addActionListener(
-                event -> JOptionPane.showMessageDialog(
-                        this,
-                        "Assignment management will be built next."
+                event -> showComingNext(
+                        "Manage Assignments"
                 )
         );
 
         btnCredentialVerification.addActionListener(
-                event -> JOptionPane.showMessageDialog(
-                        this,
-                        "Credential verification will be connected "
-                        + "after assignment management."
+                event -> showComingNext(
+                        "Credential Verification"
                 )
         );
 
         btnContractExtensions.addActionListener(
-                event -> JOptionPane.showMessageDialog(
-                        this,
-                        "Contract extension management "
-                        + "will be added later."
+                event -> showComingNext(
+                        "Contract Extensions"
                 )
+        );
+    }
+
+    private void showComingNext(String moduleName) {
+
+        JOptionPane.showMessageDialog(
+                this,
+                moduleName + " will be built next."
         );
     }
 
@@ -312,16 +317,25 @@ public class ContractorCoordinatorWorkAreaJPanel extends JPanel {
 
         tableModel.setRowCount(0);
 
+        List<ContractorAssignment> assignments =
+                getAssignments();
+
+        List<Contractor> contractors =
+                getContractors(assignments);
+
+        List<ContractExtensionRequest> extensions =
+                getExtensionRequests(assignments);
+
         tableModel.addRow(
                 new Object[]{
                     "Contractors",
-                    contractorList.size(),
-                    "Contractors managed by the staffing agency"
+                    contractors.size(),
+                    "Contractors created from approved submissions"
                 }
         );
 
         long availableContractors =
-                contractorList.stream()
+                contractors.stream()
                         .filter(contractor ->
                                 contractor.getAvailabilityStatus()
                                 == AvailabilityStatus.AVAILABLE
@@ -332,56 +346,123 @@ public class ContractorCoordinatorWorkAreaJPanel extends JPanel {
                 new Object[]{
                     "Available Contractors",
                     availableContractors,
-                    "Contractors available for a new assignment"
-                }
-        );
-
-        long activeContractors =
-                contractorList.stream()
-                        .filter(contractor ->
-                                contractor.getEmploymentStatus()
-                                == EmploymentStatus.ACTIVE
-                        )
-                        .count();
-
-        tableModel.addRow(
-                new Object[]{
-                    "Active Contractors",
-                    activeContractors,
-                    "Contractors with active employment status"
+                    "Contractors available for assignment"
                 }
         );
 
         tableModel.addRow(
                 new Object[]{
                     "Assignments",
-                    assignmentList.size(),
-                    "Total contractor assignments"
+                    assignments.size(),
+                    "Assignments linked to approved submissions"
                 }
         );
 
-        long activeAssignments =
-                assignmentList.stream()
+        long inCompliance =
+                assignments.stream()
                         .filter(assignment ->
                                 assignment.getStatus()
-                                == AssignmentStatus.ACTIVE
+                                == AssignmentStatus.IN_COMPLIANCE
                         )
                         .count();
 
         tableModel.addRow(
                 new Object[]{
-                    "Active Assignments",
-                    activeAssignments,
-                    "Assignments currently active"
+                    "In Compliance",
+                    inCompliance,
+                    "Assignments under Compliance review"
+                }
+        );
+
+        long cleared =
+                assignments.stream()
+                        .filter(assignment ->
+                                assignment.getStatus()
+                                == AssignmentStatus.CLEARED
+                        )
+                        .count();
+
+        tableModel.addRow(
+                new Object[]{
+                    "Cleared Assignments",
+                    cleared,
+                    "Assignments ready for activation"
                 }
         );
 
         tableModel.addRow(
                 new Object[]{
                     "Extension Requests",
-                    extensionRequestList.size(),
+                    extensions.size(),
                     "Contract extension requests"
                 }
         );
+    }
+
+    private List<ContractorAssignment> getAssignments() {
+
+        Map<Integer, ContractorAssignment> unique =
+                new LinkedHashMap<>();
+
+        for (CandidateSubmission submission
+                : submissionList) {
+
+            ContractorAssignment assignment =
+                    submission.getResultingAssignment();
+
+            if (assignment != null) {
+                unique.put(
+                        assignment.getAssignmentId(),
+                        assignment
+                );
+            }
+        }
+
+        return new ArrayList<>(unique.values());
+    }
+
+    private List<Contractor> getContractors(
+            List<ContractorAssignment> assignments
+    ) {
+        Map<Integer, Contractor> unique =
+                new LinkedHashMap<>();
+
+        for (ContractorAssignment assignment
+                : assignments) {
+
+            Contractor contractor =
+                    assignment.getContractor();
+
+            if (contractor != null) {
+                unique.put(
+                        contractor.getContractorId(),
+                        contractor
+                );
+            }
+        }
+
+        return new ArrayList<>(unique.values());
+    }
+
+    private List<ContractExtensionRequest>
+            getExtensionRequests(
+                    List<ContractorAssignment> assignments
+            ) {
+
+        List<ContractExtensionRequest> requests =
+                new ArrayList<>();
+
+        for (ContractorAssignment assignment
+                : assignments) {
+
+            if (assignment.getContract() != null) {
+                requests.addAll(
+                        assignment.getContract()
+                                .getExtensionRequests()
+                );
+            }
+        }
+
+        return requests;
     }
 }

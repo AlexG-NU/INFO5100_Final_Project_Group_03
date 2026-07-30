@@ -1,5 +1,6 @@
 package StaffingAgency;
 
+import StaffingAgency.Role.ContractorCoordinatorRole;
 import Core.Enterprise;
 import Core.Role;
 import StaffingAgency.Organization.ContractorManagementOrganization;
@@ -33,14 +34,29 @@ public class StaffingAgencyEnterprise extends Enterprise {
                 new RecruitingOrganization(
                         staffingRequestList, candidateList, submissionList));
         getOrganizationDirectory().addOrganization(
-                new ContractorManagementOrganization());
+                new ContractorManagementOrganization(
+        submissionList
+));
     }
 
-    @Override
-    public List<Role> getSupportedRoles() {
-        List<Role> roles = new ArrayList<>();
-        roles.add(new RecruiterRole(
-                staffingRequestList, candidateList, submissionList));
-        return roles;
-    }
-}
+   @Override
+public List<Role> getSupportedRoles() {
+
+    List<Role> roles = new ArrayList<>();
+
+    roles.add(
+            new RecruiterRole(
+                    staffingRequestList,
+                    candidateList,
+                    submissionList
+            )
+    );
+
+    roles.add(
+            new ContractorCoordinatorRole(
+                    submissionList
+            )
+    );
+
+    return roles;
+}}

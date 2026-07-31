@@ -15,11 +15,13 @@ public class ComplianceDirectory {
     private final ArrayList<ComplianceUser> userList;
     private final ArrayList<CredentialRecord> credentialList;
     private final ArrayList<VerificationReview> reviewList;
+    private final ArrayList<CredentialVerificationTask> credentialTaskList;
 
     public ComplianceDirectory() {
         userList = new ArrayList<>();
         credentialList = new ArrayList<>();
         reviewList = new ArrayList<>();
+        credentialTaskList = new ArrayList<>();
     }
 
     public List<ComplianceUser> getUserList() {
@@ -32,6 +34,10 @@ public class ComplianceDirectory {
 
     public List<VerificationReview> getReviewList() {
         return reviewList;
+    }
+
+    public List<CredentialVerificationTask> getCredentialTaskList() {
+        return credentialTaskList;
     }
 
     public void addUser(ComplianceUser user) {
@@ -60,6 +66,15 @@ public class ComplianceDirectory {
             }
         }
         credentialList.add(credential);
+        for (CredentialVerificationTask task : credentialTaskList) {
+            if (task.getCredential() == null && !task.isComplete()
+                    && task.getReview().getRequest().getAssignment().getContractor()
+                    == credential.getContractor()
+                    && task.getReview().getRequest().getVerificationType()
+                            .equalsIgnoreCase(credential.getCredentialType())) {
+                task.attachCredential(credential);
+            }
+        }
     }
 
     public VerificationReview addVerificationRequest(CredentialVerificationRequest request) {
@@ -105,5 +120,63 @@ public class ComplianceDirectory {
             }
         }
         return assignedReviews;
+    }
+
+    public CredentialVerificationTask requestCredentialVerification(
+            VerificationReview review) {
+        if (review == null) {
+            throw new IllegalArgumentException("Select a compliance review.");
+        }
+        if (review.getAssignedAnalyst() == null) {
+            throw new IllegalStateException(
+                    "The review must be assigned to an analyst first.");
+        }
+        if (review.getCredentialTask() != null) {
+            throw new IllegalStateException(
+                    "Credential verification was already requested.");
+        }
+
+        CredentialRecord matchingCredential = null;
+        for (CredentialRecord credential : credentialList) {
+            if (credential.getContractor()
+                    == review.getRequest().getAssignment().getContractor()
+                    && credential.getCredentialType().equalsIgnoreCase(
+                            review.getRequest().getVerificationType())) {
+                matchingCredential = credential;
+                break;
+            }
+        }
+
+        CredentialVerificationTask task =
+                new CredentialVerificationTask(review, matchingCredential);
+        credentialTaskList.add(task);
+        review.setCredentialTask(task);
+        return task;
+    }
+
+    public CredentialVerificationTask requestRenewalVerification(
+            CredentialRecord credential) {
+        if (credential == null) {
+            throw new IllegalArgumentException("Select a credential to renew.");
+        }
+        VerificationReview matchingReview = null;
+        for (VerificationReview review : reviewList) {
+            if (review.getRequest().getAssignment().getContractor()
+                    == credential.getContractor()
+                    && review.getRequest().getVerificationType()
+                            .equalsIgnoreCase(credential.getCredentialType())
+                    && review.getCredentialTask() != null
+                    && review.getCredentialTask().isComplete()) {
+                matchingReview = review;
+            }
+        }
+        if (matchingReview == null) {
+            return null;
+        }
+        CredentialVerificationTask task =
+                new CredentialVerificationTask(matchingReview, credential);
+        credentialTaskList.add(task);
+        matchingReview.setCredentialTask(task);
+        return task;
     }
 }

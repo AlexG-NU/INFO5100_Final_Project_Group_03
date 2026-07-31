@@ -85,7 +85,7 @@ public class ComplianceDataGenerator {
 
             CredentialRecord credential = new CredentialRecord(
                     contractor, credentialType,
-                    String.format("DOC-%05d", index + 1),
+                    faker.bothify("DOC-#####").toUpperCase(),
                     expirationDateFor(index));
             credential.setStatus(statusFor(index));
             directory.addCredential(credential);
@@ -96,6 +96,12 @@ public class ComplianceDataGenerator {
              */
             if (index < 3) {
                 review.assignAnalyst(analyst);
+                CredentialVerificationTask task =
+                        directory.requestCredentialVerification(review);
+                task.completeTask(specialist, credential.getStatus(),
+                        index == 2
+                                ? "The submitted credential is past its expiration date."
+                                : "Document number and expiration date were confirmed.");
                 review.completeReview(
                         index == 2
                                 ? ComplianceDecision.REJECTED
@@ -105,6 +111,7 @@ public class ComplianceDataGenerator {
                                 : "Credential information was reviewed and confirmed.");
             } else if (index < 6) {
                 review.assignAnalyst(analyst);
+                directory.requestCredentialVerification(review);
             }
         }
 

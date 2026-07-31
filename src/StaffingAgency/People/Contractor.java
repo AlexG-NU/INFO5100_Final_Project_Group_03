@@ -66,6 +66,10 @@ public class Contractor extends Person {
         setPhone(phone);
         setPayRate(payRate);
     }
+
+    @Override
+    public String toString() {
+        return getContractorId() + " - " + getFullName();
+    }
 }
     
-

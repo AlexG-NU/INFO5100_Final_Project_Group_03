@@ -30,6 +30,8 @@ import javax.swing.table.DefaultTableModel;
 public class ManageCandidatesJPanel extends JPanel {
 
     private final List<Candidate> candidateList;
+    private final JPanel mainContentPanel;
+    private final JPanel recruiterDashboardPanel;
 
     private JTable candidateTable;
     private DefaultTableModel tableModel;
@@ -47,11 +49,24 @@ public class ManageCandidatesJPanel extends JPanel {
     private JButton btnUpdate;
     private JButton btnDelete;
     private JButton btnClear;
+    private JButton btnBack;
 
     public ManageCandidatesJPanel(
-            List<Candidate> candidateList
+            List<Candidate> candidateList,
+            JPanel mainContentPanel,
+            JPanel recruiterDashboardPanel
     ) {
+        if (candidateList == null
+                || mainContentPanel == null
+                || recruiterDashboardPanel == null) {
+            throw new IllegalArgumentException(
+                    "Candidate list and navigation panels are required."
+            );
+        }
+
         this.candidateList = candidateList;
+        this.mainContentPanel = mainContentPanel;
+        this.recruiterDashboardPanel = recruiterDashboardPanel;
 
         initComponents();
         populateTable();
@@ -174,7 +189,9 @@ public class ManageCandidatesJPanel extends JPanel {
         btnUpdate = new JButton("Update");
         btnDelete = new JButton("Delete");
         btnClear = new JButton("Clear");
+        btnBack = new JButton("<< Back");
 
+        buttonPanel.add(btnBack);
         buttonPanel.add(btnAdd);
         buttonPanel.add(btnUpdate);
         buttonPanel.add(btnDelete);
@@ -182,6 +199,10 @@ public class ManageCandidatesJPanel extends JPanel {
 
         btnAdd.addActionListener(
                 event -> addCandidate()
+        );
+
+        btnBack.addActionListener(
+                event -> goBack()
         );
 
         btnUpdate.addActionListener(
@@ -225,7 +246,35 @@ public class ManageCandidatesJPanel extends JPanel {
 
     private void addCandidate() {
 
+        if (candidateTable.getSelectedRow() >= 0) {
+            JOptionPane.showMessageDialog(
+                    this,
+                    "This candidate is already selected. "
+                    + "Use Update to save changes, or click Clear "
+                    + "before adding a new candidate.",
+                    "Candidate Already Exists",
+                    JOptionPane.WARNING_MESSAGE
+            );
+            return;
+        }
+
         try {
+            String email = txtEmail.getText().trim();
+
+            for (Candidate existingCandidate : candidateList) {
+                if (existingCandidate.getEmail() != null
+                        && existingCandidate.getEmail()
+                                .equalsIgnoreCase(email)) {
+                    JOptionPane.showMessageDialog(
+                            this,
+                            "A candidate with this email already exists.",
+                            "Duplicate Candidate",
+                            JOptionPane.WARNING_MESSAGE
+                    );
+                    return;
+                }
+            }
+
             int yearsOfExperience =
                     Integer.parseInt(
                             txtExperience.getText().trim()
@@ -426,5 +475,23 @@ public class ManageCandidatesJPanel extends JPanel {
         );
 
         candidateTable.clearSelection();
+    }
+
+    private void goBack() {
+
+        mainContentPanel.removeAll();
+        mainContentPanel.setLayout(new BorderLayout());
+        mainContentPanel.add(
+                recruiterDashboardPanel,
+                BorderLayout.CENTER
+        );
+        mainContentPanel.revalidate();
+        mainContentPanel.repaint();
+
+        if (recruiterDashboardPanel
+                instanceof UserInterface1.StaffingAgency.RecruiterWorkAreaJPanel) {
+            ((UserInterface1.StaffingAgency.RecruiterWorkAreaJPanel)
+                    recruiterDashboardPanel).refreshDashboard();
+        }
     }
 }

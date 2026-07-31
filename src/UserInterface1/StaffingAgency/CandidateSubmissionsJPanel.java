@@ -40,6 +40,8 @@ public class CandidateSubmissionsJPanel extends JPanel {
     private final List<CandidateSubmission> submissionList;
     private final UserAccount recruiterAccount;
     private final Network network;
+    private final JPanel mainContentPanel;
+    private final JPanel recruiterDashboardPanel;
 
     private JTable tblSubmissions;
     private DefaultTableModel tableModel;
@@ -54,12 +56,15 @@ public class CandidateSubmissionsJPanel extends JPanel {
     private JButton btnSendToCompliance;
     private JButton btnRefresh;
     private JButton btnClear;
+    private JButton btnBack;
 
     public CandidateSubmissionsJPanel(
             List<Candidate> candidateList,
             List<CandidateSubmission> submissionList,
             UserAccount recruiterAccount,
-            Network network
+            Network network,
+            JPanel mainContentPanel,
+            JPanel recruiterDashboardPanel
     ) {
         if (candidateList == null) {
             throw new IllegalArgumentException(
@@ -84,11 +89,19 @@ public class CandidateSubmissionsJPanel extends JPanel {
                     "Network cannot be null."
             );
         }
+        if (mainContentPanel == null
+                || recruiterDashboardPanel == null) {
+            throw new IllegalArgumentException(
+                    "Navigation panels cannot be null."
+            );
+        }
 
         this.candidateList = candidateList;
         this.submissionList = submissionList;
         this.recruiterAccount = recruiterAccount;
         this.network = network;
+        this.mainContentPanel = mainContentPanel;
+        this.recruiterDashboardPanel = recruiterDashboardPanel;
 
         initComponents();
         loadComboBoxes();
@@ -277,6 +290,10 @@ public class CandidateSubmissionsJPanel extends JPanel {
         btnClear =
                 new JButton("Clear");
 
+        btnBack =
+                new JButton("<< Back");
+
+        buttonPanel.add(btnBack);
         buttonPanel.add(btnSubmit);
         buttonPanel.add(btnSendToClient);
         buttonPanel.add(btnWithdraw);
@@ -286,6 +303,10 @@ public class CandidateSubmissionsJPanel extends JPanel {
 
         btnSubmit.addActionListener(
                 event -> createSubmission()
+        );
+
+        btnBack.addActionListener(
+                event -> goBack()
         );
 
         btnSendToClient.addActionListener(
@@ -409,6 +430,11 @@ public class CandidateSubmissionsJPanel extends JPanel {
                 }
             }
         }
+
+        cmbStaffingRequest.setToolTipText(
+                "Claim a request in View Staffing Requests "
+                + "before creating a candidate submission."
+        );
 
         if (selectedCandidate != null) {
             cmbCandidate.setSelectedItem(
@@ -831,6 +857,25 @@ public class CandidateSubmissionsJPanel extends JPanel {
 
         txtRecruiterNotes.setText("");
         tblSubmissions.clearSelection();
+    }
+
+    private void goBack() {
+
+        mainContentPanel.removeAll();
+        mainContentPanel.setLayout(new BorderLayout());
+        mainContentPanel.add(
+                recruiterDashboardPanel,
+                BorderLayout.CENTER
+        );
+        mainContentPanel.revalidate();
+        mainContentPanel.repaint();
+        recruiterDashboardPanel.repaint();
+
+        if (recruiterDashboardPanel
+                instanceof RecruiterWorkAreaJPanel) {
+            ((RecruiterWorkAreaJPanel)
+                    recruiterDashboardPanel).refreshDashboard();
+        }
     }
 
     private void showError(String message) {

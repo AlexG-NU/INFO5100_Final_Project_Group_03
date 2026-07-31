@@ -27,14 +27,14 @@ public class PayrollBillingNetworkSmokeTest {
         Organization payrollOrg =
                 NetworkUtils.findOrganizationByName(
                         network,
-                        "PayrollBilling",
+                        "Payroll and Billing Enterprise",
                         "PayrollProcessing"
                 );
 
         Organization billingOrg =
                 NetworkUtils.findOrganizationByName(
                         network,
-                        "PayrollBilling",
+                        "Payroll and Billing Enterprise",
                         "ClientBilling"
                 );
 

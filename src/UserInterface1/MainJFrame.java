@@ -72,14 +72,9 @@ public class MainJFrame extends JFrame {
         
 
         /*
-         * Leave candidateList empty for now.
-         *
-         * Later, this can be replaced with Faker-generated data:
-         *
-         * candidateList =
-         *         ConfigureABusiness.populateCandidates();
+         * Load Faker candidates into the shared Staffing lists.
          */
-        candidateList = new ArrayList<>();
+        candidateList = ConfigureABusiness.populateCandidates();
         this.network = ConfigureABusiness.configure(
                 masterRequestList,
                 candidateList,
@@ -100,6 +95,7 @@ public class MainJFrame extends JFrame {
     public void showPanel(JPanel panel) {
 
         contentPanel.removeAll();
+        contentPanel.setLayout(new CardLayout());
 
         contentPanel.add(
                 panel,

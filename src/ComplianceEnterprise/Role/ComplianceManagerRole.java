@@ -24,9 +24,7 @@ public class ComplianceManagerRole extends Role {
             UserAccount account, Network network) {
         return new ComplianceManagerWorkAreaJPanel(
                 userProcessContainer,
-                complianceData.getComplianceDirectory(),
-                complianceData.getManager(),
-                complianceData.getContractorList(),
+                complianceData, network,
                 null);
     }
 }

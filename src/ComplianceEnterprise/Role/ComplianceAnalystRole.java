@@ -25,7 +25,7 @@ public class ComplianceAnalystRole extends Role {
         return new ComplianceAnalystWorkAreaJPanel(
                 userProcessContainer,
                 complianceData.getComplianceDirectory(),
-                complianceData.getAnalyst(),
+                complianceData.getAnalystForAccount(account),
                 null);
     }
 }

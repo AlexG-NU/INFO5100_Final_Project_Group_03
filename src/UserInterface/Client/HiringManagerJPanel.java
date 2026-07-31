@@ -202,8 +202,20 @@ public class HiringManagerJPanel extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnViewRequestsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnViewRequestsActionPerformed
-        currentRequestType = "Candidate Submission";
-        populateRequestTable(currentRequestType);
+        HiringManagerCandidateSubmissionsJPanel panel =
+                new HiringManagerCandidateSubmissionsJPanel(
+                        userProcessContainer,
+                        account,
+                        network
+                );
+        userProcessContainer.add(
+                "HiringManagerCandidateSubmissionsJPanel",
+                panel
+        );
+        java.awt.CardLayout layout =
+                (java.awt.CardLayout)
+                        userProcessContainer.getLayout();
+        layout.next(userProcessContainer);
     }//GEN-LAST:event_btnViewRequestsActionPerformed
 
     private void btnViewRequests1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnViewRequests1ActionPerformed

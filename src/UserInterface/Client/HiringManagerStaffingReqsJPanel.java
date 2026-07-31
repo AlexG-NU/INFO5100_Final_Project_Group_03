@@ -336,7 +336,7 @@ public class HiringManagerStaffingReqsJPanel extends javax.swing.JPanel {
 
                 account.getWorkQueue().getWorkOrderList().add(newWorkOrder);
 
-                Organization staffingOrg = NetworkUtils.findOrganizationByName(network, "Staffing Enterprise", "Recruiting");
+                Organization staffingOrg = NetworkUtils.findOrganizationByName(network, "Staffing Agency Enterprise", "Recruiting Organization");
 
                 if (staffingOrg != null) {
                     staffingOrg.getWorkQueue().getWorkOrderList().add(newWorkOrder);
@@ -368,7 +368,7 @@ public class HiringManagerStaffingReqsJPanel extends javax.swing.JPanel {
                 account.getWorkQueue().getWorkOrderList().remove(selectedRecord);
                 
                 // Remove from target Staffing queue if not yet processed
-                Organization staffingOrg = NetworkUtils.findOrganizationByName(network, "Staffing Enterprise", "Recruiting");
+                Organization staffingOrg = NetworkUtils.findOrganizationByName(network, "Staffing Agency Enterprise", "Recruiting Organization");
                 if (staffingOrg != null) {
                     staffingOrg.getWorkQueue().getWorkOrderList().remove(selectedRecord);
                 }

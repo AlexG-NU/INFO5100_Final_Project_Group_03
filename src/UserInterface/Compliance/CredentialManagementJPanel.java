@@ -36,12 +36,44 @@ public class CredentialManagementJPanel extends javax.swing.JPanel {
         this.contractorList = contractorList;
         this.previousPanel = previousPanel;
         initComponents();
+        ComplianceTableUI.configure(tblCredentials,
+                0, 100, 180, 180, 150, 120, 120);
         cmbContractor.setModel(new DefaultComboBoxModel<>(contractorList.toArray(new Contractor[0])));
         cmbType.setModel(new DefaultComboBoxModel<>(new String[]{"Background Check", "Drug Screening",
             "Identity Verification", "Employment Verification", "Professional License"}));
         cmbStatus.setModel(new DefaultComboBoxModel<>(CredentialStatus.values()));
+        applyResponsiveLayout();
         populateTable();
         setFormMode(false);
+    }
+
+    private void applyResponsiveLayout() {
+        java.awt.Color background = new java.awt.Color(238, 240, 244);
+        ComplianceTableUI.styleScrollPane(jScrollPane1, 230);
+
+        javax.swing.JPanel header = new javax.swing.JPanel(
+                new java.awt.FlowLayout(java.awt.FlowLayout.LEFT, 0, 0));
+        header.setBackground(background);
+        header.add(lblTitle);
+
+        javax.swing.JPanel bottomButtons = new javax.swing.JPanel(
+                new java.awt.GridLayout(1, 2, 14, 0));
+        bottomButtons.setBackground(background);
+        bottomButtons.add(btnBack);
+        bottomButtons.add(btnRefresh);
+
+        javax.swing.JPanel lower = new javax.swing.JPanel(new java.awt.BorderLayout(0, 10));
+        lower.setBackground(background);
+        lower.add(pnlCredentialDetails, java.awt.BorderLayout.CENTER);
+        lower.add(bottomButtons, java.awt.BorderLayout.SOUTH);
+
+        removeAll();
+        setLayout(new java.awt.BorderLayout(0, 12));
+        setBackground(background);
+        setBorder(javax.swing.BorderFactory.createEmptyBorder(18, 28, 18, 28));
+        add(header, java.awt.BorderLayout.NORTH);
+        add(jScrollPane1, java.awt.BorderLayout.CENTER);
+        add(lower, java.awt.BorderLayout.SOUTH);
     }
 
     private void populateTable() {
@@ -56,10 +88,10 @@ public class CredentialManagementJPanel extends javax.swing.JPanel {
 
     private void setFormMode(boolean editable) {
         cmbContractor.setEnabled(editable && addingRecord);
-        cmbType.setEnabled(editable);
+        cmbType.setEnabled(editable && addingRecord);
         txtDocument.setEditable(editable);
         txtExpiration.setEditable(editable);
-        cmbStatus.setEnabled(editable);
+        cmbStatus.setEnabled(false);
         btnSave.setEnabled(editable);
         btnCancel.setEnabled(editable);
         btnAdd.setEnabled(!editable && !contractorList.isEmpty());
@@ -111,9 +143,9 @@ public class CredentialManagementJPanel extends javax.swing.JPanel {
         } catch (DateTimeParseException ex) {
             throw new IllegalArgumentException("Enter the expiration date as YYYY-MM-DD, for example 2027-12-31.");
         }
-        if (expirationDate.isBefore(LocalDate.now())
-                && cmbStatus.getSelectedItem() != CredentialStatus.EXPIRED) {
-            throw new IllegalArgumentException("A past expiration date must use Expired status.");
+        if (expirationDate.isBefore(LocalDate.now())) {
+            throw new IllegalArgumentException(
+                    "Enter a current or future expiration date. Expired records are identified during verification.");
         }
         return expirationDate;
     }
@@ -124,7 +156,6 @@ public class CredentialManagementJPanel extends javax.swing.JPanel {
             if (addingRecord) {
                 CredentialRecord record = new CredentialRecord((Contractor) cmbContractor.getSelectedItem(),
                         cmbType.getSelectedItem().toString(), txtDocument.getText(), expirationDate);
-                record.setStatus((CredentialStatus) cmbStatus.getSelectedItem());
                 complianceDirectory.addCredential(record);
                 JOptionPane.showMessageDialog(this, "Credential record added successfully.",
                         "Record Saved", JOptionPane.INFORMATION_MESSAGE);
@@ -132,12 +163,16 @@ public class CredentialManagementJPanel extends javax.swing.JPanel {
                 if (complianceDirectory.documentNumberExists(txtDocument.getText(), selectedCredential)) {
                     throw new IllegalArgumentException("This document number already belongs to another credential record.");
                 }
-                selectedCredential.setCredentialType(cmbType.getSelectedItem().toString());
                 selectedCredential.setDocumentNumber(txtDocument.getText());
                 selectedCredential.setExpirationDate(expirationDate);
-                selectedCredential.setStatus((CredentialStatus) cmbStatus.getSelectedItem());
-                JOptionPane.showMessageDialog(this, "Credential record updated successfully.",
-                        "Record Updated", JOptionPane.INFORMATION_MESSAGE);
+                selectedCredential.setStatus(CredentialStatus.SUBMITTED);
+                ComplianceEnterprise.Model.CredentialVerificationTask renewalTask =
+                        complianceDirectory.requestRenewalVerification(selectedCredential);
+                String message = renewalTask == null
+                        ? "Credential renewal saved. It is Submitted and ready for a future verification request."
+                        : "Credential renewal saved. A new Pending Verification task was sent to the Credential Specialist.";
+                JOptionPane.showMessageDialog(this, message,
+                        "Credential Renewed", JOptionPane.INFORMATION_MESSAGE);
             }
             populateTable();
             clearForm();
@@ -164,7 +199,7 @@ public class CredentialManagementJPanel extends javax.swing.JPanel {
         lblContractor.setText("Contractor:"); lblType.setText("Credential Type:"); lblDocument.setText("Document Number:");
         lblExpiration.setText("Expiration Date (YYYY-MM-DD):"); lblStatus.setText("Status:");
         btnAdd.setText("Add New"); btnAdd.addActionListener(evt -> btnAddActionPerformed(evt));
-        btnEdit.setText("Edit Selected"); btnEdit.addActionListener(evt -> btnEditActionPerformed(evt));
+        btnEdit.setText("Renew / Update Selected"); btnEdit.addActionListener(evt -> btnEditActionPerformed(evt));
         btnSave.setText("Save"); btnSave.addActionListener(evt -> btnSaveActionPerformed(evt));
         btnDelete.setText("Delete"); btnDelete.addActionListener(evt -> btnDeleteActionPerformed(evt));
         btnCancel.setText("Cancel"); btnCancel.addActionListener(evt -> btnCancelActionPerformed(evt));

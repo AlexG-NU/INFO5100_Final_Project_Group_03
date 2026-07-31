@@ -7,8 +7,7 @@ package ComplianceEnterprise.Enums;
 public enum ComplianceDecision {
     PENDING("Pending"),
     APPROVED("Approved"),
-    REJECTED("Rejected"),
-    MORE_INFORMATION_REQUIRED("More Information Required");
+    REJECTED("Rejected");
 
     private final String displayName;
 

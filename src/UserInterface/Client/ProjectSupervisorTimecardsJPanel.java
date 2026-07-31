@@ -435,7 +435,7 @@ public class ProjectSupervisorTimecardsJPanel extends javax.swing.JPanel {
 
         Organization payrollOrg = NetworkUtils.findOrganizationByName(
             network, 
-            "PayrollBilling", 
+            "Payroll and Billing Enterprise", 
             "PayrollProcessing"
         );
 

@@ -20,6 +20,7 @@ public class VerificationReview {
     private ComplianceDecision decision;
     private String findings;
     private LocalDate reviewDate;
+    private CredentialVerificationTask credentialTask;
 
     public VerificationReview(CredentialVerificationRequest request) {
         if (request == null) {
@@ -50,9 +51,6 @@ public class VerificationReview {
         if (decision != ComplianceDecision.PENDING) {
             throw new IllegalStateException("A completed review cannot be reassigned.");
         }
-        if (this.assignedAnalyst != null && this.assignedAnalyst != assignedAnalyst) {
-            throw new IllegalStateException("This request is already assigned to another analyst.");
-        }
         this.assignedAnalyst = assignedAnalyst;
     }
 
@@ -64,8 +62,76 @@ public class VerificationReview {
         return findings;
     }
 
+    public void recordAnalystAssessment(String assessment) {
+        if (decision != ComplianceDecision.PENDING) {
+            throw new IllegalStateException("A completed assessment cannot be changed.");
+        }
+        if (assignedAnalyst == null) {
+            throw new IllegalStateException("Assign an analyst before recording an assessment.");
+        }
+        if (assessment == null || assessment.trim().length() < 10
+                || assessment.trim().length() > 500) {
+            throw new IllegalArgumentException(
+                    "Analyst assessment must contain 10-500 characters.");
+        }
+        this.findings = assessment.trim();
+    }
+
     public LocalDate getReviewDate() {
         return reviewDate;
+    }
+
+    public CredentialVerificationTask getCredentialTask() {
+        return credentialTask;
+    }
+
+    public void setCredentialTask(CredentialVerificationTask credentialTask) {
+        if (credentialTask == null) {
+            throw new IllegalArgumentException("Credential verification task is required.");
+        }
+        if (this.credentialTask != null && !this.credentialTask.isComplete()) {
+            throw new IllegalStateException("Credential verification was already requested.");
+        }
+        this.credentialTask = credentialTask;
+    }
+
+    public String getCredentialStatusText() {
+        return credentialTask == null
+                ? "Not Requested" : credentialTask.getResult().toString();
+    }
+
+    public String getWorkflowStatus() {
+        if (credentialTask != null && !credentialTask.isComplete()) {
+            return "Credential Verification Requested";
+        }
+        if (decision == ComplianceDecision.APPROVED) return "Compliance Approved";
+        if (decision == ComplianceDecision.REJECTED) return "Compliance Rejected";
+        if (assignedAnalyst == null) return "Awaiting Analyst Assignment";
+        if (credentialTask == null) return "Analyst Review";
+        return credentialTask.getResult()
+                == ComplianceEnterprise.Enums.CredentialStatus.VERIFIED
+                ? "Credential Verified - Final Decision Required"
+                : "Credential Issue - Analyst Follow-up Required";
+    }
+
+    public String getWaitingOn() {
+        if (credentialTask != null && !credentialTask.isComplete()) {
+            return "Credential Specialist";
+        }
+        if (decision == ComplianceDecision.APPROVED) return "Contractor Coordinator";
+        if (decision == ComplianceDecision.REJECTED) return "No Further Action";
+        if (assignedAnalyst == null) return "Compliance Manager";
+        return "Compliance Analyst";
+    }
+
+    public String getRequestedByText() {
+        return credentialTask == null || assignedAnalyst == null
+                ? "" : assignedAnalyst.getName();
+    }
+
+    public String getCompletedByText() {
+        return credentialTask == null || credentialTask.getCompletedBy() == null
+                ? "" : credentialTask.getCompletedBy().getName();
     }
 
     public void completeReview(ComplianceDecision decision, String findings) {
@@ -84,8 +150,19 @@ public class VerificationReview {
         if (findings.trim().length() < 10 || findings.trim().length() > 500) {
             throw new IllegalArgumentException("Findings must contain 10-500 characters.");
         }
+        if (decision == ComplianceDecision.APPROVED) {
+            if (credentialTask == null) {
+                throw new IllegalStateException(
+                        "Request credential verification before approving this review.");
+            }
+            if (credentialTask.getResult()
+                    != ComplianceEnterprise.Enums.CredentialStatus.VERIFIED) {
+                throw new IllegalStateException(
+                        "The required credential must be Verified before final approval.");
+            }
+        }
+        recordAnalystAssessment(findings);
         this.decision = decision;
-        this.findings = findings.trim();
         this.reviewDate = LocalDate.now();
 
         if (decision == ComplianceDecision.APPROVED) {

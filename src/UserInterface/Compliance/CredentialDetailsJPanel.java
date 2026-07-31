@@ -15,7 +15,31 @@ public class CredentialDetailsJPanel extends javax.swing.JPanel {
         this.credential = credential;
         this.previousPanel = previousPanel;
         initComponents();
+        applyFittedLayout();
         displayCredential();
+    }
+
+    private void applyFittedLayout() {
+        ComplianceTableUI.configure(tblCredentials,
+                100, 110, 180, 180, 160, 130, 110);
+        ComplianceTableUI.styleScrollPane(jScrollPaneTable, 120);
+        javax.swing.JScrollPane detailsScroll = new javax.swing.JScrollPane(
+                pnlDetails,
+                javax.swing.JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
+                javax.swing.JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        detailsScroll.setBorder(null);
+
+        javax.swing.JPanel center = new javax.swing.JPanel(
+                new java.awt.BorderLayout(0, 8));
+        center.add(jScrollPaneTable, java.awt.BorderLayout.NORTH);
+        center.add(detailsScroll, java.awt.BorderLayout.CENTER);
+
+        removeAll();
+        setLayout(new java.awt.BorderLayout(0, 10));
+        setBorder(javax.swing.BorderFactory.createEmptyBorder(12, 18, 12, 18));
+        add(lblTitle, java.awt.BorderLayout.NORTH);
+        add(center, java.awt.BorderLayout.CENTER);
+        add(btnBack, java.awt.BorderLayout.SOUTH);
     }
 
     private void displayCredential() {

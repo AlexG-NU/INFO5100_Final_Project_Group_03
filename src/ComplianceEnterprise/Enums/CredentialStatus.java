@@ -8,6 +8,7 @@ public enum CredentialStatus {
     NOT_STARTED("Not Started"),
     SUBMITTED("Submitted"),
     VERIFIED("Verified"),
+    MISSING("Missing"),
     EXPIRED("Expired"),
     REJECTED("Rejected");
 

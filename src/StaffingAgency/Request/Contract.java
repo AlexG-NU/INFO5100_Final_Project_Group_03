@@ -21,6 +21,7 @@ public class Contract {
 
     private static final AtomicInteger ID_SEQUENCE = new AtomicInteger(6000);
 
+    private final ContractorAssignment assignment;
     private final int contractId;
     private final LocalDate startDate;
     private LocalDate endDate;
@@ -29,16 +30,33 @@ public class Contract {
     private ContractStatus status;
     private final List<ContractExtensionRequest> extensionRequests = new ArrayList<>();
 
-    public Contract(ContractorAssignment assignment, LocalDate startDate, LocalDate endDate,
-                     BigDecimal payRate, BigDecimal billRate) {
-        this.contractId = ID_SEQUENCE.incrementAndGet();
-        this.startDate = startDate;
-        this.endDate = endDate;
-        setPayRate(payRate);
-        setBillRate(billRate);
-        this.status = ContractStatus.ACTIVE;
-        assignment.assignContract(this);
+   public Contract(
+        ContractorAssignment assignment,
+        LocalDate startDate,
+        LocalDate endDate,
+        BigDecimal payRate,
+        BigDecimal billRate
+) {
+    if (assignment == null) {
+        throw new IllegalArgumentException(
+                "Assignment is required."
+        );
     }
+
+    this.contractId =
+            ID_SEQUENCE.incrementAndGet();
+
+    this.assignment = assignment;
+    this.startDate = startDate;
+    this.endDate = endDate;
+
+    setPayRate(payRate);
+    setBillRate(billRate);
+
+    this.status = ContractStatus.ACTIVE;
+
+    assignment.assignContract(this);
+}
 
     public int getContractId() {
         return contractId;
@@ -104,5 +122,8 @@ public class Contract {
     public List<ContractExtensionRequest> getExtensionRequests() {
         return List.copyOf(extensionRequests);
     }
+    public ContractorAssignment getAssignment() {
+    return assignment;
+}
 }
 

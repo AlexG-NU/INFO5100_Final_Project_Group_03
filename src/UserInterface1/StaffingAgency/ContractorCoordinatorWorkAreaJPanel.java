@@ -285,22 +285,16 @@ public class ContractorCoordinatorWorkAreaJPanel
 );
 
         btnManageAssignments.addActionListener(
-                event -> showComingNext(
-                        "Manage Assignments"
-                )
-        );
+        event -> openManageAssignments()
+);
 
         btnCredentialVerification.addActionListener(
-                event -> showComingNext(
-                        "Credential Verification"
-                )
-        );
+        event -> openCredentialVerification()
+);
 
         btnContractExtensions.addActionListener(
-                event -> showComingNext(
-                        "Contract Extensions"
-                )
-        );
+        event -> openContractExtensions()
+);
     }
 private void openManageContractors() {
 
@@ -313,7 +307,17 @@ private void openManageContractors() {
 
     displayPanel(contractorPanel);
 }
+private void openManageAssignments() {
 
+    ManageAssignmentsJPanel assignmentPanel =
+            new ManageAssignmentsJPanel(
+                    mainContentPanel,
+                    this,
+                    submissionList
+            );
+
+    displayPanel(assignmentPanel);
+}
 private void displayPanel(JPanel panel) {
 
     mainContentPanel.removeAll();
@@ -472,6 +476,18 @@ public void refreshDashboard() {
 
         return new ArrayList<>(unique.values());
     }
+    private void openCredentialVerification() {
+
+    CredentialVerificationJPanel verificationPanel =
+            new CredentialVerificationJPanel(
+                    mainContentPanel,
+                    this,
+                    submissionList,
+                    network
+            );
+
+    displayPanel(verificationPanel);
+}
 
     private List<ContractExtensionRequest>
             getExtensionRequests(
@@ -494,4 +510,16 @@ public void refreshDashboard() {
 
         return requests;
     }
+            private void openContractExtensions() {
+
+    ContractExtensionsJPanel extensionsPanel =
+            new ContractExtensionsJPanel(
+                    mainContentPanel,
+                    this,
+                    coordinatorAccount,
+                    network
+            );
+
+    displayPanel(extensionsPanel);
+}
 }

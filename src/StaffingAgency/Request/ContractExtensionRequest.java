@@ -10,39 +10,74 @@ package StaffingAgency.Request;
  */
     
 
-import StaffingAgency.Enums.RequestStatus;
+
+import Core.WorkOrder;
+import Core.WorkOrderStatus;
 import java.time.LocalDate;
-import java.util.concurrent.atomic.AtomicInteger;
 
-public class ContractExtensionRequest {
+/**
+ * Work order created by the Client and reviewed by the
+ * Staffing Agency Contractor Management Organization.
+ */
+public class ContractExtensionRequest extends WorkOrder {
 
-    private static final AtomicInteger ID_SEQUENCE = new AtomicInteger(7000);
-
-    private final int extensionRequestId;
     private final LocalDate currentEndDate;
     private final LocalDate requestedEndDate;
     private final String reason;
-    private final LocalDate requestDate;
-    private RequestStatus status;
-
     private final Contract contract;
 
-    public ContractExtensionRequest(Contract contract, LocalDate requestedEndDate, String reason) {
-        this.extensionRequestId = ID_SEQUENCE.incrementAndGet();
-        this.contract = contract;
-        this.currentEndDate = contract.getEndDate();
-        if (requestedEndDate.isBefore(this.currentEndDate)) {
-            throw new IllegalArgumentException("requestedEndDate cannot be before the current end date");
+    public ContractExtensionRequest(
+            Contract contract,
+            LocalDate requestedEndDate,
+            String reason
+    ) {
+        super();
+
+        if (contract == null) {
+            throw new IllegalArgumentException(
+                    "Contract is required."
+            );
         }
-        this.requestedEndDate = requestedEndDate;
-        this.reason = reason;
-        this.requestDate = LocalDate.now();
-        this.status = RequestStatus.SUBMITTED;
+
+        if (requestedEndDate == null) {
+            throw new IllegalArgumentException(
+                    "Requested end date is required."
+            );
+        }
+
+        if (!requestedEndDate.isAfter(
+                contract.getEndDate()
+        )) {
+            throw new IllegalArgumentException(
+                    "Requested end date must be after "
+                    + "the current end date."
+            );
+        }
+
+        if (reason == null
+                || reason.trim().isEmpty()) {
+            throw new IllegalArgumentException(
+                    "Extension reason is required."
+            );
+        }
+
+        this.contract = contract;
+        this.currentEndDate =
+                contract.getEndDate();
+        this.requestedEndDate =
+                requestedEndDate;
+        this.reason = reason.trim();
+
+        setMessage(
+                "Contract extension requested for Contract #"
+                + contract.getContractId()
+        );
+
         contract.addExtensionRequest(this);
     }
 
     public int getExtensionRequestId() {
-        return extensionRequestId;
+        return getWorkOrderId();
     }
 
     public LocalDate getCurrentEndDate() {
@@ -57,37 +92,76 @@ public class ContractExtensionRequest {
         return reason;
     }
 
-    public LocalDate getRequestDate() {
-        return requestDate;
-    }
-
-    public RequestStatus getStatus() {
-        return status;
-    }
-
     public Contract getContract() {
         return contract;
     }
 
-    public void submitRequest() {
-        this.status = RequestStatus.SUBMITTED;
-    }
-
     public void approveRequest() {
-        this.status = RequestStatus.APPROVED;
+
+        if (getStatus()
+                != WorkOrderStatus.IN_PROGRESS
+                && getStatus()
+                != WorkOrderStatus.UNDER_REVIEW) {
+
+            throw new IllegalStateException(
+                    "Claim the request before approving it."
+            );
+        }
+
+        setStatus(
+                WorkOrderStatus.APPROVED
+        );
     }
 
     public void rejectRequest() {
-        this.status = RequestStatus.REJECTED;
+
+        if (getStatus().isDone()) {
+            throw new IllegalStateException(
+                    "This request is already closed."
+            );
+        }
+
+        setStatus(
+                WorkOrderStatus.REJECTED
+        );
     }
 
-    /** Pushes the requested end date onto the governing Contract, once approved. */
+    /**
+     * Applies the approved date to both the contract
+     * and its contractor assignment.
+     */
     public void applyExtension() {
-        if (status != RequestStatus.APPROVED) {
-            throw new IllegalStateException("Cannot apply an extension that has not been approved");
+
+        if (getStatus()
+                != WorkOrderStatus.APPROVED) {
+
+            throw new IllegalStateException(
+                    "The extension must be approved "
+                    + "before it can be applied."
+            );
         }
-        contract.extendContract(requestedEndDate);
-        this.status = RequestStatus.COMPLETED;
+
+        contract.extendContract(
+                requestedEndDate
+        );
+
+        if (contract.getAssignment() != null) {
+
+            contract.getAssignment()
+                    .extendAssignment(
+                            requestedEndDate
+                    );
+        }
+
+        setStatus(
+                WorkOrderStatus.COMPLETED
+        );
+    }
+
+    @Override
+    public String toString() {
+        return getWorkOrderId()
+                + " - Contract #"
+                + contract.getContractId();
     }
 }
-    

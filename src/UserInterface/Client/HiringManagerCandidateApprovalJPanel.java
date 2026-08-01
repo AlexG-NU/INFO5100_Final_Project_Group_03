@@ -10,7 +10,12 @@ import Core.Organization;
 import Core.UserAccount;
 import Core.WorkOrder;
 import Core.WorkOrderStatus; 
-import Core.WorkOrders.CandidateApprovalWorkOrder; 
+import StaffingAgency.Enums.CandidateStatus;
+import StaffingAgency.People.Candidate;
+import StaffingAgency.People.Contractor;
+import StaffingAgency.Request.CandidateSubmission; 
+import StaffingAgency.Request.ContractorAssignment;
+import java.math.BigDecimal;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.table.DefaultTableModel;
@@ -24,7 +29,7 @@ public class HiringManagerCandidateApprovalJPanel extends javax.swing.JPanel {
     private JPanel container;
     private UserAccount userAccount;
     private Network network;
-    private CandidateApprovalWorkOrder selectedRecord;
+    private CandidateSubmission selectedRecord;
 
     private final String[] COLUMN_NAMES = {
         "Work Order ID", "Candidate Name", "Status"
@@ -38,33 +43,41 @@ public class HiringManagerCandidateApprovalJPanel extends javax.swing.JPanel {
         refreshTable();
     }
 
-    private void refreshTable() {
+private void refreshTable() {
         DefaultTableModel model = new DefaultTableModel(COLUMN_NAMES, 0) {
             @Override
             public boolean isCellEditable(int row, int col) { return false; }
         };
-        for (WorkOrder workOrder : userAccount.getWorkQueue().getWorkOrderList()) {
-            if (workOrder instanceof CandidateApprovalWorkOrder) {
-                CandidateApprovalWorkOrder candidateReq = (CandidateApprovalWorkOrder) workOrder;
-                
-                // Using WorkOrderStatus from your base WorkOrder schema
-                if (candidateReq.getStatus() == WorkOrderStatus.PENDING) {
-                    model.addRow(new Object[]{
-                        candidateReq, // Or candidateReq.getWorkOrderId()
-                        candidateReq.getCandidateName(), 
-                        candidateReq.getStatus()
-                    });
+ 
+        Organization hrOrg = NetworkUtils.findOrganizationByName(
+                network,
+                "Client Enterprise",
+                "Human Resources Organization"
+        );
+ 
+        if (hrOrg != null) {
+            for (WorkOrder workOrder : hrOrg.getWorkQueue().getWorkOrderList()) {
+                if (workOrder instanceof CandidateSubmission) {
+                    CandidateSubmission candidateReq = (CandidateSubmission) workOrder;
+ 
+                    if (candidateReq.getStatus() == WorkOrderStatus.UNDER_REVIEW) {
+                        model.addRow(new Object[]{
+                            candidateReq, // Or candidateReq.getWorkOrderId()
+                            candidateReq.getCandidate().getFullName(),
+                            candidateReq.getStatus()
+                        });
+                    }
                 }
             }
         }
         tblData.setModel(model); 
     }
 
-    private void populateForm(CandidateApprovalWorkOrder item) {
+    private void populateForm(CandidateSubmission item) {
         
-        txtCandidateName.setText(item.getCandidateName());
-        txtareaResume.setText(item.getResume());
-        txtareaAgencyComments.setText(item.getAgencyComments());
+        txtCandidateName.setText(item.getCandidate().getFullName());
+        txtareaResume.setText(item.getCandidate().getSkills());
+        txtareaAgencyComments.setText(item.getRecruiterNotes());
     }
 
     private boolean validateSelection() {
@@ -159,7 +172,7 @@ public class HiringManagerCandidateApprovalJPanel extends javax.swing.JPanel {
         });
 
         jLabel6.setFont(new java.awt.Font("Segoe UI", 0, 24)); // NOI18N
-        jLabel6.setText("Timecards");
+        jLabel6.setText("Candidate Approval");
 
         txtareaAgencyComments.setColumns(20);
         txtareaAgencyComments.setLineWrap(true);
@@ -255,33 +268,70 @@ public class HiringManagerCandidateApprovalJPanel extends javax.swing.JPanel {
 
     private void btnApproveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnApproveActionPerformed
         if (!validateSelection()) return;
-
-        selectedRecord.setStatus(WorkOrderStatus.APPROVED);
-        selectedRecord.setApprovalStatus("Approved"); // From your specific Candidate string field
-
-        // Route to appropriate org (e.g., HR/Onboarding)
-        Organization hrOrg = NetworkUtils.findOrganizationByName(
-            network, 
-            "HumanResources", 
-            "OnboardingOrganization"
+ 
+        Candidate candidate = selectedRecord.getCandidate();
+ 
+        Contractor contractor = new Contractor(
+                candidate.getFirstName(),
+                candidate.getLastName(),
+                candidate.getEmail(),
+                candidate.getPhone(),
+                candidate.getSkills(),
+                new BigDecimal("55.00") // TODO: replace with a real negotiated pay rate
         );
-
-        if (hrOrg != null) {
-            hrOrg.getWorkQueue().getWorkOrderList().add(selectedRecord);
-            JOptionPane.showMessageDialog(this, "Candidate approved for onboarding!");
-        } else {
-            JOptionPane.showMessageDialog(this, "Candidate approved locally (Onboarding Org not found).");
+ 
+        ContractorAssignment assignment = new ContractorAssignment(
+                contractor,
+                selectedRecord.getStaffingRequest().getStartDate()
+        );
+ 
+        selectedRecord.setReceiver(userAccount);
+        selectedRecord.linkAssignment(assignment); // also moves status to APPROVED
+        candidate.setCandidateStatus(CandidateStatus.PLACED);
+ 
+        // TODO: This is a demo-only stand-in for real account provisioning.
+        // Auto-generates a login so the newly hired contractor can actually
+        // sign in, since there's no real link between StaffingAgency.People.Contractor
+        // and Core.UserAccount/Core.Person yet.
+        String baseUsername = (candidate.getFirstName() + "."
+                + candidate.getLastName())
+                .toLowerCase()
+                .replaceAll("[^a-z0-9._-]", "");
+ 
+        String username = baseUsername;
+        int suffix = 1;
+        while (!network.getUserAccountDirectory().uniqueUsername(username)) {
+            username = baseUsername + suffix;
+            suffix++;
         }
+ 
+        String defaultPassword = "password";
+        Core.Person loginPerson = new Core.Person(candidate.getFullName());
+ 
+        network.getUserAccountDirectory().createUserAccount(
+                username,
+                defaultPassword,
+                loginPerson,
+                new Client.Roles.ContractorRole()
+        );
+ 
+        JOptionPane.showMessageDialog(
+                this,
+                "Candidate approved and converted to a contractor!\n\n"
+                + "Login created — username: " + username
+                + " / password: " + defaultPassword
+        );
         refreshTable();
         clearFormAndSelection();
     }//GEN-LAST:event_btnApproveActionPerformed
 
     private void btnRejectActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnRejectActionPerformed
         if (!validateSelection()) return;
-
-        selectedRecord.setStatus(WorkOrderStatus.REJECTED);
-        selectedRecord.setApprovalStatus("Rejected"); 
-
+ 
+        selectedRecord.setReceiver(userAccount);
+        selectedRecord.updateStatus(WorkOrderStatus.REJECTED);
+        selectedRecord.getCandidate().setCandidateStatus(CandidateStatus.REJECTED);
+ 
         JOptionPane.showMessageDialog(this, "Candidate Rejected.");
         refreshTable();
         clearFormAndSelection();
@@ -295,7 +345,7 @@ public class HiringManagerCandidateApprovalJPanel extends javax.swing.JPanel {
         int viewRow = tblData.getSelectedRow();
         if (viewRow >= 0) {
             int modelRow = tblData.convertRowIndexToModel(viewRow);
-            selectedRecord = (CandidateApprovalWorkOrder) tblData.getValueAt(modelRow, 0);
+            selectedRecord = (CandidateSubmission) tblData.getValueAt(modelRow, 0);
             populateForm(selectedRecord);
         }
     }//GEN-LAST:event_tblDataMouseClicked

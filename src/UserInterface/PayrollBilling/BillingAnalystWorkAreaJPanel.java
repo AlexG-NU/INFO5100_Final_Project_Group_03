@@ -5,6 +5,8 @@
 package UserInterface.PayrollBilling;
 
 import Business.Network;
+import Core.NetworkUtils;
+import Core.Organization;
 import Core.UserAccount;
 import PayrollBilling.ConfigurePayrollBilling;
 import PayrollBilling.PayrollBillingModule;
@@ -278,7 +280,17 @@ public class BillingAnalystWorkAreaJPanel extends javax.swing.JPanel {
 
         try {
             Invoice invoice = request.processBilling();
+            Organization hrOrg = NetworkUtils.findOrganizationByName(
+                    network,
+                    "Client Enterprise",
+                    "Human Resources Organization"
+            );
 
+            if (hrOrg != null) {
+                hrOrg.getWorkQueue().addWorkOrder(request);
+            } else {
+                showMessage("Invoice generated locally (HR Organization not found).");
+            }
             if (request.getBillingRecord() != null
                     && !module.getBillingRecords().contains(request.getBillingRecord())) {
                 module.getBillingRecords().add(request.getBillingRecord());

@@ -10,7 +10,9 @@ import Core.Organization;
 import Core.UserAccount;
 import Core.WorkOrder;
 import Core.WorkOrderStatus;
-import Core.WorkOrders.InvoiceWorkOrder; 
+import PayrollBilling.Enums.InvoiceStatus;
+import PayrollBilling.Record.Invoice;
+import PayrollBilling.Request.BillingRequest;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.table.DefaultTableModel;
@@ -23,7 +25,7 @@ public class HiringManagerInvoiceJPanel extends javax.swing.JPanel {
     private JPanel container;
     private UserAccount userAccount;
     private Network network;
-    private InvoiceWorkOrder selectedRecord;
+    private BillingRequest selectedRecord;
 
     private final String[] COLUMN_NAMES = {
         "Invoice ID", "Timecard ID", "Amount ($)", "Due Date", "Status"
@@ -37,39 +39,61 @@ public class HiringManagerInvoiceJPanel extends javax.swing.JPanel {
         refreshTable();
     }
 
-    private void refreshTable() {
+ private void refreshTable() {
         DefaultTableModel model = new DefaultTableModel(COLUMN_NAMES, 0) {
             @Override
             public boolean isCellEditable(int row, int col) { return false; }
         };
-        for (WorkOrder workOrder : userAccount.getWorkQueue().getWorkOrderList()) {
-            if (workOrder instanceof InvoiceWorkOrder) {
-                InvoiceWorkOrder invoice = (InvoiceWorkOrder) workOrder;
-                
-                if (invoice.getStatus() == WorkOrderStatus.PENDING) {
-                    model.addRow(new Object[]{
-                        invoice, // Or invoice.getWorkOrderId()
-                        invoice.getTimeCardID(), 
-                        invoice.getTotalAmount(),
-                        invoice.getDueDate(),
-                        invoice.getStatus()
-                    });
+ 
+        Organization hrOrg = NetworkUtils.findOrganizationByName(
+                network,
+                "Client Enterprise",
+                "Human Resources Organization"
+        );
+ 
+        if (hrOrg != null) {
+            for (WorkOrder workOrder : hrOrg.getWorkQueue().getWorkOrderList()) {
+                if (workOrder instanceof BillingRequest) {
+                    BillingRequest billingRequest = (BillingRequest) workOrder;
+                    Invoice invoice = billingRequest.getInvoice();
+ 
+                    if (invoice != null && invoice.getInvoiceStatus() == InvoiceStatus.SENT) {
+                        model.addRow(new Object[]{
+                            billingRequest, // Or billingRequest.getWorkOrderId()
+                            invoice.getTimeCardId(),
+                            invoice.getInvoiceTotal(),
+                            invoice.getDueDate(),
+                            reviewStatusLabel(billingRequest)
+                        });
+                    }
                 }
             }
         }
         tblData.setModel(model); 
     }
-
-    private void populateForm(InvoiceWorkOrder item) {
-        
-        //txtTimeCardID.setText(String.valueOf(item.getTimeCardID()));
-        txtBillingStart.setText(item.getBillingStartDate() != null ? item.getBillingStartDate().toString() : "");
-        txtBillingEnd.setText(item.getBillingEndDate() != null ? item.getBillingEndDate().toString() : "");
-        //txtDueDate.setText(item.getDueDate() != null ? item.getDueDate().toString() : "");
-        txtTotalHours.setText(String.valueOf(item.getTotalHours()));
-        txtTotalAmount.setText(String.format("%.2f", item.getTotalAmount()));
+ 
+    private WorkOrderStatus reviewStatusLabel(BillingRequest billingRequest) {
+        WorkOrderStatus status = billingRequest.getStatus();
+        if (status == WorkOrderStatus.APPROVED || status == WorkOrderStatus.REJECTED) {
+            return status;
+        }
+        return WorkOrderStatus.PENDING;
     }
-
+ 
+ 
+    private void populateForm(BillingRequest item) {
+        Invoice invoice = item.getInvoice();
+        if (invoice == null) {
+            clearFormAndSelection();
+            return;
+        }
+ 
+        txtBillingStart.setText(invoice.getBillingStartDate() != null ? invoice.getBillingStartDate().toString() : "");
+        txtBillingEnd.setText(invoice.getBillingEndDate() != null ? invoice.getBillingEndDate().toString() : "");
+        txtTotalHours.setText(String.valueOf(invoice.getTotalHours()));
+        txtTotalAmount.setText(String.format("%.2f", invoice.getInvoiceTotal()));
+    }
+ 
     private boolean validateSelection() {
         if (selectedRecord == null) {
             JOptionPane.showMessageDialog(this, "Please select an invoice to review.", "Warning", JOptionPane.WARNING_MESSAGE);
@@ -87,7 +111,7 @@ public class HiringManagerInvoiceJPanel extends javax.swing.JPanel {
         selectedRecord = null;
         tblData.clearSelection();
     }
-
+ 
 
 
     /**
@@ -162,7 +186,7 @@ public class HiringManagerInvoiceJPanel extends javax.swing.JPanel {
         });
 
         jLabel6.setFont(new java.awt.Font("Segoe UI", 0, 24)); // NOI18N
-        jLabel6.setText("Timecards");
+        jLabel6.setText("Invoices");
 
         jLabel1.setText("Billing Start Date:");
 
@@ -264,8 +288,8 @@ public class HiringManagerInvoiceJPanel extends javax.swing.JPanel {
 
         Organization billingOrg = NetworkUtils.findOrganizationByName(
             network, 
-            "PayrollBilling", 
-            "AccountsPayableOrganization"
+            "Payroll and Billing Enterprise", 
+            "ClientBilling"
         );
 
         if (billingOrg != null) {
@@ -296,7 +320,7 @@ public class HiringManagerInvoiceJPanel extends javax.swing.JPanel {
         int viewRow = tblData.getSelectedRow();
         if (viewRow >= 0) {
             int modelRow = tblData.convertRowIndexToModel(viewRow);
-            selectedRecord = (InvoiceWorkOrder) tblData.getValueAt(modelRow, 0);
+            selectedRecord = (BillingRequest) tblData.getValueAt(modelRow, 0);
             populateForm(selectedRecord);
         }
     }//GEN-LAST:event_tblDataMouseClicked

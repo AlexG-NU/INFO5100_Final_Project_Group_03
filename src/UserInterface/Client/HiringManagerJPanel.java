@@ -117,6 +117,11 @@ public class HiringManagerJPanel extends javax.swing.JPanel {
         btnRefresh.setText("Refresh");
 
         btnReports.setText("Reports");
+        btnReports.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnReportsActionPerformed(evt);
+            }
+        });
 
         tblMain.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
@@ -228,6 +233,13 @@ public class HiringManagerJPanel extends javax.swing.JPanel {
         java.awt.CardLayout layout = (java.awt.CardLayout) userProcessContainer.getLayout();
         layout.next(userProcessContainer);
     }//GEN-LAST:event_btnManageRecordsActionPerformed
+
+    private void btnReportsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnReportsActionPerformed
+        HiringManagerReportsJPanel panel = new HiringManagerReportsJPanel(userProcessContainer, account, network);
+        userProcessContainer.add("HiringManagerReportsJPanel", panel);
+        java.awt.CardLayout layout = (java.awt.CardLayout) userProcessContainer.getLayout();
+        layout.next(userProcessContainer);
+    }//GEN-LAST:event_btnReportsActionPerformed
 
     private void populateRequestTable(String requestType) {
         javax.swing.table.DefaultTableModel model =

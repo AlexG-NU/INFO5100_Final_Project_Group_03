@@ -5,6 +5,7 @@ import ComplianceEnterprise.Role.ComplianceUser;
 import StaffingAgency.Request.CredentialVerificationRequest;
 import java.util.ArrayList;
 import java.util.List;
+import java.time.LocalDate;
 
 /**
  *
@@ -16,12 +17,14 @@ public class ComplianceDirectory {
     private final ArrayList<CredentialRecord> credentialList;
     private final ArrayList<VerificationReview> reviewList;
     private final ArrayList<CredentialVerificationTask> credentialTaskList;
+    private final SimulatedCredentialRegistry credentialRegistry;
 
     public ComplianceDirectory() {
         userList = new ArrayList<>();
         credentialList = new ArrayList<>();
         reviewList = new ArrayList<>();
         credentialTaskList = new ArrayList<>();
+        credentialRegistry = new SimulatedCredentialRegistry();
     }
 
     public List<ComplianceUser> getUserList() {
@@ -38,6 +41,10 @@ public class ComplianceDirectory {
 
     public List<CredentialVerificationTask> getCredentialTaskList() {
         return credentialTaskList;
+    }
+
+    public SimulatedCredentialRegistry getCredentialRegistry() {
+        return credentialRegistry;
     }
 
     public void addUser(ComplianceUser user) {
@@ -136,19 +143,44 @@ public class ComplianceDirectory {
                     "Credential verification was already requested.");
         }
 
+        if (review.getRequiredCredentialType().isEmpty()) {
+            throw new IllegalStateException(
+                    "Select the required credential before sending the task.");
+        }
+
         CredentialRecord matchingCredential = null;
         for (CredentialRecord credential : credentialList) {
             if (credential.getContractor()
                     == review.getRequest().getAssignment().getContractor()
                     && credential.getCredentialType().equalsIgnoreCase(
-                            review.getRequest().getVerificationType())) {
+                            review.getRequiredCredentialType())) {
                 matchingCredential = credential;
                 break;
             }
         }
 
-        CredentialVerificationTask task =
-                new CredentialVerificationTask(review, matchingCredential);
+        String contractorName = review.getRequest().getAssignment()
+                .getContractor().getFullName();
+        String credentialType = review.getRequiredCredentialType();
+        RegistryCredentialRecord registryRecord = credentialRegistry.find(
+                contractorName, credentialType);
+
+        // New live-demo contractors receive a sample active registry record.
+        // Seeded missing examples remain missing for testing that outcome.
+        if (registryRecord == null
+                && credentialRegistry.shouldAutoGenerate(
+                        contractorName, credentialType)) {
+            registryRecord = new RegistryCredentialRecord(
+                    contractorName,
+                    credentialType,
+                    "SIM-" + review.getRequest().getVerificationRequestId(),
+                    "Sample Credential Board",
+                    LocalDate.now().plusYears(1),
+                    ComplianceEnterprise.Enums.CredentialStatus.VERIFIED);
+            credentialRegistry.addRecord(registryRecord);
+        }
+        CredentialVerificationTask task = new CredentialVerificationTask(
+                review, matchingCredential, registryRecord);
         credentialTaskList.add(task);
         review.setCredentialTask(task);
         return task;

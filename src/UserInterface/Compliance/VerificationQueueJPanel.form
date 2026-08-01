@@ -17,7 +17,7 @@
       <SubComponents>
         <Component class="javax.swing.JLabel" name="lblDecision"><Properties><Property name="text" type="java.lang.String" value="Decision:"/></Properties></Component>
         <Component class="javax.swing.JComboBox" name="cmbDecision"/>
-        <Component class="javax.swing.JLabel" name="lblFindings"><Properties><Property name="text" type="java.lang.String" value="Findings:"/></Properties></Component>
+        <Component class="javax.swing.JLabel" name="lblFindings"><Properties><Property name="text" type="java.lang.String" value="Instructions / Final Findings:"/></Properties></Component>
         <Container class="javax.swing.JScrollPane" name="jScrollPane2"><Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/><SubComponents><Component class="javax.swing.JTextArea" name="txtFindings"/></SubComponents></Container>
         <Component class="javax.swing.JButton" name="btnAssignToMe"><Properties><Property name="text" type="java.lang.String" value="Assign to Me"/></Properties><Events><EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnAssignToMeActionPerformed"/></Events></Component>
         <Component class="javax.swing.JButton" name="btnCompleteReview"><Properties><Property name="text" type="java.lang.String" value="Complete Review"/></Properties><Events><EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnCompleteReviewActionPerformed"/></Events></Component>

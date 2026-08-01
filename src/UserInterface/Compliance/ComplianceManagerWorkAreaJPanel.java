@@ -67,7 +67,7 @@ public class ComplianceManagerWorkAreaJPanel extends javax.swing.JPanel {
 
     private void configureTables() {
         ComplianceTableUI.configure(tblRequests,
-                90, 100, 100, 170, 210, 150, 190, 150);
+                90, 180, 220, 190, 160);
         ComplianceTableUI.configure(tblWorkload,
                 100, 160, 130, 85, 90, 90);
         lblNextStep.setVisible(false);
@@ -156,19 +156,15 @@ public class ComplianceManagerWorkAreaJPanel extends javax.swing.JPanel {
             lblCaseStatus.setText("Selected case: none");
             return;
         }
-        lblCaseStatus.setText("Current step: " + tblRequests.getValueAt(row, 4)
-                + "  |  Waiting on: " + tblRequests.getValueAt(row, 5));
+        lblCaseStatus.setText("Current status: " + tblRequests.getValueAt(row, 2));
     }
 
     private void populateTable() {
         DefaultTableModel model = (DefaultTableModel) tblRequests.getModel(); model.setRowCount(0);
         for (VerificationReview review : complianceDirectory.getReviewList()) {
             model.addRow(new Object[]{review.getRequest().getVerificationRequestId(),
-                review.getRequest().getAssignment().getAssignmentId(),
-                review.getRequest().getAssignment().getContractor().getContractorId(),
                 review.getRequest().getAssignment().getContractor().getFullName(),
-                review.getWorkflowStatus(), review.getWaitingOn(),
-                review.getRequest().getVerificationType(),
+                review.getWorkflowStatus(), review.getRequest().getVerificationType(),
                 review.getAssignedAnalyst() == null
                         ? "Unassigned" : review.getAssignedAnalyst().getName()});
         }
@@ -241,12 +237,12 @@ public class ComplianceManagerWorkAreaJPanel extends javax.swing.JPanel {
         lblTitle.setFont(new java.awt.Font("Myanmar Sangam MN", 3, 18)); lblTitle.setText("Compliance Manager Work Area");
         lblOrganization.setFont(new java.awt.Font("Myanmar MN", 0, 13));
         lblOrganization.setForeground(new java.awt.Color(102, 102, 102));
-        lblOrganization.setText("Compliance Enterprise - Compliance Oversight"); btnView.setText("View Request Details"); btnQueue.setText("Show All Requests"); btnManage.setText("Show Needs Attention"); btnReports.setText("Compliance Report");
+        lblOrganization.setText("Compliance Enterprise - Compliance Oversight"); btnView.setText("View Request Details"); btnQueue.setText("Show All Requests"); btnManage.setText("Show Unassigned Requests"); btnReports.setText("Compliance Report");
         lblNextStep.setFont(new java.awt.Font("Segoe UI", 1, 13));
         lblCaseStatus.setForeground(new java.awt.Color(0, 102, 153));
         btnBack.setText("Back");
         btnRefresh.setText("Refresh");
-        tblRequests.setModel(new DefaultTableModel(new Object[][]{}, new String[]{"Request ID", "Assignment ID", "Contractor ID", "Contractor", "Workflow Status", "Waiting On", "Verification Type", "Assigned Analyst"}) { public boolean isCellEditable(int r, int c) { return false; }});
+        tblRequests.setModel(new DefaultTableModel(new Object[][]{}, new String[]{"Request ID", "Contractor", "Status", "Required Credential", "Assigned Analyst"}) { public boolean isCellEditable(int r, int c) { return false; }});
         tblRequests.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION); jScrollPane1.setViewportView(tblRequests);
         lblAssign.setText("Assign selected request to:");
         btnAssign.setText("Assign / Reassign");
@@ -290,25 +286,21 @@ public class ComplianceManagerWorkAreaJPanel extends javax.swing.JPanel {
         model.setRowCount(0);
         for (VerificationReview review : complianceDirectory.getReviewList()) {
             if (review.getAssignedAnalyst() == null
-                    || review.getDecision() == ComplianceDecision.REJECTED) {
+                    && review.getDecision() == ComplianceDecision.PENDING) {
                 model.addRow(new Object[]{
                     review.getRequest().getVerificationRequestId(),
-                    review.getRequest().getAssignment().getAssignmentId(),
-                    review.getRequest().getAssignment().getContractor().getContractorId(),
                     review.getRequest().getAssignment().getContractor().getFullName(),
                     review.getWorkflowStatus(),
-                    review.getWaitingOn(),
                     review.getRequest().getVerificationType(),
-                    review.getAssignedAnalyst() == null
-                            ? "Unassigned" : review.getAssignedAnalyst().getName()
+                    "Unassigned"
                 });
             }
         }
         tblRequests.clearSelection();
         if (model.getRowCount() == 0) {
             JOptionPane.showMessageDialog(this,
-                    "There are no unassigned or rejected requests.",
-                    "No Requests Need Attention",
+                    "There are no requests waiting for an analyst assignment.",
+                    "No Unassigned Requests",
                     JOptionPane.INFORMATION_MESSAGE);
         }
     }
@@ -353,8 +345,7 @@ public class ComplianceManagerWorkAreaJPanel extends javax.swing.JPanel {
                     review.assignAnalyst(analyst);
                     refreshManagerData();
                     JOptionPane.showMessageDialog(this,
-                            "Assigned to " + analyst.getName()
-                            + ". The case is now available in the analyst's active queue.");
+                            "Assigned to " + analyst.getName() + ".");
                 } catch (IllegalArgumentException
                         | IllegalStateException ex) {
                     JOptionPane.showMessageDialog(this,

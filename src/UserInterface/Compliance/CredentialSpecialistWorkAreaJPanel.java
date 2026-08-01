@@ -3,6 +3,7 @@ package UserInterface.Compliance;
 import ComplianceEnterprise.Model.ComplianceDirectory;
 import ComplianceEnterprise.Model.CredentialRecord;
 import ComplianceEnterprise.Model.CredentialVerificationTask;
+import ComplianceEnterprise.Model.RegistryCredentialRecord;
 import ComplianceEnterprise.Enums.CredentialStatus;
 import ComplianceEnterprise.Role.CredentialSpecialist;
 import StaffingAgency.People.Contractor;
@@ -22,6 +23,7 @@ public class CredentialSpecialistWorkAreaJPanel extends javax.swing.JPanel {
     private final List<Contractor> contractorList;
     private final javax.swing.JPanel container;
     private final javax.swing.JPanel previousPanel;
+    private boolean showingCompleted;
 
     public CredentialSpecialistWorkAreaJPanel(ComplianceDirectory complianceDirectory,
             CredentialSpecialist specialist, List<Contractor> contractorList) {
@@ -40,20 +42,33 @@ public class CredentialSpecialistWorkAreaJPanel extends javax.swing.JPanel {
         btnBack.setVisible(previousPanel != null);
         configureTable();
         applyResponsiveLayout();
-        populateTable();
+        populatePendingTasks();
     }
 
     private void configureTable() {
         ComplianceTableUI.configure(tblRequests,
-                0, 85, 90, 100, 170, 190, 150, 120, 150, 120, 150, 150);
-        lblNextStep.setVisible(false);
+                0, 90, 180, 190, 120, 120, 260);
+        lblNextStep.setVisible(true);
+        lblNextStep.setText("Purpose: check the requested credential evidence and return a result to the Compliance Analyst.");
         lblCaseStatus.setText("Selected task: none");
         tblRequests.getSelectionModel().addListSelectionListener(event -> {
             if (!event.getValueIsAdjusting()) {
                 int row = tblRequests.getSelectedRow();
                 lblCaseStatus.setText(row < 0 ? "Selected task: none"
-                        : "Current result: " + tblRequests.getValueAt(row, 9)
-                        + "  |  Waiting on: " + tblRequests.getValueAt(row, 10));
+                        : "Current result: " + tblRequests.getValueAt(row, 5));
+                if (row < 0) {
+                    lblNextStep.setText("Select a pending task, view the evidence, then complete and return the result.");
+                    btnView.setEnabled(false);
+                    btnExpiring.setEnabled(false);
+                } else {
+                    CredentialVerificationTask selected =
+                            (CredentialVerificationTask) tblRequests.getValueAt(row, 0);
+                    lblNextStep.setText(selected.isComplete()
+                            ? "This result was already returned to the Compliance Analyst."
+                            : "Review the credential and submit the verification result.");
+                    btnView.setEnabled(true);
+                    btnExpiring.setEnabled(!selected.isComplete());
+                }
             }
         });
     }
@@ -67,6 +82,8 @@ public class CredentialSpecialistWorkAreaJPanel extends javax.swing.JPanel {
         header.add(javax.swing.Box.createVerticalStrut(4));
         header.add(lblOrganization);
         header.add(javax.swing.Box.createVerticalStrut(8));
+        header.add(lblNextStep);
+        header.add(javax.swing.Box.createVerticalStrut(4));
         header.add(lblCaseStatus);
         header.add(javax.swing.Box.createVerticalStrut(10));
         header.add(managerStyleGrid(
@@ -100,23 +117,42 @@ public class CredentialSpecialistWorkAreaJPanel extends javax.swing.JPanel {
         return panel;
     }
 
-    private void populateTable() {
+    private void populatePendingTasks() {
+        showingCompleted = false;
+        populateTable(false);
+        lblNextStep.setText("Select a pending task, view the evidence, then complete and return the result.");
+        lblCaseStatus.setText("Pending tasks: " + tblRequests.getRowCount());
+        btnView.setEnabled(false);
+        btnExpiring.setEnabled(false);
+    }
+
+    private void populateCompletedTasks() {
+        showingCompleted = true;
+        populateTable(true);
+        lblNextStep.setText("Completed tasks are view-only. Select one to review the evidence and result.");
+        lblCaseStatus.setText("Completed tasks: " + tblRequests.getRowCount());
+        btnView.setEnabled(false);
+        btnExpiring.setEnabled(false);
+    }
+
+    private void populateTable(boolean completedOnly) {
         DefaultTableModel model = (DefaultTableModel) tblRequests.getModel();
         model.setRowCount(0);
         for (CredentialVerificationTask task
                 : complianceDirectory.getCredentialTaskList()) {
-            CredentialRecord credential = task.getCredential();
-            model.addRow(new Object[]{task, task.getTaskId(),
+            if (task.isComplete() != completedOnly) {
+                continue;
+            }
+            RegistryCredentialRecord registryRecord = task.getRegistryRecord();
+            String analystInstructions = task.getReview().getFindings();
+            model.addRow(new Object[]{task,
                 task.getReview().getRequest().getVerificationRequestId(),
-                task.getReview().getRequest().getAssignment().getAssignmentId(),
                 task.getReview().getRequest().getAssignment().getContractor().getFullName(),
-                task.getReview().getRequest().getVerificationType(),
-                credential == null ? "Not Provided" : credential.getDocumentNumber(),
-                credential == null ? "" : credential.getExpirationDate(),
-                task.getReview().getRequestedByText(),
+                task.getReview().getRequiredCredentialType(),
+                registryRecord == null ? "Not found" : registryRecord.getExpirationDate(),
                 task.getResult(),
-                task.getReview().getWaitingOn(),
-                task.getReview().getCompletedByText()});
+                analystInstructions == null || analystInstructions.isBlank()
+                        ? "No special instructions" : analystInstructions});
         }
     }
 
@@ -158,22 +194,22 @@ public class CredentialSpecialistWorkAreaJPanel extends javax.swing.JPanel {
         lblNextStep.setFont(new java.awt.Font("Segoe UI", 1, 13));
         lblCaseStatus.setForeground(new java.awt.Color(0, 102, 153));
 
-        btnView.setText("View Credential Evidence");
+        btnView.setText("View Registry Result");
 
-        btnExpiring.setText("Record Verification Result");
+        btnExpiring.setText("Check Registry and Submit Result");
 
-        btnManage.setText("Manage Credential Records");
+        btnManage.setText("Pending Tasks");
 
         btnBack.setText("Back");
 
         btnRefresh.setText("Refresh");
 
-        btnReports.setText("Compliance Report");
+        btnReports.setText("Completed Tasks (View Only)");
 
         tblRequests.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {},
             new String [] {
-                "Task", "Task ID", "Request ID", "Assignment ID", "Contractor", "Required Credential", "Document Number", "Expiration Date", "Requested By", "Result", "Waiting On", "Completed By"
+                "Task", "Request ID", "Contractor", "Required Credential", "Registry Expiration", "Result", "Analyst Instructions"
             }
         ));
         tblRequests.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
@@ -258,18 +294,15 @@ public class CredentialSpecialistWorkAreaJPanel extends javax.swing.JPanel {
     private void btnViewActionPerformed(java.awt.event.ActionEvent evt) { viewCredential(); }
     private void btnExpiringActionPerformed(java.awt.event.ActionEvent evt) { processSelectedTask(); }
     private void btnManageActionPerformed(java.awt.event.ActionEvent evt) {
-        javax.swing.JPanel nextPanel = new CredentialManagementJPanel(container, complianceDirectory, contractorList, this);
-        if (container == null) { JOptionPane.showMessageDialog(this, nextPanel, "Credential Management", JOptionPane.PLAIN_MESSAGE); return; }
-        container.removeAll(); container.setLayout(new java.awt.CardLayout()); container.add(nextPanel, "CredentialManagement");
-        ((java.awt.CardLayout) container.getLayout()).show(container, "CredentialManagement"); container.revalidate(); container.repaint();
+        populatePendingTasks();
     }
     private void btnReportsActionPerformed(java.awt.event.ActionEvent evt) {
-        javax.swing.JPanel nextPanel = new ComplianceReportJPanel(container, complianceDirectory, this);
-        if (container == null) { JOptionPane.showMessageDialog(this, nextPanel, "Compliance Report", JOptionPane.PLAIN_MESSAGE); return; }
-        container.removeAll(); container.setLayout(new java.awt.CardLayout()); container.add(nextPanel, "ComplianceReport");
-        ((java.awt.CardLayout) container.getLayout()).show(container, "ComplianceReport"); container.revalidate(); container.repaint();
+        populateCompletedTasks();
     }
-    private void btnRefreshActionPerformed(java.awt.event.ActionEvent evt) { populateTable(); tblRequests.clearSelection(); }
+    private void btnRefreshActionPerformed(java.awt.event.ActionEvent evt) {
+        if (showingCompleted) populateCompletedTasks(); else populatePendingTasks();
+        tblRequests.clearSelection();
+    }
     private void btnBackActionPerformed(java.awt.event.ActionEvent evt) {
         if (container != null && previousPanel != null) {
             container.removeAll(); container.setLayout(new java.awt.CardLayout()); container.add(previousPanel, "PreviousPanel");
@@ -280,17 +313,27 @@ public class CredentialSpecialistWorkAreaJPanel extends javax.swing.JPanel {
     private void viewCredential() {
         CredentialVerificationTask task = getSelectedTask();
         if (task == null) return;
-        CredentialRecord credential = task.getCredential();
-        if (credential == null) {
-            JOptionPane.showMessageDialog(this,
-                    "No credential document was provided for this task.",
-                    "Credential Missing", JOptionPane.WARNING_MESSAGE);
-            return;
+        RegistryCredentialRecord record = task.getRegistryRecord();
+        String message;
+        if (record == null) {
+            message = "Search name: "
+                    + task.getReview().getRequest().getAssignment()
+                            .getContractor().getFullName()
+                    + "\nCredential requested: "
+                    + task.getReview().getRequiredCredentialType()
+                    + "\n\nNo matching record was found in the simulated registry."
+                    + "\nResult: Record Not Found";
+        } else {
+            message = "Contractor: " + record.getContractorName()
+                    + "\nCredential: " + record.getCredentialType()
+                    + "\nCredential number: " + record.getCredentialNumber()
+                    + "\nIssuing organization: " + record.getIssuingOrganization()
+                    + "\nExpiration date: " + record.getExpirationDate()
+                    + "\nRegistry status: " + record.getStatus()
+                    + "\n\nSystem result: " + task.getRegistryResult();
         }
-        javax.swing.JPanel nextPanel = new CredentialDetailsJPanel(container, credential, this);
-        if (container == null) { JOptionPane.showMessageDialog(this, nextPanel, "Credential Details", JOptionPane.PLAIN_MESSAGE); return; }
-        container.removeAll(); container.setLayout(new java.awt.CardLayout()); container.add(nextPanel, "CredentialDetails");
-        ((java.awt.CardLayout) container.getLayout()).show(container, "CredentialDetails"); container.revalidate(); container.repaint();
+        JOptionPane.showMessageDialog(this, message,
+                "Simulated Registry Result", JOptionPane.INFORMATION_MESSAGE);
     }
 
     private void processSelectedTask() {
@@ -305,26 +348,39 @@ public class CredentialSpecialistWorkAreaJPanel extends javax.swing.JPanel {
             return;
         }
 
-        javax.swing.JComboBox<CredentialStatus> resultCombo =
-                new javax.swing.JComboBox<>(new CredentialStatus[]{
-                    CredentialStatus.VERIFIED, CredentialStatus.MISSING,
-                    CredentialStatus.EXPIRED, CredentialStatus.REJECTED
-                });
-        if (task.getCredential() == null) {
-            resultCombo.setSelectedItem(CredentialStatus.MISSING);
-        } else if (task.getCredential().getExpirationDate().isBefore(LocalDate.now())) {
-            resultCombo.setSelectedItem(CredentialStatus.EXPIRED);
-        }
         javax.swing.JTextArea notesArea = new javax.swing.JTextArea(5, 34);
         notesArea.setLineWrap(true);
         notesArea.setWrapStyleWord(true);
+        javax.swing.JTextArea instructionsArea = new javax.swing.JTextArea(
+                task.getReview().getFindings().isBlank()
+                        ? "No special instructions were provided."
+                        : task.getReview().getFindings(), 3, 34);
+        instructionsArea.setEditable(false);
+        instructionsArea.setLineWrap(true);
+        instructionsArea.setWrapStyleWord(true);
+        String analystName = task.getReview().getRequestedByText();
+        String instructionsTitle = analystName == null || analystName.isBlank()
+                ? "Instructions from Compliance Analyst"
+                : "Instructions from Compliance Analyst: " + analystName;
+        javax.swing.JScrollPane instructionsScrollPane =
+                new javax.swing.JScrollPane(instructionsArea);
+        instructionsScrollPane.setBorder(
+                javax.swing.BorderFactory.createTitledBorder(instructionsTitle));
+        javax.swing.JScrollPane notesScrollPane =
+                new javax.swing.JScrollPane(notesArea);
+        notesScrollPane.setBorder(javax.swing.BorderFactory.createTitledBorder(
+                "Credential Specialist Notes"));
         javax.swing.JPanel reviewPanel = new javax.swing.JPanel(
                 new java.awt.BorderLayout(8, 8));
-        reviewPanel.add(resultCombo, java.awt.BorderLayout.NORTH);
-        reviewPanel.add(new javax.swing.JScrollPane(notesArea),
+        reviewPanel.add(instructionsScrollPane,
+                java.awt.BorderLayout.SOUTH);
+        javax.swing.JLabel resultLabel = new javax.swing.JLabel(
+                "System result: " + task.getRegistryResult());
+        reviewPanel.add(resultLabel, java.awt.BorderLayout.NORTH);
+        reviewPanel.add(notesScrollPane,
                 java.awt.BorderLayout.CENTER);
         reviewPanel.setBorder(javax.swing.BorderFactory.createTitledBorder(
-                "Evidence Notes (10-500 characters; describe what you checked)"));
+                "Verification Result and Notes"));
 
         int answer = JOptionPane.showConfirmDialog(this, reviewPanel,
                 "Process Credential Task " + task.getTaskId(),
@@ -333,12 +389,16 @@ public class CredentialSpecialistWorkAreaJPanel extends javax.swing.JPanel {
             return;
         }
         try {
-            task.completeTask(specialist,
-                    (CredentialStatus) resultCombo.getSelectedItem(),
-                    notesArea.getText());
-            populateTable();
-            JOptionPane.showMessageDialog(this,
-                    "Verification returned to the Compliance Analyst. The Analyst must make the final case decision.");
+            task.completeFromRegistry(specialist, notesArea.getText());
+            populatePendingTasks();
+            if (task.getResult() == CredentialStatus.VERIFIED) {
+                JOptionPane.showMessageDialog(this, "Verification submitted.");
+            } else if (task.getResult() == CredentialStatus.RECORD_NOT_FOUND) {
+                JOptionPane.showMessageDialog(this, "Result submitted: Record Not Found.");
+            } else {
+                JOptionPane.showMessageDialog(this,
+                        "Result submitted: " + task.getResult() + ".");
+            }
         } catch (IllegalArgumentException | IllegalStateException ex) {
             JOptionPane.showMessageDialog(this, ex.getMessage(),
                     "Check Verification Result", JOptionPane.ERROR_MESSAGE);

@@ -27,10 +27,10 @@ public class ProjectSupervisorJPanel extends javax.swing.JPanel {
         this.userProcessContainer = userProcessContainer;
         this.account = account;
         this.network = network;
-        btnViewRequests.setEnabled(true);
+        //btnViewRequests.setEnabled(true);
         btnBack.setVisible(false);
-        btnReports.setEnabled(true);
-        btnReports.addActionListener(event -> showSupervisorReport());
+        //btnReports.setEnabled(true);
+        //btnReports.addActionListener(event -> showSupervisorReport());
         populateContractorTable();
     }
     public void setWorkAreaHeader(String title, String subtitle) {
@@ -39,10 +39,10 @@ public class ProjectSupervisorJPanel extends javax.swing.JPanel {
     }
 
     public void setButtonLabels(String viewText, String primaryText, String manageText, String reportsText) {
-        btnViewRequests.setText(viewText);
+        //btnViewRequests.setText(viewText);
         btnPrimaryAction.setText(primaryText);
         btnManageRecords.setText(manageText);
-        btnReports.setText(reportsText);
+        //btnReports.setText(reportsText);
     }
 
     public void clearTable() {
@@ -92,12 +92,10 @@ public class ProjectSupervisorJPanel extends javax.swing.JPanel {
 
         lblTitle = new javax.swing.JLabel();
         lblSubtitle = new javax.swing.JLabel();
-        btnViewRequests = new javax.swing.JButton();
         btnManageRecords = new javax.swing.JButton();
         btnPrimaryAction = new javax.swing.JButton();
         btnBack = new javax.swing.JButton();
         btnRefresh = new javax.swing.JButton();
-        btnReports = new javax.swing.JButton();
         jScrollPane1 = new javax.swing.JScrollPane();
         tblMain = new javax.swing.JTable();
 
@@ -109,14 +107,6 @@ public class ProjectSupervisorJPanel extends javax.swing.JPanel {
         lblSubtitle.setFont(new java.awt.Font("Myanmar MN", 0, 13)); // NOI18N
         lblSubtitle.setForeground(new java.awt.Color(102, 102, 102));
         lblSubtitle.setText("Client Enterprise - Operations Organization");
-
-        btnViewRequests.setText("View Contractors");
-        btnViewRequests.setEnabled(false);
-        btnViewRequests.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnViewRequestsActionPerformed(evt);
-            }
-        });
 
         btnManageRecords.setText("Manage Tasks");
         btnManageRecords.addActionListener(new java.awt.event.ActionListener() {
@@ -142,9 +132,6 @@ public class ProjectSupervisorJPanel extends javax.swing.JPanel {
             }
         });
 
-        btnReports.setText("Reports");
-        btnReports.setEnabled(false);
-
         tblMain.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
                 {null, null, null, null, null, null},
@@ -164,24 +151,19 @@ public class ProjectSupervisorJPanel extends javax.swing.JPanel {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(layout.createSequentialGroup()
-                                .addGap(98, 98, 98)
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                                    .addComponent(lblSubtitle)
-                                    .addGroup(layout.createSequentialGroup()
-                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                            .addComponent(btnViewRequests)
-                                            .addComponent(btnManageRecords))
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                                            .addComponent(btnPrimaryAction)
-                                            .addComponent(btnReports)))))
-                            .addGroup(layout.createSequentialGroup()
-                                .addGap(21, 21, 21)
-                                .addComponent(lblTitle)))
-                        .addGap(0, 0, Short.MAX_VALUE))
+                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addGroup(layout.createSequentialGroup()
+                            .addGap(98, 98, 98)
+                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                                .addComponent(lblSubtitle)
+                                .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
+                                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                                        .addComponent(btnManageRecords, javax.swing.GroupLayout.Alignment.LEADING)
+                                        .addComponent(btnPrimaryAction, javax.swing.GroupLayout.Alignment.LEADING))
+                                    .addGap(0, 0, Short.MAX_VALUE))))
+                        .addGroup(layout.createSequentialGroup()
+                            .addGap(21, 21, 21)
+                            .addComponent(lblTitle)))
                     .addGroup(layout.createSequentialGroup()
                         .addContainerGap()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -201,13 +183,9 @@ public class ProjectSupervisorJPanel extends javax.swing.JPanel {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(lblSubtitle)
                 .addGap(42, 42, 42)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(btnViewRequests)
-                    .addComponent(btnPrimaryAction))
+                .addComponent(btnPrimaryAction)
                 .addGap(45, 45, 45)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(btnReports)
-                    .addComponent(btnManageRecords))
+                .addComponent(btnManageRecords)
                 .addGap(37, 37, 37)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 122, Short.MAX_VALUE)
                 .addGap(18, 18, 18)
@@ -217,11 +195,6 @@ public class ProjectSupervisorJPanel extends javax.swing.JPanel {
                 .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
-
-    private void btnViewRequestsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnViewRequestsActionPerformed
-        populateContractorTable();
-        tblMain.clearSelection();
-    }//GEN-LAST:event_btnViewRequestsActionPerformed
 
     private void btnManageRecordsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnManageRecordsActionPerformed
         ProjectSupervisorTasksJPanel panel = new ProjectSupervisorTasksJPanel(userProcessContainer, account, network);
@@ -259,8 +232,6 @@ public class ProjectSupervisorJPanel extends javax.swing.JPanel {
     private javax.swing.JButton btnManageRecords;
     private javax.swing.JButton btnPrimaryAction;
     private javax.swing.JButton btnRefresh;
-    private javax.swing.JButton btnReports;
-    private javax.swing.JButton btnViewRequests;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JLabel lblSubtitle;
     private javax.swing.JLabel lblTitle;

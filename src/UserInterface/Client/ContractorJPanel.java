@@ -27,6 +27,7 @@ public class ContractorJPanel extends javax.swing.JPanel {
         btnBack.setVisible(false);
         btnRefresh.setVisible(false);
         btnReports.setVisible(false);
+        txtSupervisor.setText(account.getSupervisor().getUsername());
     }
     public void setWorkAreaHeader(String title, String subtitle) {
         lblTitle.setText(title);
@@ -41,9 +42,9 @@ public class ContractorJPanel extends javax.swing.JPanel {
     }
 
     public void clearTable() {
-        javax.swing.table.DefaultTableModel model
-                = (javax.swing.table.DefaultTableModel) tblMain.getModel();
-        model.setRowCount(0);
+        //javax.swing.table.DefaultTableModel model
+                //= (javax.swing.table.DefaultTableModel) tblMain.getModel();
+        //model.setRowCount(0);
     }
 
     public void showMessage(String message) {
@@ -71,8 +72,8 @@ public class ContractorJPanel extends javax.swing.JPanel {
         btnBack = new javax.swing.JButton();
         btnRefresh = new javax.swing.JButton();
         btnReports = new javax.swing.JButton();
-        jScrollPane1 = new javax.swing.JScrollPane();
-        tblMain = new javax.swing.JTable();
+        jLabel1 = new javax.swing.JLabel();
+        txtSupervisor = new javax.swing.JTextField();
 
         setBackground(new java.awt.Color(255, 255, 204));
 
@@ -109,19 +110,9 @@ public class ContractorJPanel extends javax.swing.JPanel {
         btnReports.setText("Reports");
         btnReports.setEnabled(false);
 
-        tblMain.setModel(new javax.swing.table.DefaultTableModel(
-            new Object [][] {
-                {null, null, null, null, null, null},
-                {null, null, null, null, null, null},
-                {null, null, null, null, null, null},
-                {null, null, null, null, null, null}
-            },
-            new String [] {
-                "ID", "Type", "Status", "Sender", "Receiver", "Date"
-            }
-        ));
-        tblMain.setEnabled(false);
-        jScrollPane1.setViewportView(tblMain);
+        jLabel1.setText("Supervisor:");
+
+        txtSupervisor.setEnabled(false);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -148,15 +139,17 @@ public class ContractorJPanel extends javax.swing.JPanel {
                                 .addComponent(lblTitle)))
                         .addGap(0, 0, Short.MAX_VALUE))
                     .addGroup(layout.createSequentialGroup()
-                        .addContainerGap()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(layout.createSequentialGroup()
-                                .addGap(0, 0, Short.MAX_VALUE)
-                                .addComponent(btnBack, javax.swing.GroupLayout.PREFERRED_SIZE, 295, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(18, 18, 18)
-                                .addComponent(btnRefresh, javax.swing.GroupLayout.PREFERRED_SIZE, 295, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addComponent(jScrollPane1))))
+                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(btnBack, javax.swing.GroupLayout.PREFERRED_SIZE, 295, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(18, 18, 18)
+                        .addComponent(btnRefresh, javax.swing.GroupLayout.PREFERRED_SIZE, 295, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
+            .addGroup(layout.createSequentialGroup()
+                .addGap(131, 131, 131)
+                .addComponent(jLabel1)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(txtSupervisor, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -173,9 +166,11 @@ public class ContractorJPanel extends javax.swing.JPanel {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(btnReports)
                     .addComponent(btnManageRecords))
-                .addGap(37, 37, 37)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 122, Short.MAX_VALUE)
-                .addGap(18, 18, 18)
+                .addGap(41, 41, 41)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel1)
+                    .addComponent(txtSupervisor, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 114, Short.MAX_VALUE)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(btnBack)
                     .addComponent(btnRefresh))
@@ -205,9 +200,9 @@ public class ContractorJPanel extends javax.swing.JPanel {
     private javax.swing.JButton btnRefresh;
     private javax.swing.JButton btnReports;
     private javax.swing.JButton btnViewRequests;
-    private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel lblSubtitle;
     private javax.swing.JLabel lblTitle;
-    private javax.swing.JTable tblMain;
+    private javax.swing.JTextField txtSupervisor;
     // End of variables declaration//GEN-END:variables
 }

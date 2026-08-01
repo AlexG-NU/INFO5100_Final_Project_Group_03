@@ -61,20 +61,23 @@ private void generateDashboardMetrics() {
         DefaultTableModel modelUnder = (DefaultTableModel) tblUnderutilized.getModel();
         DefaultTableModel modelDuration = (DefaultTableModel) tblTaskDuration.getModel();
         DefaultTableModel modelSpan = (DefaultTableModel) tblContractorCount.getModel();
+ 
 
-        // Clear existing table data
         modelOvertime.setRowCount(0);
         modelUnder.setRowCount(0);
         modelDuration.setRowCount(0);
         modelSpan.setRowCount(0);
-
+ 
         Map<String, ContractorStats> contractorStatsMap = new HashMap<>();
         Map<String, Set<String>> supervisorSpanMap = new HashMap<>();
-
-        // 1. Loop directly through the Network's global user directory
+ 
         for (UserAccount ua : network.getUserAccountDirectory().getUserAccountList()) {
-            
-            // Track Supervisor Span of Control directly from the UserAccount field
+ 
+            if (!(ua.getRole() instanceof Client.Roles.ContractorRole)) {
+                continue;
+            }
+ 
+
             if (ua.getSupervisor() != null) {
                 String supervisorName = ua.getSupervisor().getUsername();
                 String subordinateName = ua.getUsername();
@@ -82,27 +85,54 @@ private void generateDashboardMetrics() {
                 supervisorSpanMap.putIfAbsent(supervisorName, new HashSet<>());
                 supervisorSpanMap.get(supervisorName).add(subordinateName);
             }
-
-            // 2. Process work orders for task durations / metrics
+ 
+            String contractorName = ua.getUsername();
+            contractorStatsMap.putIfAbsent(contractorName, new ContractorStats());
+            ContractorStats stats = contractorStatsMap.get(contractorName);
+            stats.name = contractorName;
+ 
             for (WorkOrder wo : ua.getWorkQueue().getWorkOrderList()) {
+ 
                 if (wo instanceof Core.WorkOrders.TaskWorkOrder) {
                     Core.WorkOrders.TaskWorkOrder taskOrder = (Core.WorkOrders.TaskWorkOrder) wo;
-                    
-                    String submitterName = (taskOrder.getSender() != null) ? taskOrder.getSender().getUsername() : ua.getUsername();
-                    
-                    contractorStatsMap.putIfAbsent(submitterName, new ContractorStats());
-                    ContractorStats stats = contractorStatsMap.get(submitterName);
-                    stats.name = submitterName;
+ 
                     stats.totalTasksCompleted++;
                     
                     if (taskOrder.getResolveDate() != null && taskOrder.getRequestDate() != null) {
                         long hoursTaken = java.time.temporal.ChronoUnit.HOURS.between(taskOrder.getRequestDate(), taskOrder.getResolveDate());
                         stats.totalTaskDurationHours += hoursTaken;
                     }
+                } else if (wo instanceof TimecardWorkOrder) {
+                    TimecardWorkOrder timecard = (TimecardWorkOrder) wo;
+ 
+                    double weekHours = timecard.getTotalHours();
+                    stats.totalHoursLogged += weekHours;
+                    stats.totalTimecards++;
+ 
+                    if (weekHours > 40) {
+                        stats.weeksOvertime++;
+                    } else if (weekHours < 40) {
+                        stats.weeksUnderutilized++;
+                    }
                 }
             }
         }
-
+ 
+        // Push Overtime / Underutilized to Tabs 1 and 2
+        for (ContractorStats stats : contractorStatsMap.values()) {
+            if (stats.totalTimecards > 0) {
+                double avgHoursPerWeek = stats.totalHoursLogged / stats.totalTimecards;
+ 
+                if (stats.weeksOvertime > 0) {
+                    modelOvertime.addRow(new Object[]{stats.name, stats.name, stats.weeksOvertime, String.format("%.2f", avgHoursPerWeek)});
+                }
+ 
+                if (stats.weeksUnderutilized > 0) {
+                    modelUnder.addRow(new Object[]{stats.name, stats.name, stats.weeksUnderutilized, String.format("%.2f", avgHoursPerWeek)});
+                }
+            }
+        }
+ 
         // Push Task Durations to Tab 3
         for (ContractorStats stats : contractorStatsMap.values()) {
             if (stats.totalTasksCompleted > 0) {

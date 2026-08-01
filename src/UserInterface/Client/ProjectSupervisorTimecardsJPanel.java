@@ -36,7 +36,7 @@ public class ProjectSupervisorTimecardsJPanel extends javax.swing.JPanel {
 
     // Define the columns you actually want visible in the JTable
     private final String[] COLUMN_NAMES = {
-        "Timecard ID", "Week Ending", "Total Hours", "Status"
+        "Timecard ID", "Name", "Week Ending", "Total Hours", "Status"
     };
 
     public ProjectSupervisorTimecardsJPanel(JPanel container, UserAccount userAccount, Network network) {
@@ -52,9 +52,10 @@ public class ProjectSupervisorTimecardsJPanel extends javax.swing.JPanel {
     private Object[] mapObjectToRow(TimecardWorkOrder item) {
         return new Object[]{
             item,                      // Column 0: The object (displays ID via toString)
-            item.getWeekEndingDate(),        // Column 1
-            item.getTotalHours(),   // Column 2
-            item.getStatus()           // Column 3
+            item.getSender().getUsername(), // Column 1
+            item.getWeekEndingDate(),        // Column 2
+            item.getTotalHours(),   // Column 3
+            item.getStatus()           // Column 4
         };
     }
 

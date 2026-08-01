@@ -32,7 +32,7 @@ public class HiringManagerJPanel extends javax.swing.JPanel {
         btnBack.setVisible(false);
         btnRefresh.addActionListener(event ->
                 populateRequestTable(currentRequestType));
-        btnReports.addActionListener(event -> showHiringSummary());
+        //btnReports.addActionListener(event -> showHiringSummary());
         populateRequestTable(currentRequestType);
     }
     public void setWorkAreaHeader(String title, String subtitle) {

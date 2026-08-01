@@ -23,31 +23,24 @@
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" attributes="0">
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Group type="102" attributes="0">
-                      <Group type="103" groupAlignment="0" attributes="0">
-                          <Group type="102" alignment="0" attributes="0">
-                              <EmptySpace min="-2" pref="98" max="-2" attributes="0"/>
-                              <Group type="103" groupAlignment="1" max="-2" attributes="0">
-                                  <Component id="lblSubtitle" min="-2" max="-2" attributes="0"/>
-                                  <Group type="102" attributes="0">
-                                      <Group type="103" groupAlignment="0" attributes="0">
-                                          <Component id="btnViewRequests" alignment="0" min="-2" max="-2" attributes="0"/>
-                                          <Component id="btnManageRecords" alignment="0" min="-2" max="-2" attributes="0"/>
-                                      </Group>
-                                      <EmptySpace max="32767" attributes="0"/>
-                                      <Group type="103" groupAlignment="1" attributes="0">
-                                          <Component id="btnPrimaryAction" min="-2" max="-2" attributes="0"/>
-                                          <Component id="btnReports" min="-2" max="-2" attributes="0"/>
-                                      </Group>
+                  <Group type="103" groupAlignment="0" attributes="0">
+                      <Group type="102" alignment="0" attributes="0">
+                          <EmptySpace min="-2" pref="98" max="-2" attributes="0"/>
+                          <Group type="103" groupAlignment="1" attributes="0">
+                              <Component id="lblSubtitle" min="-2" max="-2" attributes="0"/>
+                              <Group type="102" alignment="0" attributes="0">
+                                  <Group type="103" groupAlignment="1" attributes="0">
+                                      <Component id="btnManageRecords" alignment="0" min="-2" max="-2" attributes="0"/>
+                                      <Component id="btnPrimaryAction" alignment="0" min="-2" max="-2" attributes="0"/>
                                   </Group>
+                                  <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
                               </Group>
                           </Group>
-                          <Group type="102" alignment="0" attributes="0">
-                              <EmptySpace min="-2" pref="21" max="-2" attributes="0"/>
-                              <Component id="lblTitle" min="-2" max="-2" attributes="0"/>
-                          </Group>
                       </Group>
-                      <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
+                      <Group type="102" alignment="0" attributes="0">
+                          <EmptySpace min="-2" pref="21" max="-2" attributes="0"/>
+                          <Component id="lblTitle" min="-2" max="-2" attributes="0"/>
+                      </Group>
                   </Group>
                   <Group type="102" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
@@ -74,15 +67,9 @@
               <EmptySpace max="-2" attributes="0"/>
               <Component id="lblSubtitle" min="-2" max="-2" attributes="0"/>
               <EmptySpace min="-2" pref="42" max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="btnViewRequests" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="btnPrimaryAction" alignment="3" min="-2" max="-2" attributes="0"/>
-              </Group>
+              <Component id="btnPrimaryAction" min="-2" max="-2" attributes="0"/>
               <EmptySpace min="-2" pref="45" max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="btnReports" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="btnManageRecords" alignment="3" min="-2" max="-2" attributes="0"/>
-              </Group>
+              <Component id="btnManageRecords" min="-2" max="-2" attributes="0"/>
               <EmptySpace min="-2" pref="37" max="-2" attributes="0"/>
               <Component id="jScrollPane1" pref="122" max="32767" attributes="0"/>
               <EmptySpace type="separate" max="-2" attributes="0"/>
@@ -115,15 +102,6 @@
         <Property name="text" type="java.lang.String" value="Client Enterprise - Operations Organization"/>
       </Properties>
     </Component>
-    <Component class="javax.swing.JButton" name="btnViewRequests">
-      <Properties>
-        <Property name="text" type="java.lang.String" value="View Contractors"/>
-        <Property name="enabled" type="boolean" value="false"/>
-      </Properties>
-      <Events>
-        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnViewRequestsActionPerformed"/>
-      </Events>
-    </Component>
     <Component class="javax.swing.JButton" name="btnManageRecords">
       <Properties>
         <Property name="text" type="java.lang.String" value="Manage Tasks"/>
@@ -153,12 +131,6 @@
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnRefreshActionPerformed"/>
       </Events>
-    </Component>
-    <Component class="javax.swing.JButton" name="btnReports">
-      <Properties>
-        <Property name="text" type="java.lang.String" value="Reports"/>
-        <Property name="enabled" type="boolean" value="false"/>
-      </Properties>
     </Component>
     <Container class="javax.swing.JScrollPane" name="jScrollPane1">
 

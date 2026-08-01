@@ -13,10 +13,14 @@ import Core.Person;
 import Core.UserAccount;
 import Core.WorkOrderStatus;
 import Core.WorkOrders.TaskWorkOrder;
+import Core.WorkOrders.StaffingReqWorkOrder;
+import Core.WorkOrders.TimecardWorkOrder;
 import WorkOrders.StaffingRequest;
+import com.github.javafaker.Faker;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 /**
  *
@@ -33,14 +37,15 @@ public class ConfigureAClient {
         //network.getEnterpriseList().add(payroll);
         //network.getEnterpriseList().add(staffing);
         //network.getEnterpriseList().add(compliance);
-        Person hrPerson = new Person("Ted HR");
+        Faker faker = new Faker(new Random(5102));
+        Person hrPerson = new Person(faker.name().fullName());
         UserAccount hrAccount = network.getUserAccountDirectory().createUserAccount(
                 "HR", 
                 "password", 
                 hrPerson,
                 new HiringManagerRole()
         );
-        Person contractorPerson = new Person("Alex Contractor");
+        Person contractorPerson = new Person(faker.name().fullName());
         UserAccount contractorAccount = network.getUserAccountDirectory().createUserAccount(
                 "Contractor", 
                 "password", 
@@ -48,7 +53,7 @@ public class ConfigureAClient {
                 new ContractorRole()
         );
         
-        Person supervisorPerson = new Person("Lisa Supervisor");
+        Person supervisorPerson = new Person(faker.name().fullName());
         UserAccount supervisorAccount = network.getUserAccountDirectory().createUserAccount(
                 "Sup", 
                 "password", 
@@ -59,6 +64,8 @@ public class ConfigureAClient {
         
         populateStaffingRequests();
         populateContractorTasks(contractorAccount, supervisorAccount);
+        populateClientRequests(hrAccount, network, faker);
+        populateTimecards(contractorAccount, supervisorAccount, faker);
     }
     
     public static List<StaffingRequest> populateStaffingRequests() {
@@ -113,29 +120,67 @@ public class ConfigureAClient {
     }
     
     public static void populateContractorTasks(UserAccount contractor, UserAccount supervisor) {
-        // Task 1
-        TaskWorkOrder task1 = new TaskWorkOrder();
-        task1.setTaskName("Inspect HVAC System");
-        task1.setMessage("Perform quarterly inspection and replace air filters in Building B.");
-        task1.setSender(supervisor);
-        task1.setReceiver(contractor);
-        task1.setStatus(WorkOrderStatus.PENDING);
+        Faker faker = new Faker(new Random(5103));
+        for (int index = 0; index < 6; index++) {
+            TaskWorkOrder task = new TaskWorkOrder();
+            task.setTaskName(faker.job().field() + " Project Task");
+            task.setMessage("Complete assigned work for "
+                    + faker.company().name() + ".");
+            task.setSender(supervisor);
+            task.setReceiver(contractor);
+            task.setStatus(index < 2
+                    ? WorkOrderStatus.IN_PROGRESS : WorkOrderStatus.PENDING);
+            contractor.getWorkQueue().getWorkOrderList().add(task);
+            supervisor.getWorkQueue().getWorkOrderList().add(task);
+        }
+    }
 
-        // Task 2
-        TaskWorkOrder task2 = new TaskWorkOrder();
-        task2.setTaskName("Repair Lobby Drywall");
-        task2.setMessage("Patch drywall damage near the front entrance and prep for painting.");
-        task2.setSender(supervisor);
-        task2.setReceiver(contractor);
-        task2.setStatus(WorkOrderStatus.IN_PROGRESS);
+    private static void populateClientRequests(UserAccount hrAccount,
+            Network network, Faker faker) {
+        UserAccount recruiter = network.getUserAccountDirectory()
+                .authenticateUser("recruiter", "password");
+        String[] titles = {
+            "Java Developer", "Quality Analyst", "Data Analyst",
+            "Project Coordinator"
+        };
 
-        // Add to Contractor's private queue
-        contractor.getWorkQueue().getWorkOrderList().add(task1);
-        contractor.getWorkQueue().getWorkOrderList().add(task2);
+        for (int index = 0; index < titles.length; index++) {
+            StaffingReqWorkOrder request = new StaffingReqWorkOrder();
+            request.setJobTitle(titles[index]);
+            request.setDescription("Contract support for "
+                    + faker.company().name() + ".");
+            request.setRequiredSkills(faker.job().keySkills());
+            request.setNumberOfPositions(1 + (index % 2));
+            request.setStartDate(LocalDate.now().plusDays(14 + index * 7));
+            request.setSender(hrAccount);
+            request.setReceiver(recruiter);
+            request.setStatus(index < 2
+                    ? WorkOrderStatus.IN_PROGRESS : WorkOrderStatus.PENDING);
+            hrAccount.getWorkQueue().addWorkOrder(request);
+            if (recruiter != null) {
+                recruiter.getWorkQueue().addWorkOrder(request);
+            }
+        }
+    }
 
-        // Add to Supervisor's private queue for tracking
-        supervisor.getWorkQueue().getWorkOrderList().add(task1);
-        supervisor.getWorkQueue().getWorkOrderList().add(task2);
+    private static void populateTimecards(UserAccount contractor,
+            UserAccount supervisor, Faker faker) {
+        for (int index = 0; index < 4; index++) {
+            TimecardWorkOrder timecard = new TimecardWorkOrder(
+                    LocalDate.now().minusWeeks(index), 0.0);
+            timecard.setDailyHours(new double[]{
+                0.0, 8.0, 8.0, 8.0, 8.0,
+                4.0 + (index % 2), 0.0
+            });
+            timecard.setWorkSummary("Completed "
+                    + faker.job().field().toLowerCase() + " project work.");
+            timecard.setSender(contractor);
+            timecard.setReceiver(supervisor);
+            timecard.setStatus(index == 0
+                    ? WorkOrderStatus.PENDING : WorkOrderStatus.APPROVED);
+            contractor.getWorkQueue().addWorkOrder(timecard);
+            supervisor.getWorkQueue().addWorkOrder(timecard);
+        }
     }
     
 }

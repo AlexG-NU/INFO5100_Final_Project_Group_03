@@ -28,13 +28,18 @@ public class RecruiterRole extends Role {
     }
 
     @Override
-    public JPanel createWorkArea(JPanel userProcessContainer,
-            UserAccount account, Network network) {
-        return new RecruiterWorkAreaJPanel(
-                userProcessContainer,
-                staffingRequestList,
-                candidateList,
-                submissionList,
-                network); // @janet - shared handoff to Compliance
-    }
+public JPanel createWorkArea(
+        JPanel userProcessContainer,
+        UserAccount account,
+        Network network
+) {
+    return new RecruiterWorkAreaJPanel(
+            userProcessContainer,
+            staffingRequestList,
+            candidateList,
+            submissionList,
+            account,
+            network
+    );
+}
 }

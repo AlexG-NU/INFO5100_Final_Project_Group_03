@@ -40,9 +40,51 @@ public class VerificationQueueJPanel extends javax.swing.JPanel {
         this.assignedOnly = assignedOnly;
         initComponents();
         if (assignedOnly) {
-            lblTitle.setText("My Assigned Verification Requests");
+            lblTitle.setText("Active Compliance Case");
+            btnAssignToMe.setVisible(false);
         }
+        ComplianceTableUI.configure(tblRequests,
+                0, 90, 100, 100, 170, 190, 150, 170, 130, 210, 150, 150);
+        applyFittedLayout();
         populateTable();
+    }
+
+    /**
+     * Keeps navigation fixed while allowing the table to consume only the
+     * remaining space. This replaces the fixed-height GUI-builder page that
+     * pushed Back and Refresh below the visible work area.
+     */
+    private void applyFittedLayout() {
+        java.awt.Color background = new java.awt.Color(255, 255, 204);
+        ComplianceTableUI.styleScrollPane(jScrollPane1, 220);
+
+        javax.swing.JPanel header = new javax.swing.JPanel();
+        header.setBackground(background);
+        header.setLayout(new javax.swing.BoxLayout(
+                header, javax.swing.BoxLayout.Y_AXIS));
+        header.add(lblTitle);
+        header.add(javax.swing.Box.createVerticalStrut(4));
+        header.add(lblCaseStatus);
+
+        javax.swing.JPanel center = new javax.swing.JPanel(
+                new java.awt.BorderLayout(0, 8));
+        center.setBackground(background);
+        center.add(jScrollPane1, java.awt.BorderLayout.CENTER);
+        center.add(pnlReviewDetails, java.awt.BorderLayout.SOUTH);
+
+        javax.swing.JPanel footer = new javax.swing.JPanel(
+                new java.awt.GridLayout(1, 2, 12, 0));
+        footer.setBackground(background);
+        footer.add(btnBack);
+        footer.add(btnRefresh);
+
+        removeAll();
+        setLayout(new java.awt.BorderLayout(0, 10));
+        setBackground(background);
+        setBorder(javax.swing.BorderFactory.createEmptyBorder(12, 18, 12, 18));
+        add(header, java.awt.BorderLayout.NORTH);
+        add(center, java.awt.BorderLayout.CENTER);
+        add(footer, java.awt.BorderLayout.SOUTH);
     }
 
     private void populateTable() {
@@ -53,7 +95,10 @@ public class VerificationQueueJPanel extends javax.swing.JPanel {
             if (assignedOnly && review.getAssignedAnalyst() != analyst) {
                 continue;
             }
-            Object[] row = new Object[8];
+            if (assignedOnly && review.getDecision() != ComplianceDecision.PENDING) {
+                continue;
+            }
+            Object[] row = new Object[12];
             row[0] = review;
             row[1] = review.getRequest().getVerificationRequestId();
             row[2] = review.getRequest().getAssignment().getAssignmentId();
@@ -62,7 +107,11 @@ public class VerificationQueueJPanel extends javax.swing.JPanel {
             row[5] = review.getRequest().getVerificationType();
             row[6] = review.getAssignedAnalyst() == null
                     ? "Unassigned" : review.getAssignedAnalyst().getName();
-            row[7] = review.getDecision();
+            row[7] = review.getCredentialStatusText();
+            row[8] = review.getDecision();
+            row[9] = review.getWorkflowStatus();
+            row[10] = review.getWaitingOn();
+            row[11] = review.getCompletedByText();
             model.addRow(row);
         }
     }
@@ -81,9 +130,12 @@ public class VerificationQueueJPanel extends javax.swing.JPanel {
     private void initComponents() {
 
         lblTitle = new javax.swing.JLabel();
+        lblNextStep = new javax.swing.JLabel();
+        lblCaseStatus = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
         tblRequests = new javax.swing.JTable();
         btnAssignToMe = new javax.swing.JButton();
+        btnRequestCredential = new javax.swing.JButton();
         lblDecision = new javax.swing.JLabel();
         cmbDecision = new javax.swing.JComboBox<>();
         lblFindings = new javax.swing.JLabel();
@@ -95,13 +147,17 @@ public class VerificationQueueJPanel extends javax.swing.JPanel {
         pnlReviewDetails = new javax.swing.JPanel();
 
         lblTitle.setFont(new java.awt.Font("Segoe UI", 1, 18));
-        lblTitle.setText("Credential Verification Request Queue");
+        lblTitle.setText("Compliance Review");
+        lblNextStep.setFont(new java.awt.Font("Segoe UI", 1, 13));
+        lblNextStep.setVisible(false);
+        lblCaseStatus.setForeground(new java.awt.Color(0, 102, 153));
+        lblCaseStatus.setText("Selected case: none");
 
         tblRequests.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {},
-            new String [] {"Review", "Request ID", "Assignment ID", "Contractor ID", "Contractor", "Verification Type", "Assigned Analyst", "Decision"}
+            new String [] {"Review", "Request ID", "Assignment ID", "Contractor ID", "Contractor", "Verification Type", "Assigned Analyst", "Credential Status", "Decision", "Workflow Status", "Waiting On", "Completed By"}
         ) {
-            boolean[] canEdit = new boolean [] {false, false, false, false, false, false, false, false};
+            boolean[] canEdit = new boolean [] {false, false, false, false, false, false, false, false, false, false, false, false};
             public boolean isCellEditable(int rowIndex, int columnIndex) { return canEdit[columnIndex]; }
         });
         jScrollPane1.setViewportView(tblRequests);
@@ -118,9 +174,12 @@ public class VerificationQueueJPanel extends javax.swing.JPanel {
 
         btnAssignToMe.setText("Assign to Me");
         btnAssignToMe.addActionListener(evt -> btnAssignToMeActionPerformed(evt));
+        btnRequestCredential.setText("Request Credential Check");
+        btnRequestCredential.addActionListener(evt -> btnRequestCredentialActionPerformed(evt));
+        btnRequestCredential.setEnabled(false);
         lblDecision.setText("Decision:");
         cmbDecision.setModel(new javax.swing.DefaultComboBoxModel<>(ComplianceDecision.values()));
-        lblFindings.setText("Findings:");
+        lblFindings.setText("Analyst Assessment:");
         txtFindings.setColumns(20);
         txtFindings.setRows(5);
         jScrollPane2.setViewportView(txtFindings);
@@ -133,6 +192,7 @@ public class VerificationQueueJPanel extends javax.swing.JPanel {
         if (analyst == null) {
             btnAssignToMe.setEnabled(false);
             btnCompleteReview.setEnabled(false);
+            btnRequestCredential.setEnabled(false);
             cmbDecision.setEnabled(false);
             txtFindings.setEditable(false);
         }
@@ -149,6 +209,7 @@ public class VerificationQueueJPanel extends javax.swing.JPanel {
                     .addComponent(cmbDecision, javax.swing.GroupLayout.PREFERRED_SIZE, 220, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 430, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addGroup(detailsLayout.createSequentialGroup().addComponent(btnAssignToMe)
+                        .addGap(12, 12, 12).addComponent(btnRequestCredential)
                         .addGap(12, 12, 12).addComponent(btnCompleteReview)))
                 .addContainerGap(18, Short.MAX_VALUE)));
         detailsLayout.setVerticalGroup(detailsLayout.createSequentialGroup().addGap(12, 12, 12)
@@ -159,7 +220,7 @@ public class VerificationQueueJPanel extends javax.swing.JPanel {
                 .addComponent(lblFindings).addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 82, javax.swing.GroupLayout.PREFERRED_SIZE))
             .addGap(12, 12, 12)
             .addGroup(detailsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                .addComponent(btnAssignToMe).addComponent(btnCompleteReview))
+                .addComponent(btnAssignToMe).addComponent(btnRequestCredential).addComponent(btnCompleteReview))
             .addContainerGap(12, Short.MAX_VALUE));
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
@@ -167,13 +228,14 @@ public class VerificationQueueJPanel extends javax.swing.JPanel {
         layout.setHorizontalGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup().addGap(30, 30, 30)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(lblTitle)
+                    .addComponent(lblTitle).addComponent(lblNextStep).addComponent(lblCaseStatus)
                     .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 820, Short.MAX_VALUE)
                     .addComponent(pnlReviewDetails, javax.swing.GroupLayout.PREFERRED_SIZE, 610, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addGroup(layout.createSequentialGroup().addComponent(btnBack).addGap(12, 12, 12).addComponent(btnRefresh)))
                 .addGap(30, 30, 30)));
         layout.setVerticalGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup().addGap(25, 25, 25).addComponent(lblTitle).addGap(20, 20, 20)
+            .addGroup(layout.createSequentialGroup().addGap(25, 25, 25).addComponent(lblTitle).addGap(8, 8, 8)
+                .addComponent(lblNextStep).addGap(4, 4, 4).addComponent(lblCaseStatus).addGap(12, 12, 12)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 210, javax.swing.GroupLayout.PREFERRED_SIZE).addGap(14, 14, 14)
                 .addComponent(pnlReviewDetails, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(10, 10, 10).addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE).addComponent(btnBack).addComponent(btnRefresh)).addContainerGap(25, Short.MAX_VALUE)));
@@ -202,7 +264,8 @@ public class VerificationQueueJPanel extends javax.swing.JPanel {
             return;
         }
         if (review.getAssignedAnalyst() != analyst) {
-            JOptionPane.showMessageDialog(this, "Assign the request to yourself before completing the review.");
+            JOptionPane.showMessageDialog(this,
+                    "This request must be assigned to you by the Compliance Manager before you can complete it.");
             return;
         }
         try {
@@ -210,9 +273,32 @@ public class VerificationQueueJPanel extends javax.swing.JPanel {
             review.completeReview(decision, txtFindings.getText());
             txtFindings.setText("");
             populateTable();
-            JOptionPane.showMessageDialog(this, "Verification review completed.");
+            JOptionPane.showMessageDialog(this,
+                    "Compliance decision completed. The result is available to the Contractor Coordinator.");
         } catch (IllegalArgumentException | IllegalStateException ex) {
             JOptionPane.showMessageDialog(this, ex.getMessage(), "Validation Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private void btnRequestCredentialActionPerformed(java.awt.event.ActionEvent evt) {
+        VerificationReview review = getSelectedReview();
+        if (review == null) {
+            return;
+        }
+        if (review.getAssignedAnalyst() != analyst) {
+            JOptionPane.showMessageDialog(this,
+                    "This request must be assigned to you by the Compliance Manager first.");
+            return;
+        }
+        try {
+            review.recordAnalystAssessment(txtFindings.getText());
+            complianceDirectory.requestCredentialVerification(review);
+            populateTable();
+            JOptionPane.showMessageDialog(this,
+                    "Assessment saved and credential verification requested.");
+        } catch (IllegalArgumentException | IllegalStateException ex) {
+            JOptionPane.showMessageDialog(this, ex.getMessage(),
+                    "Credential Check", JOptionPane.WARNING_MESSAGE);
         }
     }
 
@@ -242,20 +328,27 @@ public class VerificationQueueJPanel extends javax.swing.JPanel {
         int row = tblRequests.getSelectedRow();
         if (row < 0) {
             txtFindings.setText("");
+            lblCaseStatus.setText("Selected case: none");
             return;
         }
         VerificationReview review = (VerificationReview) tblRequests.getValueAt(row, 0);
+        lblCaseStatus.setText("Current step: " + review.getWorkflowStatus()
+                + "  |  Waiting on: " + review.getWaitingOn());
         txtFindings.setText(review.getFindings());
         cmbDecision.setSelectedItem(review.getDecision());
         boolean pending = review.getDecision() == ComplianceDecision.PENDING && analyst != null;
         txtFindings.setEditable(pending);
         cmbDecision.setEnabled(pending);
-        btnAssignToMe.setEnabled(pending);
+        btnAssignToMe.setEnabled(pending && !assignedOnly);
+        btnRequestCredential.setEnabled(pending
+                && review.getAssignedAnalyst() == analyst
+                && review.getCredentialTask() == null);
         btnCompleteReview.setEnabled(pending);
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnAssignToMe;
+    private javax.swing.JButton btnRequestCredential;
     private javax.swing.JButton btnCompleteReview;
     private javax.swing.JButton btnRefresh;
     private javax.swing.JButton btnBack;
@@ -264,6 +357,8 @@ public class VerificationQueueJPanel extends javax.swing.JPanel {
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JLabel lblDecision;
     private javax.swing.JLabel lblFindings;
+    private javax.swing.JLabel lblCaseStatus;
+    private javax.swing.JLabel lblNextStep;
     private javax.swing.JLabel lblTitle;
     private javax.swing.JPanel pnlReviewDetails;
     private javax.swing.JTable tblRequests;

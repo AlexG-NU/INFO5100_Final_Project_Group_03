@@ -25,6 +25,11 @@ import javax.swing.JTable;
 import javax.swing.SwingConstants;
 import javax.swing.table.DefaultTableModel;
  import StaffingAgency.Request.CandidateSubmission;
+ import Core.NetworkUtils;
+import Core.Organization;
+import Core.UserAccount;
+import Core.WorkOrder;
+import Core.WorkOrders.StaffingReqWorkOrder;
 
 public class RecruiterWorkAreaJPanel extends JPanel {
 
@@ -33,6 +38,7 @@ public class RecruiterWorkAreaJPanel extends JPanel {
     private final List<Candidate> candidateList;
     private final List<CandidateSubmission> submissionList;
     private final Network network; // @janet - shared enterprise network
+    private final UserAccount recruiterAccount;
 
     private JTable tblMain;
     private DefaultTableModel tableModel;
@@ -43,11 +49,12 @@ public class RecruiterWorkAreaJPanel extends JPanel {
     private JButton btnReports;
     private JButton btnRefresh;
 
-    public RecruiterWorkAreaJPanel(
+   public RecruiterWorkAreaJPanel(
         JPanel mainContentPanel,
         List<StaffingRequest> masterRequestList,
         List<Candidate> candidateList,
         List<CandidateSubmission> submissionList,
+        UserAccount recruiterAccount,
         Network network
 ) {
     if (mainContentPanel == null) {
@@ -78,12 +85,18 @@ public class RecruiterWorkAreaJPanel extends JPanel {
                 "Network cannot be null."
         );
     }
+    if (recruiterAccount == null) {
+    throw new IllegalArgumentException(
+            "Recruiter account cannot be null."
+    );
+}
 
     this.mainContentPanel = mainContentPanel;
     this.masterRequestList = masterRequestList;
     this.candidateList = candidateList;
     this.submissionList = submissionList;
     this.network = network;
+    this.recruiterAccount = recruiterAccount;
 
     initComponents();
     populateDashboardTable();
@@ -286,10 +299,7 @@ public class RecruiterWorkAreaJPanel extends JPanel {
 );
 
         btnReports.addActionListener(
-                event -> JOptionPane.showMessageDialog(
-                        this,
-                        "Recruiter reports will be added later."
-                )
+                event -> openRecruiterReport()
         );
     }
 
@@ -297,10 +307,12 @@ public class RecruiterWorkAreaJPanel extends JPanel {
 
         tableModel.setRowCount(0);
 
+        int sharedRequestCount = getSharedStaffingRequestCount();
+
         tableModel.addRow(
                 new Object[]{
                     "Staffing Requests",
-                    masterRequestList.size(),
+                    sharedRequestCount,
                     "Requests available for recruiter review"
                 }
         );
@@ -338,10 +350,12 @@ public class RecruiterWorkAreaJPanel extends JPanel {
 
     private void openStaffingRequests() {
 
-        ManageStaffingRequestsJPanel staffingPanel =
-                new ManageStaffingRequestsJPanel(
+        RecruiterStaffingQueueJPanel staffingPanel =
+                new RecruiterStaffingQueueJPanel(
                         mainContentPanel,
-                        masterRequestList
+                        this,
+                        recruiterAccount,
+                        network
                 );
 
         displayPanel(staffingPanel);
@@ -351,7 +365,9 @@ public class RecruiterWorkAreaJPanel extends JPanel {
 
         ManageCandidatesJPanel candidatePanel =
                 new ManageCandidatesJPanel(
-                        candidateList
+                        candidateList,
+                        mainContentPanel,
+                        this
                 );
 
         displayPanel(candidatePanel);
@@ -375,11 +391,59 @@ public class RecruiterWorkAreaJPanel extends JPanel {
     CandidateSubmissionsJPanel submissionPanel =
             new CandidateSubmissionsJPanel(
                     candidateList,
-                    masterRequestList,
                     submissionList,
-                    network // @janet - send the same assignment to Compliance
+                    recruiterAccount,
+                    network,
+                    mainContentPanel,
+                    this
             );
 
     displayPanel(submissionPanel);
+    
 }
+
+    private void openRecruiterReport() {
+
+        RecruiterReportJPanel reportPanel =
+                new RecruiterReportJPanel(
+                        mainContentPanel,
+                        this,
+                        network,
+                        candidateList,
+                        submissionList
+                );
+
+        displayPanel(reportPanel);
+    }
+
+    public void refreshDashboard() {
+    populateDashboardTable();
+}
+
+    private int getSharedStaffingRequestCount() {
+
+        Organization recruitingOrganization =
+                NetworkUtils.findOrganizationByName(
+                        network,
+                        "Staffing Agency Enterprise",
+                        "Recruiting Organization"
+                );
+
+        if (recruitingOrganization == null) {
+            return 0;
+        }
+
+        int count = 0;
+
+        for (WorkOrder workOrder
+                : recruitingOrganization
+                        .getWorkQueue()
+                        .getWorkOrderList()) {
+            if (workOrder instanceof StaffingReqWorkOrder) {
+                count++;
+            }
+        }
+
+        return count;
+    }
 }

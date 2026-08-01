@@ -3,6 +3,11 @@ package Business;
 import ComplianceEnterprise.ComplianceIntegrationService;
 import ComplianceEnterprise.Enums.ComplianceDecision;
 import ComplianceEnterprise.Model.VerificationReview;
+import ComplianceEnterprise.Model.CredentialRecord;
+import ComplianceEnterprise.Model.CredentialVerificationTask;
+import ComplianceEnterprise.Enums.CredentialStatus;
+import ComplianceEnterprise.Role.ComplianceAnalyst;
+import ComplianceEnterprise.Role.ComplianceAnalystRole;
 import Core.Enterprise;
 import Core.EnterpriseAdminRole;
 import Core.NetworkAdminRole;
@@ -14,10 +19,13 @@ import Core.WorkOrders.CrossEnterpriseWorkOrder;
 import StaffingAgency.People.Candidate;
 import StaffingAgency.Enums.AssignmentStatus;
 import StaffingAgency.Request.CandidateSubmission;
+import PayrollBilling.ConfigurePayrollBilling;
+import PayrollBilling.PayrollBillingModule;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.time.LocalDate;
 import java.awt.Component;
 import java.awt.Container;
 import javax.swing.JButton;
@@ -33,7 +41,8 @@ public class ProjectRubricSmokeTest {
     public static void main(String[] args) {
         System.setProperty("java.awt.headless", "true");
 
-        List<Candidate> candidates = new ArrayList<>();
+        List<Candidate> candidates =
+                ConfigureABusiness.populateCandidates();
         List<CandidateSubmission> submissions = new ArrayList<>();
         Network network = ConfigureABusiness.configure(
                 ConfigureABusiness.populateStaffingRequests(),
@@ -66,11 +75,10 @@ public class ProjectRubricSmokeTest {
                 workAreaCount++;
             }
         }
-        require(roleTypes.size() == 9,
-                "Expected 9 configured non-admin roles before the teammate's "
-                        + "missing Staffing role is merged.");
-        require(workAreaCount >= 9,
-                "Expected a configured account for every current role.");
+        require(roleTypes.size() == 10,
+                "Expected 10 configured non-admin roles.");
+        require(workAreaCount >= 10,
+                "Expected a configured account for every operational role.");
 
         List<WorkOrder> requests =
                 network.getWorkOrderQueue().getWorkOrderList();
@@ -93,6 +101,26 @@ public class ProjectRubricSmokeTest {
         require(network.getComplianceData() != null
                 && network.getComplianceData().getContractorList().size() >= 12,
                 "Expected Java Faker compliance demo records.");
+        require(candidates.size() >= 16,
+                "Expected Java Faker Staffing candidates.");
+
+        UserAccount hrAccount = network.getUserAccountDirectory()
+                .authenticateUser("HR", "password");
+        UserAccount contractorAccount = network.getUserAccountDirectory()
+                .authenticateUser("Contractor", "password");
+        require(hrAccount != null
+                && hrAccount.getWorkQueue().getWorkOrderList().size() >= 4,
+                "Expected Java Faker Client staffing requests.");
+        require(contractorAccount != null
+                && contractorAccount.getWorkQueue().getWorkOrderList().size() >= 10,
+                "Expected Java Faker Client tasks and timecards.");
+
+        PayrollBillingModule payrollModule =
+                ConfigurePayrollBilling.getSharedPayrollBillingModule();
+        require(payrollModule.getPayrollRecords().size() >= 8,
+                "Expected Java Faker Payroll records.");
+        require(payrollModule.getInvoices().size() >= 8,
+                "Expected Java Faker Billing invoices.");
 
         require(!submissions.isEmpty()
                 && submissions.get(0).getResultingAssignment() != null,
@@ -104,6 +132,19 @@ public class ProjectRubricSmokeTest {
                         "Final Integration Test",
                         "Confirm the shared assignment can be cleared.");
         review.assignAnalyst(network.getComplianceData().getAnalyst());
+        CredentialRecord testCredential = new CredentialRecord(
+                submissions.get(0).getResultingAssignment().getContractor(),
+                "Final Integration Test", "FINAL-5100",
+                LocalDate.now().plusYears(1));
+        network.getComplianceData().getComplianceDirectory()
+                .addCredential(testCredential);
+        CredentialVerificationTask credentialTask =
+                network.getComplianceData().getComplianceDirectory()
+                        .requestCredentialVerification(review);
+        credentialTask.completeTask(
+                network.getComplianceData().getSpecialist(),
+                CredentialStatus.VERIFIED,
+                "Document number and expiration date were confirmed.");
         review.completeReview(
                 ComplianceDecision.APPROVED,
                 "All background and credential requirements were verified.");
@@ -118,6 +159,7 @@ public class ProjectRubricSmokeTest {
                 .authenticateUser("C.analyst", "password") != null,
                 "Role-based authentication failed.");
         verifyAllDemoAccounts(network);
+        verifyMultipleComplianceAnalysts(network);
 
         boolean shortPasswordRejected = false;
         try {
@@ -141,7 +183,44 @@ public class ProjectRubricSmokeTest {
         System.out.println("Cross-enterprise requests: " + requests.size());
         System.out.println("Faker compliance contractors: "
                 + network.getComplianceData().getContractorList().size());
-        System.out.println("Demo accounts authenticated: 14");
+        System.out.println("Faker staffing candidates: "
+                + candidates.size());
+        System.out.println("Faker payroll records: "
+                + payrollModule.getPayrollRecords().size());
+        System.out.println("Faker billing invoices: "
+                + payrollModule.getInvoices().size());
+        System.out.println("Demo accounts authenticated: 15");
+    }
+
+    private static void verifyMultipleComplianceAnalysts(Network network) {
+        UserAccount secondAccount = new UserAccount(
+                "C.analyst2", "password",
+                new ComplianceAnalystRole(network.getComplianceData()));
+        secondAccount.setPerson(new Person("Jordan Kim"));
+
+        ComplianceAnalyst firstAnalyst =
+                network.getComplianceData().getAnalyst();
+        ComplianceAnalyst secondAnalyst =
+                network.getComplianceData()
+                        .getAnalystForAccount(secondAccount);
+        require(firstAnalyst != secondAnalyst,
+                "Each Compliance Analyst account must use "
+                + "a separate analyst profile.");
+
+        VerificationReview pendingReview = null;
+        for (VerificationReview review : network.getComplianceData()
+                .getComplianceDirectory().getReviewList()) {
+            if (review.getDecision() == ComplianceDecision.PENDING) {
+                pendingReview = review;
+                break;
+            }
+        }
+        require(pendingReview != null,
+                "A pending Compliance request is required.");
+        pendingReview.assignAnalyst(firstAnalyst);
+        pendingReview.assignAnalyst(secondAnalyst);
+        require(pendingReview.getAssignedAnalyst() == secondAnalyst,
+                "Compliance Manager reassignment failed.");
     }
 
     private static void require(boolean condition, String message) {
@@ -172,6 +251,7 @@ public class ProjectRubricSmokeTest {
             "client.admin",
             "payroll.admin",
             "recruiter",
+            "coordinator",
             "C.manager",
             "C.analyst",
             "C.specialist",

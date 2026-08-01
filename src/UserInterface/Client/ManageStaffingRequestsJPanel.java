@@ -4,16 +4,7 @@
  */
 package UserInterface.Client;
 
-
-import Business.Network;
-import Client.Roles.ContractorRole;
-import Core.NetworkUtils;
-import Core.Organization;
-import Core.UserAccount;
-import Core.WorkOrder;
-import Core.WorkOrderStatus;
-import Core.WorkOrders.StaffingReqWorkOrder;
-import java.awt.CardLayout;
+import WorkOrders.StaffingRequest;
 import java.time.LocalDate;
 import java.util.List;
 import javax.swing.JOptionPane;
@@ -24,28 +15,26 @@ import javax.swing.table.DefaultTableModel;
  *
  * @author Alex
  */
-public class HiringManagerContractorsJPanel extends javax.swing.JPanel {
+public class ManageStaffingRequestsJPanel extends javax.swing.JPanel {
 
     private JPanel container;
-    private UserAccount account;
-    private Network network;
+    private List<StaffingRequest> dataList;
+    private StaffingRequest selectedRecord = null; 
 
     // Define the columns you actually want visible in the JTable
     private final String[] COLUMN_NAMES = {
-        "Contractor Name", "Role/Title", "Assigned Supervisor"
+        "Req ID", "Job Title", "Target Hires", "Start Date", "Status"
     };
 
-    public HiringManagerContractorsJPanel(JPanel container, UserAccount account, Network network) {
+    public ManageStaffingRequestsJPanel(JPanel container, List<StaffingRequest> dataList) {
         initComponents(); 
         this.container = container;
-        this.account = account;
-        this.network = network;
-        populateSupervisorComboBox();
+        this.dataList = dataList;
         refreshTable();
     }
 
     // Map object to the table row
-    private Object[] mapObjectToRow(StaffingReqWorkOrder item) {
+    private Object[] mapObjectToRow(StaffingRequest item) {
         return new Object[]{
             item,                      // Column 0: The object (displays ID via toString)
             item.getJobTitle(),        // Column 1
@@ -56,21 +45,19 @@ public class HiringManagerContractorsJPanel extends javax.swing.JPanel {
     }
 
     // Create a new blank object and pass it to the update method
-    /*private StaffingReqWorkOrder buildObjectFromFields() throws NumberFormatException {
-        StaffingReqWorkOrder newItem = new StaffingReqWorkOrder();
+    private StaffingRequest buildObjectFromFields() throws NumberFormatException {
+        StaffingRequest newItem = new StaffingRequest();
         
         
-        newItem.setSender(account);                        
-        //newItem.setRequestDate(LocalDate.now());           
-        newItem.setStatus(WorkOrderStatus.PENDING);       
-        //newItem.setJobTitle(txtJobTitle.getText().trim()); 
+        //newItem.setStatus("Submitted");
+        //newItem.setSubmittedDate(java.time.LocalDate.now().toString()); 
         
         updateObjectFromFields(newItem);
         return newItem;
-    }*/
+    }
 
     // Update an object with text fields
-    /*private void updateObjectFromFields(StaffingReqWorkOrder item) throws NumberFormatException {
+    private void updateObjectFromFields(StaffingRequest item) throws NumberFormatException {
         // Parse numbers
         //item.setId(Integer.parseInt(txtId.getText().trim()));
         item.setNumberOfPositions(Integer.parseInt(txtQuantity.getText().trim()));
@@ -79,95 +66,60 @@ public class HiringManagerContractorsJPanel extends javax.swing.JPanel {
         item.setJobTitle(txtJobTitle.getText().trim());
         item.setDescription(txtDescription.getText().trim());
         item.setRequiredSkills(txtSkills.getText().trim());
-        
-        java.util.Date spinnerDate = (java.util.Date) spnStartDate.getValue();
-        LocalDate startDate = spinnerDate.toInstant()
-                                         .atZone(java.time.ZoneId.systemDefault())
-                                         .toLocalDate();
-        item.setStartDate(startDate);
+        item.setStartDate(LocalDate.parse(txtStartDate.getText().trim()));
         
         // Status and SubmittedDate are usually handled by system logic 
         
-    }*/
+    }
 
     // Fill text fields when a table row is clicked
-    /*private void populateForm(StaffingReqWorkOrder item) {
+    private void populateForm(StaffingRequest item) {
         //txtId.setText(String.valueOf(item.getId()));
         txtQuantity.setText(String.valueOf(item.getNumberOfPositions()));
         
         txtJobTitle.setText(item.getJobTitle());
         txtDescription.setText(item.getDescription());
         txtSkills.setText(item.getRequiredSkills());
-        
-        if (item.getStartDate() != null) {
-            java.util.Date spinnerDate = java.util.Date.from(
-                item.getStartDate().atStartOfDay(java.time.ZoneId.systemDefault()).toInstant()
-            );
-            spnStartDate.setValue(spinnerDate);
-        }
-    }*/
+        txtStartDate.setText(item.getStartDate() != null ? item.getStartDate().toString() : "");
+    }
 
     // Check for empty string fields before saving
-    /*private boolean validateInput() {
+    private boolean validateInput() {
         //if (txtId.getText().trim().isEmpty() || 
         if    (txtJobTitle.getText().trim().isEmpty() || 
-            txtQuantity.getText().trim().isEmpty()) {
+            txtQuantity.getText().trim().isEmpty() ||
+            txtStartDate.getText().trim().isEmpty()) {
             
-            JOptionPane.showMessageDialog(this, "ID, Job Title, Number of Hires are required.", "Warning", JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(this, "ID, Job Title, Number of Hires, and Start Date are required.", "Warning", JOptionPane.WARNING_MESSAGE);
             return false;
         }
         return true;
-    }*/
-
-    private void populateSupervisorComboBox() {
-        cmbSupervisors.removeAllItems();
+    }
     
-        
-        cmbSupervisors.addItem(null);
-
-        for (UserAccount ua : network.getUserAccountDirectory().getUserAccountList()) {
-            if (ua.getRole().toString().contains("Supervisor")) {
-                cmbSupervisors.addItem(ua);
-            }
-        }
-}
     //-------------You should not need to edit below this line--------------------
 
     private void refreshTable() {
         DefaultTableModel model = new DefaultTableModel(COLUMN_NAMES, 0) {
             @Override
-            public boolean isCellEditable(int row, int col) { 
-                return false; 
-            }
+            public boolean isCellEditable(int row, int col) { return false; }
         };
-
-        for (UserAccount ua : network.getUserAccountDirectory().getUserAccountList()) {
-            // 1. Check the object type directly instead of parsing strings
-            if (ua.getRole() instanceof ContractorRole) { 
-
-                model.addRow(new Object[]{
-                    ua, 
-                    ua.getRole(),
-                    ua.getSupervisor() 
-                });
-            }
+        for (int i = 0; i < dataList.size(); i++) {
+            model.addRow(mapObjectToRow(dataList.get(i)));
         }
-    tblData.setModel(model);
+        tblData.setModel(model); 
     }
-
 
     private void clearFormAndSelection() {
         // Clear visually (add specific fields here if needed in Zone 1, 
         // but looping components keeps it generic)
-        /*java.awt.Component[] components = getComponents();
+        java.awt.Component[] components = getComponents();
         for (java.awt.Component component : components) {
             if (component instanceof javax.swing.JTextField) {
                 ((javax.swing.JTextField) component).setText("");
             }
         }
-        spnStartDate.setValue(new java.util.Date());*/
-        cmbSupervisors.setSelectedItem(null);
-        //selectedRecord = null;
+        
+        selectedRecord = null;
         tblData.clearSelection();
     }
 
@@ -185,12 +137,19 @@ public class HiringManagerContractorsJPanel extends javax.swing.JPanel {
         jScrollPane1 = new javax.swing.JScrollPane();
         tblData = new javax.swing.JTable();
         btnBack = new javax.swing.JButton();
-        btnSave = new javax.swing.JButton();
-        btnDelete = new javax.swing.JButton();
-        btnClear = new javax.swing.JButton();
-        jLabel6 = new javax.swing.JLabel();
-        jLabel7 = new javax.swing.JLabel();
-        cmbSupervisors = new javax.swing.JComboBox<>();
+        txtJobTitle = new javax.swing.JTextField();
+        jLabel1 = new javax.swing.JLabel();
+        txtDescription = new javax.swing.JTextField();
+        jLabel2 = new javax.swing.JLabel();
+        txtSkills = new javax.swing.JTextField();
+        jLabel3 = new javax.swing.JLabel();
+        txtStartDate = new javax.swing.JTextField();
+        jLabel4 = new javax.swing.JLabel();
+        txtQuantity = new javax.swing.JTextField();
+        jLabel5 = new javax.swing.JLabel();
+        btnSave = new javax.swing.JToggleButton();
+        btnDelete = new javax.swing.JToggleButton();
+        btnClear = new javax.swing.JToggleButton();
 
         tblData.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
@@ -217,6 +176,16 @@ public class HiringManagerContractorsJPanel extends javax.swing.JPanel {
             }
         });
 
+        jLabel1.setText("Job Title:");
+
+        jLabel2.setText("Description:");
+
+        jLabel3.setText("Required Skills:");
+
+        jLabel4.setText("Start Date:");
+
+        jLabel5.setText("Quantity:");
+
         btnSave.setText("Save");
         btnSave.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -225,7 +194,6 @@ public class HiringManagerContractorsJPanel extends javax.swing.JPanel {
         });
 
         btnDelete.setText("Delete");
-        btnDelete.setEnabled(false);
         btnDelete.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnDeleteActionPerformed(evt);
@@ -239,11 +207,6 @@ public class HiringManagerContractorsJPanel extends javax.swing.JPanel {
             }
         });
 
-        jLabel6.setFont(new java.awt.Font("Segoe UI", 0, 24)); // NOI18N
-        jLabel6.setText("Manage Contractors");
-
-        jLabel7.setText("Assign Supervisor:");
-
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -255,40 +218,63 @@ public class HiringManagerContractorsJPanel extends javax.swing.JPanel {
                         .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(layout.createSequentialGroup()
                         .addGap(31, 31, 31)
-                        .addComponent(btnBack)
-                        .addGap(88, 88, 88)
-                        .addComponent(jLabel6))
+                        .addComponent(btnBack))
                     .addGroup(layout.createSequentialGroup()
+                        .addGap(134, 134, 134)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(jLabel1)
+                            .addComponent(jLabel2)
+                            .addComponent(jLabel3)
+                            .addComponent(jLabel4)
+                            .addComponent(jLabel5)
+                            .addComponent(btnSave, javax.swing.GroupLayout.Alignment.LEADING))
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(layout.createSequentialGroup()
-                                .addGap(134, 134, 134)
-                                .addComponent(btnSave))
+                                .addGap(18, 18, 18)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                    .addComponent(txtStartDate)
+                                    .addComponent(txtQuantity, javax.swing.GroupLayout.PREFERRED_SIZE, 118, javax.swing.GroupLayout.PREFERRED_SIZE)))
                             .addGroup(layout.createSequentialGroup()
-                                .addGap(189, 189, 189)
-                                .addComponent(jLabel7)))
-                        .addGap(32, 32, 32)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(cmbSupervisors, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addGroup(layout.createSequentialGroup()
+                                .addGap(45, 45, 45)
                                 .addComponent(btnDelete)
                                 .addGap(80, 80, 80)
-                                .addComponent(btnClear)))))
-                .addContainerGap(59, Short.MAX_VALUE))
+                                .addComponent(btnClear))
+                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(txtJobTitle, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 228, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(txtDescription, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 228, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(txtSkills, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 228, javax.swing.GroupLayout.PREFERRED_SIZE))))))
+                .addContainerGap(78, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGap(8, 8, 8)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(btnBack)
-                    .addComponent(jLabel6))
+                .addGap(18, 18, 18)
+                .addComponent(btnBack)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 216, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(42, 42, 42)
+                .addGap(18, 18, 18)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel7)
-                    .addComponent(cmbSupervisors, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(154, 154, 154)
+                    .addComponent(txtJobTitle, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel1))
+                .addGap(18, 18, 18)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(txtDescription, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel2))
+                .addGap(18, 18, 18)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(txtSkills, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel3))
+                .addGap(18, 18, 18)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(txtStartDate, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel4))
+                .addGap(18, 18, 18)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(txtQuantity, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel5))
+                .addGap(18, 18, 18)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(btnSave)
                     .addComponent(btnDelete)
@@ -298,52 +284,40 @@ public class HiringManagerContractorsJPanel extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnBackActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnBackActionPerformed
-        container.remove(this);
-        CardLayout layout = (CardLayout) container.getLayout();
-        layout.previous(container);
+        // TODO add your handling code here:
     }//GEN-LAST:event_btnBackActionPerformed
 
     private void btnSaveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSaveActionPerformed
-        int selectedRow = tblData.getSelectedRow();
-        if (selectedRow < 0) {
-            JOptionPane.showMessageDialog(this, "Please select a contractor from the table.", "Warning", JOptionPane.WARNING_MESSAGE);
-            return;
+        if (!validateInput()) return;
+
+        try {
+            if (selectedRecord == null) {
+                dataList.add(buildObjectFromFields());
+                JOptionPane.showMessageDialog(this, "Record created successfully.");
+            } else {
+                updateObjectFromFields(selectedRecord);
+                JOptionPane.showMessageDialog(this, "Record updated successfully.");
+            }
+            refreshTable();
+            clearFormAndSelection();
+        } catch (NumberFormatException ex) {
+            JOptionPane.showMessageDialog(this, "Please ensure numeric fields contain valid whole or decimal numbers.", "Input Error", JOptionPane.ERROR_MESSAGE);
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, "An unexpected error occurred: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
-
-        UserAccount selectedContractor = (UserAccount) tblData.getValueAt(selectedRow, 0);
-        // Directly retrieve the selected UserAccount object (or null)
-        UserAccount selectedSupervisor = (UserAccount) cmbSupervisors.getSelectedItem();
-
-        selectedContractor.setSupervisor(selectedSupervisor);
-
-        String msg = (selectedSupervisor != null) 
-            ? "Supervisor assigned successfully!" 
-            : "Supervisor unassigned successfully.";
-
-        JOptionPane.showMessageDialog(this, msg);
-        refreshTable();
     }//GEN-LAST:event_btnSaveActionPerformed
 
     private void btnDeleteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDeleteActionPerformed
-        /*if (selectedRecord != null) {
-            int confirm = JOptionPane.showConfirmDialog(this, "Are you sure you want to delete this work order?", "Confirm Deletion", JOptionPane.YES_NO_OPTION);
+        if (selectedRecord != null) {
+            int confirm = JOptionPane.showConfirmDialog(this, "Are you sure you want to delete this record?", "Confirm Deletion", JOptionPane.YES_NO_OPTION);
             if (confirm == JOptionPane.YES_OPTION) {
-                
-                // Remove from Hiring Manager's local queue
-                account.getWorkQueue().getWorkOrderList().remove(selectedRecord);
-                
-                // Remove from target Staffing queue if not yet processed
-                Organization staffingOrg = NetworkUtils.findOrganizationByName(network, "Staffing Agency Enterprise", "Recruiting Organization");
-                if (staffingOrg != null) {
-                    staffingOrg.getWorkQueue().getWorkOrderList().remove(selectedRecord);
-                }
-                
+                dataList.remove(selectedRecord);
                 refreshTable();
                 clearFormAndSelection();
             }
         } else {
-            JOptionPane.showMessageDialog(this, "Please select a work order from the table first.", "Warning", JOptionPane.WARNING_MESSAGE);
-        }*/
+            JOptionPane.showMessageDialog(this, "Please select a row from the table first.", "Warning", JOptionPane.WARNING_MESSAGE);
+        }
     }//GEN-LAST:event_btnDeleteActionPerformed
 
     private void btnClearActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnClearActionPerformed
@@ -354,23 +328,33 @@ public class HiringManagerContractorsJPanel extends javax.swing.JPanel {
         int viewRow = tblData.getSelectedRow();
         if (viewRow >= 0) {
             int modelRow = tblData.convertRowIndexToModel(viewRow);
-
-            UserAccount selectedContractor = (UserAccount) tblData.getValueAt(modelRow, 0);
-
-            cmbSupervisors.setSelectedItem(selectedContractor.getSupervisor());
+            
+            // Suppress warning here as we strictly control column 0 insertion
+            @SuppressWarnings("unchecked") 
+            StaffingRequest castRecord = (StaffingRequest) tblData.getValueAt(modelRow, 0);
+            
+            selectedRecord = castRecord;
+            populateForm(selectedRecord);
         }
     }//GEN-LAST:event_tblDataMouseClicked
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnBack;
-    private javax.swing.JButton btnClear;
-    private javax.swing.JButton btnDelete;
-    private javax.swing.JButton btnSave;
-    private javax.swing.JComboBox<UserAccount> cmbSupervisors;
-    private javax.swing.JLabel jLabel6;
-    private javax.swing.JLabel jLabel7;
+    private javax.swing.JToggleButton btnClear;
+    private javax.swing.JToggleButton btnDelete;
+    private javax.swing.JToggleButton btnSave;
+    private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel4;
+    private javax.swing.JLabel jLabel5;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JTable tblData;
+    private javax.swing.JTextField txtDescription;
+    private javax.swing.JTextField txtJobTitle;
+    private javax.swing.JTextField txtQuantity;
+    private javax.swing.JTextField txtSkills;
+    private javax.swing.JTextField txtStartDate;
     // End of variables declaration//GEN-END:variables
 }

@@ -1,8 +1,12 @@
 package ComplianceEnterprise.Model;
 
 import ComplianceEnterprise.Role.ComplianceAnalyst;
+import ComplianceEnterprise.Role.ComplianceUser;
 import ComplianceEnterprise.Role.ComplianceManager;
 import ComplianceEnterprise.Role.CredentialSpecialist;
+import ComplianceEnterprise.Role.ComplianceAnalystRole;
+import Business.Network;
+import Core.UserAccount;
 import StaffingAgency.People.Contractor;
 import StaffingAgency.Request.CredentialVerificationRequest;
 import java.util.List;
@@ -43,6 +47,39 @@ public class ComplianceData {
 
     public ComplianceAnalyst getAnalyst() {
         return analyst;
+    }
+
+    public ComplianceAnalyst getAnalystForAccount(UserAccount account) {
+        if (account == null) {
+            return analyst;
+        }
+        for (ComplianceUser user : complianceDirectory.getUserList()) {
+            if (user instanceof ComplianceAnalyst
+                    && user.getUsername().equalsIgnoreCase(
+                            account.getUsername())) {
+                return (ComplianceAnalyst) user;
+            }
+        }
+        String name = account.getPerson() == null
+                ? account.getUsername() : account.getPerson().toString();
+        ComplianceAnalyst newAnalyst = new ComplianceAnalyst(
+                name,
+                account.getUsername() + "@compliance.local",
+                account.getUsername());
+        complianceDirectory.addUser(newAnalyst);
+        return newAnalyst;
+    }
+
+    public void syncAnalystsFromNetwork(Network network) {
+        if (network == null || network.getUserAccountDirectory() == null) {
+            return;
+        }
+        for (UserAccount account : network.getUserAccountDirectory()
+                .getUserAccountList()) {
+            if (account.getRole() instanceof ComplianceAnalystRole) {
+                getAnalystForAccount(account);
+            }
+        }
     }
 
     public CredentialSpecialist getSpecialist() {

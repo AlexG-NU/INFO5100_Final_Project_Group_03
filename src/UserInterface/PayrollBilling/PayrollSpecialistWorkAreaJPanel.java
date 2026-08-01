@@ -453,7 +453,7 @@ public class PayrollSpecialistWorkAreaJPanel extends javax.swing.JPanel {
     private Organization getPayrollProcessingOrganization() {
         return NetworkUtils.findOrganizationByName(
                 network,
-                "PayrollBilling",
+                "Payroll and Billing Enterprise",
                 "PayrollProcessing"
         );
     }
@@ -461,7 +461,7 @@ public class PayrollSpecialistWorkAreaJPanel extends javax.swing.JPanel {
     private Organization getClientBillingOrganization() {
         return NetworkUtils.findOrganizationByName(
                 network,
-                "PayrollBilling",
+                "Payroll and Billing Enterprise",
                 "ClientBilling"
         );
     }

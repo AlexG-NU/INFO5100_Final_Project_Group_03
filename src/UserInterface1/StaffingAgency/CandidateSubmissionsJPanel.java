@@ -6,16 +6,16 @@ package UserInterface1.StaffingAgency;
 
 import Business.Network;
 import ComplianceEnterprise.ComplianceIntegrationService;
-/**
- *
- * @author abhit
- */
-
+import Core.NetworkUtils;
+import Core.Organization;
+import Core.UserAccount;
+import Core.WorkOrder;
+import Core.WorkOrderQueue;
+import Core.WorkOrderStatus;
+import Core.WorkOrders.StaffingReqWorkOrder;
 import StaffingAgency.Enums.CandidateStatus;
-import StaffingAgency.Enums.RequestStatus;
 import StaffingAgency.People.Candidate;
 import StaffingAgency.Request.CandidateSubmission;
-import WorkOrders.StaffingRequest;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.FlowLayout;
@@ -37,15 +37,17 @@ import javax.swing.table.DefaultTableModel;
 public class CandidateSubmissionsJPanel extends JPanel {
 
     private final List<Candidate> candidateList;
-    private final List<StaffingRequest> staffingRequestList;
     private final List<CandidateSubmission> submissionList;
-    private final Network network; // @janet - shared enterprise network
+    private final UserAccount recruiterAccount;
+    private final Network network;
+    private final JPanel mainContentPanel;
+    private final JPanel recruiterDashboardPanel;
 
     private JTable tblSubmissions;
     private DefaultTableModel tableModel;
 
     private JComboBox<Candidate> cmbCandidate;
-    private JComboBox<StaffingRequest> cmbStaffingRequest;
+    private JComboBox<StaffingReqWorkOrder> cmbStaffingRequest;
     private JTextArea txtRecruiterNotes;
 
     private JButton btnSubmit;
@@ -54,22 +56,19 @@ public class CandidateSubmissionsJPanel extends JPanel {
     private JButton btnSendToCompliance;
     private JButton btnRefresh;
     private JButton btnClear;
+    private JButton btnBack;
 
     public CandidateSubmissionsJPanel(
             List<Candidate> candidateList,
-            List<StaffingRequest> staffingRequestList,
             List<CandidateSubmission> submissionList,
-            Network network
+            UserAccount recruiterAccount,
+            Network network,
+            JPanel mainContentPanel,
+            JPanel recruiterDashboardPanel
     ) {
         if (candidateList == null) {
             throw new IllegalArgumentException(
                     "Candidate list cannot be null."
-            );
-        }
-
-        if (staffingRequestList == null) {
-            throw new IllegalArgumentException(
-                    "Staffing-request list cannot be null."
             );
         }
 
@@ -78,16 +77,31 @@ public class CandidateSubmissionsJPanel extends JPanel {
                     "Submission list cannot be null."
             );
         }
+
+        if (recruiterAccount == null) {
+            throw new IllegalArgumentException(
+                    "Recruiter account cannot be null."
+            );
+        }
+
         if (network == null) {
             throw new IllegalArgumentException(
                     "Network cannot be null."
             );
         }
+        if (mainContentPanel == null
+                || recruiterDashboardPanel == null) {
+            throw new IllegalArgumentException(
+                    "Navigation panels cannot be null."
+            );
+        }
 
         this.candidateList = candidateList;
-        this.staffingRequestList = staffingRequestList;
         this.submissionList = submissionList;
+        this.recruiterAccount = recruiterAccount;
         this.network = network;
+        this.mainContentPanel = mainContentPanel;
+        this.recruiterDashboardPanel = recruiterDashboardPanel;
 
         initComponents();
         loadComboBoxes();
@@ -132,7 +146,8 @@ public class CandidateSubmissionsJPanel extends JPanel {
         );
 
         JLabel lblSubtitle = new JLabel(
-                "Submit qualified candidates for open staffing requests"
+                "Route qualified candidates to the "
+                + "Client Human Resources queue"
         );
 
         lblSubtitle.setFont(
@@ -164,7 +179,7 @@ public class CandidateSubmissionsJPanel extends JPanel {
             "Submission ID",
             "Date",
             "Candidate",
-            "Request ID",
+            "Staffing Work Order",
             "Job Title",
             "Status",
             "Recruiter Notes",
@@ -191,12 +206,8 @@ public class CandidateSubmissionsJPanel extends JPanel {
                 ListSelectionModel.SINGLE_SELECTION
         );
 
-        tblSubmissions
-                .getTableHeader()
+        tblSubmissions.getTableHeader()
                 .setReorderingAllowed(false);
-
-        JScrollPane scrollPane =
-                new JScrollPane(tblSubmissions);
 
         JLabel lblTableTitle =
                 new JLabel("Submission History");
@@ -211,7 +222,7 @@ public class CandidateSubmissionsJPanel extends JPanel {
         );
 
         tablePanel.add(
-                scrollPane,
+                new JScrollPane(tblSubmissions),
                 BorderLayout.CENTER
         );
 
@@ -246,7 +257,9 @@ public class CandidateSubmissionsJPanel extends JPanel {
         formPanel.add(new JLabel("Candidate:"));
         formPanel.add(cmbCandidate);
 
-        formPanel.add(new JLabel("Staffing Request:"));
+        formPanel.add(
+                new JLabel("Staffing Work Order:")
+        );
         formPanel.add(cmbStaffingRequest);
 
         formPanel.add(new JLabel("Recruiter Notes:"));
@@ -259,13 +272,28 @@ public class CandidateSubmissionsJPanel extends JPanel {
 
         buttonPanel.setOpaque(false);
 
-        btnSubmit = new JButton("Create Submission");
-        btnSendToClient = new JButton("Send to Client");
-        btnWithdraw = new JButton("Withdraw");
-        btnSendToCompliance = new JButton("Send to Compliance");
-        btnRefresh = new JButton("Refresh");
-        btnClear = new JButton("Clear");
+        btnSubmit =
+                new JButton("Create Submission");
 
+        btnSendToClient =
+                new JButton("Send to Client HR");
+
+        btnWithdraw =
+                new JButton("Withdraw");
+
+        btnSendToCompliance =
+                new JButton("Send to Compliance");
+
+        btnRefresh =
+                new JButton("Refresh");
+
+        btnClear =
+                new JButton("Clear");
+
+        btnBack =
+                new JButton("<< Back");
+
+        buttonPanel.add(btnBack);
         buttonPanel.add(btnSubmit);
         buttonPanel.add(btnSendToClient);
         buttonPanel.add(btnWithdraw);
@@ -277,6 +305,10 @@ public class CandidateSubmissionsJPanel extends JPanel {
                 event -> createSubmission()
         );
 
+        btnBack.addActionListener(
+                event -> goBack()
+        );
+
         btnSendToClient.addActionListener(
                 event -> sendSelectedToClient()
         );
@@ -285,7 +317,6 @@ public class CandidateSubmissionsJPanel extends JPanel {
                 event -> withdrawSelectedSubmission()
         );
 
-        // @janet - Staffing sends its existing assignment to Compliance.
         btnSendToCompliance.addActionListener(
                 event -> sendSelectedToCompliance()
         );
@@ -301,10 +332,35 @@ public class CandidateSubmissionsJPanel extends JPanel {
                 event -> clearForm()
         );
 
-        outerPanel.add(formPanel, BorderLayout.CENTER);
-        outerPanel.add(buttonPanel, BorderLayout.SOUTH);
+        outerPanel.add(
+                formPanel,
+                BorderLayout.CENTER
+        );
+
+        outerPanel.add(
+                buttonPanel,
+                BorderLayout.SOUTH
+        );
 
         return outerPanel;
+    }
+
+    private Organization getRecruitingOrganization() {
+
+        return NetworkUtils.findOrganizationByName(
+                network,
+                "Staffing Agency Enterprise",
+                "Recruiting Organization"
+        );
+    }
+
+    private Organization getClientHrOrganization() {
+
+        return NetworkUtils.findOrganizationByName(
+                network,
+                "Client Enterprise",
+                "Human Resources Organization"
+        );
     }
 
     private void loadComboBoxes() {
@@ -312,19 +368,20 @@ public class CandidateSubmissionsJPanel extends JPanel {
         Candidate selectedCandidate =
                 (Candidate) cmbCandidate.getSelectedItem();
 
-        StaffingRequest selectedRequest =
-                (StaffingRequest)
+        StaffingReqWorkOrder selectedRequest =
+                (StaffingReqWorkOrder)
                         cmbStaffingRequest.getSelectedItem();
 
         cmbCandidate.removeAllItems();
 
         for (Candidate candidate : candidateList) {
-            if (candidate.getCandidateStatus()
-                    != CandidateStatus.REJECTED
-                    && candidate.getCandidateStatus()
-                    != CandidateStatus.WITHDRAWN
-                    && candidate.getCandidateStatus()
-                    != CandidateStatus.PLACED) {
+
+            CandidateStatus status =
+                    candidate.getCandidateStatus();
+
+            if (status != CandidateStatus.REJECTED
+                    && status != CandidateStatus.WITHDRAWN
+                    && status != CandidateStatus.PLACED) {
 
                 cmbCandidate.addItem(candidate);
             }
@@ -332,22 +389,63 @@ public class CandidateSubmissionsJPanel extends JPanel {
 
         cmbStaffingRequest.removeAllItems();
 
-        for (StaffingRequest request : staffingRequestList) {
-            if (request.getStatus()
-                    != WorkOrders.RequestStatus.COMPLETED
-                    && request.getStatus()
-                    != WorkOrders.RequestStatus.REJECTED) {
+        Organization recruitingOrganization =
+                getRecruitingOrganization();
 
-                cmbStaffingRequest.addItem(request);
+        if (recruitingOrganization != null) {
+
+            for (WorkOrder workOrder
+                    : recruitingOrganization
+                            .getWorkQueue()
+                            .getWorkOrderList()) {
+
+                if (!(workOrder
+                        instanceof StaffingReqWorkOrder)) {
+                    continue;
+                }
+
+                StaffingReqWorkOrder request =
+                        (StaffingReqWorkOrder) workOrder;
+
+                if (request.getStatus() == null
+                        || request.getStatus().isDone()) {
+                    continue;
+                }
+
+                UserAccount receiver =
+                        request.getReceiver();
+
+                /*
+                 * Only show work orders claimed by the
+                 * currently logged-in recruiter.
+                 */
+                if (receiver != null
+                        && receiver.getUsername()
+                                .equalsIgnoreCase(
+                                        recruiterAccount
+                                                .getUsername()
+                                )) {
+
+                    cmbStaffingRequest.addItem(request);
+                }
             }
         }
 
+        cmbStaffingRequest.setToolTipText(
+                "Claim a request in View Staffing Requests "
+                + "before creating a candidate submission."
+        );
+
         if (selectedCandidate != null) {
-            cmbCandidate.setSelectedItem(selectedCandidate);
+            cmbCandidate.setSelectedItem(
+                    selectedCandidate
+            );
         }
 
         if (selectedRequest != null) {
-            cmbStaffingRequest.setSelectedItem(selectedRequest);
+            cmbStaffingRequest.setSelectedItem(
+                    selectedRequest
+            );
         }
     }
 
@@ -355,32 +453,40 @@ public class CandidateSubmissionsJPanel extends JPanel {
 
         tableModel.setRowCount(0);
 
-        for (CandidateSubmission submission : submissionList) {
+        for (CandidateSubmission submission
+                : submissionList) {
 
-            Object[] row = {
-                submission.getSubmissionId(),
-                submission.getSubmissionDate(),
-                submission.getCandidate().getFullName(),
-                submission.getStaffingRequest().getRequestId(),
-                submission.getStaffingRequest().getJobTitle(),
-                submission.getStatus(),
-                submission.getRecruiterNotes(),
-                submission.getClientFeedback() == null
-                        ? ""
-                        : submission.getClientFeedback()
-            };
+            StaffingReqWorkOrder request =
+                    submission.getStaffingRequest();
 
-            tableModel.addRow(row);
+            tableModel.addRow(
+                    new Object[]{
+                        submission.getSubmissionId(),
+                        submission.getSubmissionDate(),
+                        submission.getCandidate()
+                                .getFullName(),
+                        request.getWorkOrderId(),
+                        request.getJobTitle(),
+                        submission.getStatus(),
+                        submission.getRecruiterNotes(),
+                        submission.getClientFeedback()
+                                == null
+                                ? ""
+                                : submission
+                                        .getClientFeedback()
+                    }
+            );
         }
     }
 
     private void createSubmission() {
 
         Candidate candidate =
-                (Candidate) cmbCandidate.getSelectedItem();
+                (Candidate)
+                        cmbCandidate.getSelectedItem();
 
-        StaffingRequest request =
-                (StaffingRequest)
+        StaffingReqWorkOrder request =
+                (StaffingReqWorkOrder)
                         cmbStaffingRequest.getSelectedItem();
 
         String notes =
@@ -388,29 +494,35 @@ public class CandidateSubmissionsJPanel extends JPanel {
 
         if (candidate == null) {
             showError(
-                    "Create a candidate before making a submission."
+                    "Create or select a candidate first."
             );
             return;
         }
 
         if (request == null) {
             showError(
-                    "No eligible staffing request is available."
+                    "Claim a staffing work order before "
+                    + "creating a submission."
             );
             return;
         }
 
         if (notes.isEmpty()) {
             showError(
-                    "Enter recruiter notes before submitting."
+                    "Enter recruiter notes before "
+                    + "creating the submission."
             );
             return;
         }
 
-        if (submissionAlreadyExists(candidate, request)) {
+        if (submissionAlreadyExists(
+                candidate,
+                request
+        )) {
             showError(
-                    "This candidate has already been submitted "
-                    + "for the selected staffing request."
+                    "This candidate already has an active "
+                    + "submission for the selected staffing "
+                    + "work order."
             );
             return;
         }
@@ -423,8 +535,20 @@ public class CandidateSubmissionsJPanel extends JPanel {
                             notes
                     );
 
+            submission.setSender(
+                    recruiterAccount
+            );
+
             submissionList.add(submission);
-            request.addSubmission(submission);
+
+            /*
+             * Save the pending submission in the
+             * recruiter's personal queue.
+             */
+            addToQueueIfMissing(
+                    recruiterAccount.getWorkQueue(),
+                    submission
+            );
 
             candidate.setCandidateStatus(
                     CandidateStatus.SUBMITTED
@@ -435,7 +559,8 @@ public class CandidateSubmissionsJPanel extends JPanel {
 
             JOptionPane.showMessageDialog(
                     this,
-                    "Candidate submission created successfully."
+                    "Candidate submission created. "
+                    + "Select it and send it to Client HR."
             );
 
         } catch (IllegalArgumentException ex) {
@@ -445,9 +570,10 @@ public class CandidateSubmissionsJPanel extends JPanel {
 
     private boolean submissionAlreadyExists(
             Candidate candidate,
-            StaffingRequest request
+            StaffingReqWorkOrder request
     ) {
-        for (CandidateSubmission submission : submissionList) {
+        for (CandidateSubmission submission
+                : submissionList) {
 
             boolean sameCandidate =
                     submission.getCandidate()
@@ -456,16 +582,18 @@ public class CandidateSubmissionsJPanel extends JPanel {
 
             boolean sameRequest =
                     submission.getStaffingRequest()
-                            .getRequestId()
-                    == request.getRequestId();
+                            .getWorkOrderId()
+                    == request.getWorkOrderId();
 
-            boolean stillActive =
+            boolean active =
                     submission.getStatus()
-                    != RequestStatus.REJECTED;
+                    != WorkOrderStatus.REJECTED
+                    && submission.getStatus()
+                    != WorkOrderStatus.CANCELLED;
 
             if (sameCandidate
                     && sameRequest
-                    && stillActive) {
+                    && active) {
                 return true;
             }
         }
@@ -483,22 +611,65 @@ public class CandidateSubmissionsJPanel extends JPanel {
         }
 
         if (submission.getStatus()
-                != RequestStatus.SUBMITTED) {
+                != WorkOrderStatus.PENDING) {
 
             showError(
-                    "Only newly created submissions can be sent."
+                    "Only a pending submission can "
+                    + "be sent to Client HR."
             );
             return;
         }
 
-        submission.submitToClient();
+        Organization hrOrganization =
+                getClientHrOrganization();
 
-        populateTable();
+        if (hrOrganization == null) {
+            showError(
+                    "Client Enterprise - Human Resources "
+                    + "Organization was not found."
+            );
+            return;
+        }
 
-        JOptionPane.showMessageDialog(
-                this,
-                "Submission sent to the client for review."
-        );
+        try {
+            /*
+             * Update the same WorkOrder object.
+             */
+            submission.submitToClient();
+
+            /*
+             * Route the same object to Client HR.
+             */
+            addToQueueIfMissing(
+                    hrOrganization.getWorkQueue(),
+                    submission
+            );
+
+            /*
+             * Add it to the network queue for reporting.
+             */
+            addToQueueIfMissing(
+                    network.getWorkOrderQueue(),
+                    submission
+            );
+
+            addToQueueIfMissing(
+                    recruiterAccount.getWorkQueue(),
+                    submission
+            );
+
+            populateTable();
+
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Candidate Submission #"
+                    + submission.getWorkOrderId()
+                    + " sent to the Client HR queue."
+            );
+
+        } catch (IllegalStateException ex) {
+            showError(ex.getMessage());
+        }
     }
 
     private void withdrawSelectedSubmission() {
@@ -511,9 +682,9 @@ public class CandidateSubmissionsJPanel extends JPanel {
         }
 
         if (submission.getStatus()
-                == RequestStatus.APPROVED
+                == WorkOrderStatus.APPROVED
                 || submission.getStatus()
-                == RequestStatus.COMPLETED) {
+                == WorkOrderStatus.COMPLETED) {
 
             showError(
                     "An approved or completed submission "
@@ -522,70 +693,106 @@ public class CandidateSubmissionsJPanel extends JPanel {
             return;
         }
 
-        int choice = JOptionPane.showConfirmDialog(
-                this,
-                "Withdraw the selected candidate submission?",
-                "Confirm Withdrawal",
-                JOptionPane.YES_NO_OPTION
-        );
+        int choice =
+                JOptionPane.showConfirmDialog(
+                        this,
+                        "Withdraw the selected candidate submission?",
+                        "Confirm Withdrawal",
+                        JOptionPane.YES_NO_OPTION
+                );
 
         if (choice != JOptionPane.YES_OPTION) {
             return;
         }
 
-        submission.withdrawSubmission();
-
-        submission.getCandidate().setCandidateStatus(
-                CandidateStatus.WITHDRAWN
-        );
-
-        populateTable();
-        loadComboBoxes();
-
-        JOptionPane.showMessageDialog(
-                this,
-                "Submission withdrawn."
-        );
-    }
-
-    // @janet - This is the cross-enterprise handoff. No duplicate
-    // contractor or assignment record is created here.
-    private void sendSelectedToCompliance() {
-        CandidateSubmission submission = getSelectedSubmission();
-        if (submission == null) {
-            return;
-        }
-        if (submission.getStatus() != RequestStatus.APPROVED
-                || submission.getResultingAssignment() == null) {
-            showError(
-                    "The client must approve the submission and create "
-                    + "the assignment before it can be sent to Compliance."
-            );
-            return;
-        }
-        if (!submission.getResultingAssignment()
-                .getVerificationRequests().isEmpty()) {
-            showError("This assignment has already been sent to Compliance.");
-            return;
-        }
         try {
-            ComplianceIntegrationService.submitForVerification(
-                    network,
-                    submission.getResultingAssignment(),
-                    "Background and Credential Verification",
-                    "Verify contractor before the assignment start date."
-            );
+            /*
+             * Because Client HR has the same object,
+             * they will also see the CANCELLED status.
+             */
+            submission.withdrawSubmission();
+
+            submission.getCandidate()
+                    .setCandidateStatus(
+                            CandidateStatus.WITHDRAWN
+                    );
+
             populateTable();
+            loadComboBoxes();
+
             JOptionPane.showMessageDialog(
                     this,
-                    "Assignment sent to the Compliance queue."
+                    "Submission withdrawn."
             );
-        } catch (IllegalArgumentException | IllegalStateException ex) {
+
+        } catch (IllegalStateException ex) {
             showError(ex.getMessage());
         }
     }
 
-    private CandidateSubmission getSelectedSubmission() {
+    private void sendSelectedToCompliance() {
+
+        CandidateSubmission submission =
+                getSelectedSubmission();
+
+        if (submission == null) {
+            return;
+        }
+
+        if (submission.getStatus()
+                != WorkOrderStatus.APPROVED
+                || submission
+                        .getResultingAssignment()
+                == null) {
+
+            showError(
+                    "Client HR must approve the submission "
+                    + "and create the assignment before it "
+                    + "can be sent to Compliance."
+            );
+            return;
+        }
+
+        if (!submission
+                .getResultingAssignment()
+                .getVerificationRequests()
+                .isEmpty()) {
+
+            showError(
+                    "This assignment has already been "
+                    + "sent to Compliance."
+            );
+            return;
+        }
+
+        try {
+            ComplianceIntegrationService
+                    .submitForVerification(
+                            network,
+                            submission
+                                    .getResultingAssignment(),
+                            "Background and Credential Verification",
+                            "Verify contractor before the "
+                            + "assignment start date."
+                    );
+
+            populateTable();
+
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Assignment sent to the Compliance queue."
+            );
+
+        } catch (
+                IllegalArgumentException
+                | IllegalStateException ex
+        ) {
+            showError(ex.getMessage());
+        }
+    }
+
+    private CandidateSubmission
+            getSelectedSubmission() {
 
         int selectedRow =
                 tblSubmissions.getSelectedRow();
@@ -597,7 +804,45 @@ public class CandidateSubmissionsJPanel extends JPanel {
             return null;
         }
 
-        return submissionList.get(selectedRow);
+        int modelRow =
+                tblSubmissions
+                        .convertRowIndexToModel(
+                                selectedRow
+                        );
+
+        int submissionId =
+                (Integer)
+                        tableModel.getValueAt(
+                                modelRow,
+                                0
+                        );
+
+        for (CandidateSubmission submission
+                : submissionList) {
+
+            if (submission.getSubmissionId()
+                    == submissionId) {
+
+                return submission;
+            }
+        }
+
+        showError(
+                "The selected submission could not be found."
+        );
+
+        return null;
+    }
+
+    private void addToQueueIfMissing(
+            WorkOrderQueue queue,
+            WorkOrder workOrder
+    ) {
+        if (!queue.getWorkOrderList()
+                .contains(workOrder)) {
+
+            queue.addWorkOrder(workOrder);
+        }
     }
 
     private void clearForm() {
@@ -614,6 +859,25 @@ public class CandidateSubmissionsJPanel extends JPanel {
         tblSubmissions.clearSelection();
     }
 
+    private void goBack() {
+
+        mainContentPanel.removeAll();
+        mainContentPanel.setLayout(new BorderLayout());
+        mainContentPanel.add(
+                recruiterDashboardPanel,
+                BorderLayout.CENTER
+        );
+        mainContentPanel.revalidate();
+        mainContentPanel.repaint();
+        recruiterDashboardPanel.repaint();
+
+        if (recruiterDashboardPanel
+                instanceof RecruiterWorkAreaJPanel) {
+            ((RecruiterWorkAreaJPanel)
+                    recruiterDashboardPanel).refreshDashboard();
+        }
+    }
+
     private void showError(String message) {
 
         JOptionPane.showMessageDialog(
@@ -623,4 +887,4 @@ public class CandidateSubmissionsJPanel extends JPanel {
                 JOptionPane.ERROR_MESSAGE
         );
     }
-}    
+}

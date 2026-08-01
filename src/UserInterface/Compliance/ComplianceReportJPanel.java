@@ -4,6 +4,7 @@ import ComplianceEnterprise.Enums.ComplianceDecision;
 import ComplianceEnterprise.Enums.CredentialStatus;
 import ComplianceEnterprise.Model.ComplianceDirectory;
 import ComplianceEnterprise.Model.CredentialRecord;
+import ComplianceEnterprise.Model.CredentialVerificationTask;
 import ComplianceEnterprise.Model.VerificationReview;
 import javax.swing.table.DefaultTableModel;
 
@@ -27,7 +28,34 @@ public class ComplianceReportJPanel extends javax.swing.JPanel {
         this.complianceDirectory = complianceDirectory;
         this.previousPanel = previousPanel;
         initComponents();
+        applyFittedLayout();
         refreshReport();
+    }
+
+    private void applyFittedLayout() {
+        java.awt.Color background = new java.awt.Color(238, 240, 244);
+        ComplianceTableUI.configure(tblSummary, 360, 150);
+        ComplianceTableUI.styleScrollPane(jScrollPane1, 240);
+
+        javax.swing.JPanel center = new javax.swing.JPanel(
+                new java.awt.BorderLayout(0, 10));
+        center.setBackground(background);
+        center.add(jScrollPane1, java.awt.BorderLayout.CENTER);
+        center.add(pnlReportDetails, java.awt.BorderLayout.SOUTH);
+
+        javax.swing.JPanel footer = new javax.swing.JPanel(
+                new java.awt.GridLayout(1, 2, 12, 0));
+        footer.setBackground(background);
+        footer.add(btnBack);
+        footer.add(btnRefresh);
+
+        removeAll();
+        setLayout(new java.awt.BorderLayout(0, 10));
+        setBackground(background);
+        setBorder(javax.swing.BorderFactory.createEmptyBorder(12, 18, 12, 18));
+        add(lblTitle, java.awt.BorderLayout.NORTH);
+        add(center, java.awt.BorderLayout.CENTER);
+        add(footer, java.awt.BorderLayout.SOUTH);
     }
 
     private void refreshReport() {
@@ -35,6 +63,9 @@ public class ComplianceReportJPanel extends javax.swing.JPanel {
         int approved = 0;
         int rejected = 0;
         int expired = 0;
+        int credentialChecksPending = 0;
+        int credentialChecksVerified = 0;
+        int credentialIssues = 0;
 
         DefaultTableModel model = (DefaultTableModel) tblSummary.getModel();
         model.setRowCount(0);
@@ -47,6 +78,18 @@ public class ComplianceReportJPanel extends javax.swing.JPanel {
         for (CredentialRecord credential : complianceDirectory.getCredentialList()) {
             if (credential.getStatus() == CredentialStatus.EXPIRED) expired++;
         }
+        for (CredentialVerificationTask task
+                : complianceDirectory.getCredentialTaskList()) {
+            if (!task.isComplete()) credentialChecksPending++;
+            if (task.getResult() == CredentialStatus.VERIFIED) {
+                credentialChecksVerified++;
+            }
+            if (task.getResult() == CredentialStatus.MISSING
+                    || task.getResult() == CredentialStatus.EXPIRED
+                    || task.getResult() == CredentialStatus.REJECTED) {
+                credentialIssues++;
+            }
+        }
 
         int completed = approved + rejected;
         int total = complianceDirectory.getReviewList().size();
@@ -57,6 +100,9 @@ public class ComplianceReportJPanel extends javax.swing.JPanel {
         model.addRow(new Object[]{"Approved Reviews", approved});
         model.addRow(new Object[]{"Rejected Reviews", rejected});
         model.addRow(new Object[]{"Expired Credentials", expired});
+        model.addRow(new Object[]{"Pending Credential Checks", credentialChecksPending});
+        model.addRow(new Object[]{"Verified Credential Checks", credentialChecksVerified});
+        model.addRow(new Object[]{"Credential Issues", credentialIssues});
         model.addRow(new Object[]{"Review Completion Rate", String.format("%.1f%%", completionRate)});
         txtPending.setText(String.valueOf(pending));
         txtApproved.setText(String.valueOf(approved));

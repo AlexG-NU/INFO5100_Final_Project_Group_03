@@ -18,6 +18,8 @@ import Core.Person;
 import Core.Enterprise;
 import Core.EnterpriseAdminRole;
 import Core.NetworkAdminRole;
+import Core.NetworkUtils;
+import Core.Organization;
 import Core.UserAccount;
 import Core.UserAccountDirectory;
 import Core.WorkOrderStatus;
@@ -34,7 +36,10 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-
+import StaffingAgency.Role.ContractorCoordinatorRole;
+import Core.WorkOrders.StaffingReqWorkOrder;
+import com.github.javafaker.Faker;
+import java.util.Random;
 /**
  *
  * @author Alex
@@ -44,7 +49,7 @@ public class ConfigureABusiness {
     public static Network configure() {
         return configure(
                 populateStaffingRequests(),
-                new ArrayList<>(),
+                populateCandidates(),
                 new ArrayList<>());
     }
 
@@ -73,6 +78,23 @@ public class ConfigureABusiness {
                         candidateList,
                         submissionList)
         );
+        Person coordinatorPerson =
+        new Person("Contractor Coordinator");
+
+UserAccount coordinatorAccount =
+        network.getUserAccountDirectory()
+                .createUserAccount(
+                        "coordinator",
+                        "password",
+                        coordinatorPerson,
+                        new ContractorCoordinatorRole(
+                                submissionList
+                        )
+                );
+
+staffing.getUserAccountDirectory()
+        .getUserAccountList()
+        .add(coordinatorAccount);
         staffing.getUserAccountDirectory()
                 .getUserAccountList().add(recruiterAccount);
 
@@ -95,12 +117,74 @@ public class ConfigureABusiness {
         network.addEnterprise(compliance);
         ConfigureAClient.populateClientData(network);
         ConfigurePayrollBilling.populatePayrollBillingData(network);
+        addStaffingRequestsToSharedQueue(
+                network,
+                staffingRequestList
+        );
 
         // @janet - Add the two administrator levels to the shared login.
         addAdministratorAccounts(network);
         connectExistingUsersToEnterprises(network);
         addCrossEnterpriseDemoRequests(network);
         return network;
+    }
+
+    private static void addStaffingRequestsToSharedQueue(
+            Network network,
+            List<StaffingRequest> staffingRequestList
+    ) {
+        Organization recruitingOrganization =
+                NetworkUtils.findOrganizationByName(
+                        network,
+                        "Staffing Agency Enterprise",
+                        "Recruiting Organization"
+                );
+
+        UserAccount hiringManager =
+                findUser(network, "HR");
+
+        if (recruitingOrganization == null
+                || hiringManager == null) {
+            throw new IllegalStateException(
+                    "Staffing request demo data could not "
+                    + "be connected to HR and Recruiting."
+            );
+        }
+
+        for (StaffingRequest staffingRequest
+                : staffingRequestList) {
+
+            StaffingReqWorkOrder workOrder =
+                    new StaffingReqWorkOrder();
+
+            workOrder.setSender(hiringManager);
+            workOrder.setStatus(
+                    WorkOrderStatus.PENDING
+            );
+            workOrder.setJobTitle(
+                    staffingRequest.getJobTitle()
+            );
+            workOrder.setDescription(
+                    staffingRequest.getDescription()
+            );
+            workOrder.setRequiredSkills(
+                    staffingRequest.getRequiredSkills()
+            );
+            workOrder.setNumberOfPositions(
+                    staffingRequest.getNumberOfPositions()
+            );
+            workOrder.setStartDate(
+                    staffingRequest.getStartDate()
+            );
+
+            recruitingOrganization
+                    .getWorkQueue()
+                    .addWorkOrder(workOrder);
+
+            hiringManager
+                    .getWorkQueue()
+                    .addWorkOrder(workOrder);
+        }
     }
 
     // @janet - Network Admin manages enterprises. Each Enterprise Admin
@@ -285,23 +369,49 @@ public class ConfigureABusiness {
             return;
         }
 
-        Candidate candidate = new Candidate(
-                "Jordan",
-                "Kim",
-                "jordan.kim@example.com",
-                "949-555-0118",
-                "Java, QA, Git",
-                5);
+        Candidate candidate;
+        if (candidateList.isEmpty()) {
+            candidate = populateCandidates().get(0);
+            candidateList.add(candidate);
+        } else {
+            candidate = candidateList.get(0);
+        }
         candidate.setCandidateStatus(CandidateStatus.PLACED);
-        candidateList.add(candidate);
 
-        StaffingRequest request = staffingRequestList.get(0);
-        CandidateSubmission submission = new CandidateSubmission(
+       StaffingRequest legacyRequest =
+        staffingRequestList.get(0);
+
+StaffingReqWorkOrder request =
+        new StaffingReqWorkOrder();
+
+request.setJobTitle(
+        legacyRequest.getJobTitle()
+);
+
+request.setDescription(
+        legacyRequest.getDescription()
+);
+
+request.setRequiredSkills(
+        legacyRequest.getRequiredSkills()
+);
+
+request.setNumberOfPositions(
+        legacyRequest.getNumberOfPositions()
+);
+
+request.setStartDate(
+        legacyRequest.getStartDate()
+);
+
+CandidateSubmission submission =
+        new CandidateSubmission(
                 candidate,
                 request,
-                "Qualified candidate approved for integration testing.");
-        request.addSubmission(submission);
-        submission.submitToClient();
+                "Qualified candidate approved for integration testing."
+        );
+
+submission.submitToClient();
 
         Contractor contractor = new Contractor(
                 candidate.getFirstName(),
@@ -352,53 +462,66 @@ public class ConfigureABusiness {
     
     public static List<StaffingRequest> populateStaffingRequests() {
         List<StaffingRequest> requests = new ArrayList<>();
-
-        // Entry 1
-        requests.add(new StaffingRequest(
-            "Senior Java Developer",
-            "Lead backend developer",
-            "Java 17, Swing, PostgreSQL, Git",
-            3,
-            LocalDate.now().plusDays(14)
-        ));
-
-        // Entry 2
-        requests.add(new StaffingRequest(
-            "QA Automation Engineer",
-            "Build automated integration",
+        Faker faker = new Faker(new Random(5100));
+        String[] jobTitles = {
+            "Senior Java Developer", "QA Automation Engineer",
+            "DevOps Infrastructure Lead", "UI/UX Designer",
+            "Technical Project Manager", "Data Analyst",
+            "Business Systems Analyst", "Cloud Support Engineer"
+        };
+        String[] skills = {
+            "Java, Swing, PostgreSQL, Git",
             "JUnit, Selenium, CI/CD, Java",
-            2,
-            LocalDate.now().plusDays(21)
-        ));
-
-        // Entry 3
-        requests.add(new StaffingRequest(
-            "DevOps Infrastructure Lead",
-            "Manage local deployment pipelines",
             "Docker, Kubernetes, Linux, Bash",
-            1,
-            LocalDate.now().plusDays(30)
-        ));
-
-        // Entry 4
-        requests.add(new StaffingRequest(
-            "UI/UX Designer",
-            "Create user workflow components",
             "Figma, Wireframing, Swing Layouts",
-            1,
-            LocalDate.now().plusDays(7)
-        ));
-
-        // Entry 5
-        requests.add(new StaffingRequest(
-            "Technical Project Manager",
-            "Oversee sprint cycles and deliverables across cross-functional teams",
             "Agile, Jira, Risk Management",
-            2,
-            LocalDate.now().plusDays(45)
-        ));
+            "Power BI, SQL, Excel",
+            "Requirements, UAT, Process Mapping",
+            "AWS, Networking, Troubleshooting"
+        };
+
+        for (int index = 0; index < jobTitles.length; index++) {
+            requests.add(new StaffingRequest(
+                    jobTitles[index],
+                    "Support " + faker.company().name()
+                    + " with " + faker.company().industry().toLowerCase()
+                    + " project work.",
+                    skills[index],
+                    1 + (index % 3),
+                    LocalDate.now().plusDays(7 + (index * 5))
+            ));
+        }
 
         return requests;
+    }
+
+    public static List<Candidate> populateCandidates() {
+        List<Candidate> candidates = new ArrayList<>();
+        Faker faker = new Faker(new Random(5101));
+        String[] skills = {
+            "Java, Swing, Git", "Quality Assurance, JUnit",
+            "Power BI, SQL, Excel", "Project Management, Jira",
+            "Cloud Infrastructure, Linux", "UX Design, Figma",
+            "Business Analysis, UAT", "Payroll Operations"
+        };
+
+        for (int index = 0; index < 16; index++) {
+            Candidate candidate = new Candidate(
+                    faker.name().firstName(),
+                    faker.name().lastName(),
+                    faker.internet().emailAddress(),
+                    faker.phoneNumber().cellPhone(),
+                    skills[index % skills.length],
+                    1 + (index % 10)
+            );
+            if (index < 4) {
+                candidate.setCandidateStatus(CandidateStatus.SCREENING);
+            } else if (index < 8) {
+                candidate.setCandidateStatus(CandidateStatus.SUBMITTED);
+            }
+            candidates.add(candidate);
+        }
+        return candidates;
     }
     
 }

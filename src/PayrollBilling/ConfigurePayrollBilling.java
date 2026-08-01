@@ -16,8 +16,10 @@ import PayrollBilling.Role.PayrollSpecialistRole;
 import StaffingAgency.People.Contractor;
 import StaffingAgency.Request.Contract;
 import StaffingAgency.Request.ContractorAssignment;
+import com.github.javafaker.Faker;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.Random;
 
 public class ConfigurePayrollBilling {
     
@@ -33,60 +35,72 @@ public class ConfigurePayrollBilling {
     public static PayrollBillingModule configurePayrollBillingModule() {
 
         PayrollBillingModule module = new PayrollBillingModule();
+        Faker faker = new Faker(new Random(5104));
 
-        Contractor contractor = new Contractor(
-                "Jordan",
-                "Rivera",
-                "jordan.rivera@example.com",
-                "555-123-4567",
-                "Java, QA, DevOps",
-                new BigDecimal("45.00")
-        );
+        for (int index = 0; index < 8; index++) {
+            BigDecimal payRate =
+                    BigDecimal.valueOf(35 + (index * 3));
+            BigDecimal billRate =
+                    payRate.add(BigDecimal.valueOf(25));
 
-        ContractorAssignment assignment = new ContractorAssignment(
-                contractor,
-                LocalDate.now().minusDays(14)
-        );
+            Contractor contractor = new Contractor(
+                    faker.name().firstName(),
+                    faker.name().lastName(),
+                    faker.internet().emailAddress(),
+                    faker.phoneNumber().cellPhone(),
+                    faker.job().keySkills(),
+                    payRate
+            );
 
-        new Contract(
-                assignment,
-                LocalDate.now().minusDays(14),
-                LocalDate.now().plusMonths(3),
-                new BigDecimal("45.00"),
-                new BigDecimal("75.00")
-        );
+            ContractorAssignment assignment = new ContractorAssignment(
+                    contractor,
+                    LocalDate.now().minusDays(14 + index)
+            );
 
-        TimecardWorkOrder timecard = new TimecardWorkOrder(
-                LocalDate.now(),
-                45.00
-        );
+            new Contract(
+                    assignment,
+                    LocalDate.now().minusDays(14 + index),
+                    LocalDate.now().plusMonths(3 + (index % 3)),
+                    payRate,
+                    billRate
+            );
 
-        timecard.setDailyHours(new double[]{8.0, 8.0, 8.0, 8.0, 6.0, 0.0, 0.0});
-        timecard.setWorkSummary("Completed assigned project work for the week.");
+            TimecardWorkOrder timecard = new TimecardWorkOrder(
+                    LocalDate.now().minusWeeks(index), payRate.doubleValue()
+            );
+            timecard.setDailyHours(new double[]{
+                8.0, 8.0, 8.0, 8.0,
+                4.0 + (index % 5), 0.0, 0.0
+            });
+            timecard.setWorkSummary("Completed "
+                    + faker.job().field().toLowerCase()
+                    + " work for " + faker.company().name() + ".");
 
-        PayrollRequest payrollRequest = new PayrollRequest(timecard, assignment);
-        PayrollRecord payrollRecord = payrollRequest.processPayroll();
+            PayrollRequest payrollRequest =
+                    new PayrollRequest(timecard, assignment);
+            PayrollRecord payrollRecord = payrollRequest.processPayroll();
+            PaymentRecord paymentRecord =
+                    new PaymentRecord(payrollRecord);
+            ContractorPaymentRequest contractorPaymentRequest =
+                    new ContractorPaymentRequest(paymentRecord);
 
-        PaymentRecord paymentRecord = new PaymentRecord(payrollRecord);
+            BillingRequest billingRequest =
+                    new BillingRequest(timecard, assignment);
+            Invoice invoice = billingRequest.processBilling();
+            BillingRecord billingRecord =
+                    billingRequest.getBillingRecord();
 
-        ContractorPaymentRequest contractorPaymentRequest =
-                new ContractorPaymentRequest(paymentRecord);
-
-        BillingRequest billingRequest = new BillingRequest(timecard, assignment);
-        Invoice invoice = billingRequest.processBilling();
-        BillingRecord billingRecord = billingRequest.getBillingRecord();
+            module.getPayrollRequests().add(payrollRequest);
+            module.getPayrollRecords().add(payrollRecord);
+            module.getPaymentRecords().add(paymentRecord);
+            module.getContractorPaymentRequests()
+                    .add(contractorPaymentRequest);
+            module.getBillingRequests().add(billingRequest);
+            module.getBillingRecords().add(billingRecord);
+            module.getInvoices().add(invoice);
+        }
 
         PayrollReport report = new PayrollReport();
-
-        module.getPayrollRequests().add(payrollRequest);
-        module.getPayrollRecords().add(payrollRecord);
-        module.getPaymentRecords().add(paymentRecord);
-        module.getContractorPaymentRequests().add(contractorPaymentRequest);
-
-        module.getBillingRequests().add(billingRequest);
-        module.getBillingRecords().add(billingRecord);
-        module.getInvoices().add(invoice);
-
         report.generateSummary(
                 module.getPayrollRecords(),
                 module.getBillingRecords(),

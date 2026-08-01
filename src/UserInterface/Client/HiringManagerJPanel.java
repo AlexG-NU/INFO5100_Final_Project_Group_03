@@ -210,6 +210,19 @@ public class HiringManagerJPanel extends javax.swing.JPanel {
         HiringManagerCandidateApprovalJPanel panel = new HiringManagerCandidateApprovalJPanel(userProcessContainer, account, network);
         userProcessContainer.add("HiringManagerCandidateApprovalJPanel", panel);
         java.awt.CardLayout layout = (java.awt.CardLayout) userProcessContainer.getLayout();
+       /* HiringManagerCandidateSubmissionsJPanel panel =
+                new HiringManagerCandidateSubmissionsJPanel(
+                        userProcessContainer,
+                        account,
+                        network
+                );
+        userProcessContainer.add(
+                "HiringManagerCandidateSubmissionsJPanel",
+                panel
+        );
+        java.awt.CardLayout layout =
+                (java.awt.CardLayout)
+                        userProcessContainer.getLayout();*/
         layout.next(userProcessContainer);
     }//GEN-LAST:event_btnViewRequestsActionPerformed
 

@@ -64,8 +64,12 @@ public class StaffingReqWorkOrder extends WorkOrder{
 
     @Override
     public String toString() {
-        
-        return String.valueOf(getWorkOrderId());
+        String title = jobTitle == null
+                || jobTitle.isBlank()
+                ? "Untitled Request"
+                : jobTitle;
+
+        return getWorkOrderId() + " - " + title;
     }
     
     

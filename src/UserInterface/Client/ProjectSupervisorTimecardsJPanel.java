@@ -431,6 +431,7 @@ public class ProjectSupervisorTimecardsJPanel extends javax.swing.JPanel {
         if (!validateSelection()) return;
 
         selectedRecord.setStatus(WorkOrderStatus.APPROVED);
+        selectedRecord.setApprover(userAccount);
         selectedRecord.setResolveDate(LocalDateTime.now());
 
         Organization payrollOrg = NetworkUtils.findOrganizationByName(

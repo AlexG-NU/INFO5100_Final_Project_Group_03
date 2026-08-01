@@ -421,8 +421,10 @@ public class ContractorTimecardsJPanel extends javax.swing.JPanel {
 
         
         timecard.setSender(userAccount);
+        timecard.setSubmitter(userAccount);
 
         UserAccount supervisor = userAccount.getSupervisor();
+        
         if (supervisor != null) {
             timecard.setReceiver(supervisor);
             timecard.setStatus(WorkOrderStatus.PENDING); 

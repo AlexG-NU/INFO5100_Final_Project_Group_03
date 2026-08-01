@@ -4,6 +4,7 @@
  */
 package Core.WorkOrders;
 
+import Core.UserAccount;
 import Core.WorkOrder;
 import java.time.LocalDate;
 
@@ -16,6 +17,9 @@ public class TimecardWorkOrder extends WorkOrder{
     private LocalDate weekEndingDate;
     private double[] dailyHours;
     private String workSummary;
+    
+    private UserAccount submitter;
+    private UserAccount approver;
     
     public TimecardWorkOrder(LocalDate weekEndingDate, double hourlyPayRate) {
         super(); 
@@ -60,6 +64,22 @@ public class TimecardWorkOrder extends WorkOrder{
 
     public void setWorkSummary(String workSummary) {
         this.workSummary = workSummary;
+    }
+
+    public UserAccount getSubmitter() {
+        return submitter;
+    }
+
+    public void setSubmitter(UserAccount submitter) {
+        this.submitter = submitter;
+    }
+
+    public UserAccount getApprover() {
+        return approver;
+    }
+
+    public void setApprover(UserAccount approver) {
+        this.approver = approver;
     }
     
     

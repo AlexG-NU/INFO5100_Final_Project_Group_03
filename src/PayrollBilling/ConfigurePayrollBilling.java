@@ -1,6 +1,8 @@
 package PayrollBilling;
 
 import Business.Network;
+import Core.NetworkUtils;
+import Core.Organization;
 import Core.Person;
 import Core.WorkOrders.TimecardWorkOrder;
 import PayrollBilling.Record.BillingRecord;
@@ -139,6 +141,22 @@ public class ConfigurePayrollBilling {
                 billingPerson,
                 new BillingAnalystRole()
         );
+
+        
+        Organization hrOrg = NetworkUtils.findOrganizationByName(
+                network,
+                "Client Enterprise",
+                "Human Resources Organization"
+        );
+
+        if (hrOrg != null) {
+            for (BillingRequest billingRequest : module.getBillingRequests()) {
+                if (billingRequest.getInvoice() != null
+                        && !hrOrg.getWorkQueue().getWorkOrderList().contains(billingRequest)) {
+                    hrOrg.getWorkQueue().addWorkOrder(billingRequest);
+                }
+            }
+        }
 
         return module;
     }

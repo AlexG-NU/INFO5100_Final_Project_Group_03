@@ -57,6 +57,8 @@ public class MainJFrame extends JFrame {
 
     private JButton btnLogin;
     private JButton btnLogout;
+    private JLabel lblQuickSwitch;
+    private javax.swing.JComboBox<UserAccount> cmbQuickSwitch;
     private Network network;
     
     public MainJFrame() {
@@ -79,6 +81,8 @@ public class MainJFrame extends JFrame {
                 masterRequestList,
                 candidateList,
                 submissionList);
+        
+        populateQuickSwitchComboBox();
 
         setTitle("Global Workforce Staffing Network");
         setSize(1100, 700);
@@ -225,6 +229,34 @@ public class MainJFrame extends JFrame {
         setLoginFieldsVisible(false);
         btnLogout.setVisible(true);
     }
+    //Demo ONLY!!!
+    private void quickSwitchLogin() {
+ 
+        Object selected = cmbQuickSwitch.getSelectedItem();
+ 
+        if (!(selected instanceof UserAccount)) {
+            return;
+        }
+ 
+        UserAccount userAccount = (UserAccount) selected;
+ 
+        JPanel workArea = userAccount.getRole()
+                .createWorkArea(contentPanel, userAccount, network);
+ 
+        showPanel(workArea);
+        setLoginFieldsVisible(false);
+        btnLogout.setVisible(true);
+    }
+    
+    private void populateQuickSwitchComboBox() {
+ 
+        cmbQuickSwitch.removeAllItems();
+        cmbQuickSwitch.addItem(null);
+ 
+        for (UserAccount ua : network.getUserAccountDirectory().getUserAccountList()) {
+            cmbQuickSwitch.addItem(ua);
+        }
+    }
 
     /**
      * Handles logout.
@@ -233,6 +265,7 @@ public class MainJFrame extends JFrame {
 
         txtUsername.setText("");
         txtPassword.setText("");
+        cmbQuickSwitch.setSelectedIndex(0);
 
         setLoginFieldsVisible(true);
         btnLogout.setVisible(false);
@@ -254,60 +287,65 @@ public class MainJFrame extends JFrame {
         txtPassword.setVisible(visible);
 
         btnLogin.setVisible(visible);
+        
+        lblQuickSwitch.setVisible(visible);
+        cmbQuickSwitch.setVisible(visible);
     }
 
     /**
      * Creates the complete MainJFrame interface.
      */
     private void initComponents() {
-
+ 
         splitPane = new JSplitPane();
-
+ 
         loginPanel = new JPanel();
         contentPanel = new JPanel();
-
+ 
         lblPortalTitle = new JLabel();
         lblUsername = new JLabel();
         lblPassword = new JLabel();
-
+ 
         txtUsername = new JTextField();
         txtPassword = new JPasswordField();
-
+ 
         btnLogin = new JButton();
         btnLogout = new JButton();
-
+        lblQuickSwitch = new JLabel();
+        cmbQuickSwitch = new javax.swing.JComboBox<>();
+ 
         setDefaultCloseOperation(
                 JFrame.EXIT_ON_CLOSE
         );
-
+ 
         /*
          * Split-pane settings.
          */
         splitPane.setDividerLocation(230);
         splitPane.setDividerSize(4);
         splitPane.setEnabled(false);
-
+ 
         /*
          * Left login panel.
          */
         loginPanel.setBackground(
                 new Color(0, 153, 153)
         );
-
+ 
         loginPanel.setMinimumSize(
                 new java.awt.Dimension(
                         230,
                         700
                 )
         );
-
+ 
         loginPanel.setPreferredSize(
                 new java.awt.Dimension(
                         230,
                         700
                 )
         );
-
+ 
         /*
          * Portal title.
          */
@@ -318,15 +356,15 @@ public class MainJFrame extends JFrame {
                         18
                 )
         );
-
+ 
         lblPortalTitle.setForeground(
                 Color.WHITE
         );
-
+ 
         lblPortalTitle.setHorizontalAlignment(
                 SwingConstants.CENTER
         );
-
+ 
         lblPortalTitle.setText(
                 "<html>"
                 + "<center>"
@@ -336,7 +374,7 @@ public class MainJFrame extends JFrame {
                 + "</center>"
                 + "</html>"
         );
-
+ 
         /*
          * Username field.
          */
@@ -347,15 +385,15 @@ public class MainJFrame extends JFrame {
                         14
                 )
         );
-
+ 
         lblUsername.setForeground(
                 Color.WHITE
         );
-
+ 
         lblUsername.setText(
                 "Username"
         );
-
+ 
         txtUsername.setFont(
                 new Font(
                         "Arial",
@@ -363,7 +401,7 @@ public class MainJFrame extends JFrame {
                         14
                 )
         );
-
+ 
         /*
          * //janet - I removed the default username.
          * 
@@ -371,7 +409,7 @@ public class MainJFrame extends JFrame {
         txtUsername.setText(
                 ""
         );
-
+ 
         /*
          * Password field.
          */
@@ -382,15 +420,15 @@ public class MainJFrame extends JFrame {
                         14
                 )
         );
-
+ 
         lblPassword.setForeground(
                 Color.WHITE
         );
-
+ 
         lblPassword.setText(
                 "Password"
         );
-
+ 
         txtPassword.setFont(
                 new Font(
                         "Arial",
@@ -398,7 +436,7 @@ public class MainJFrame extends JFrame {
                         14
                 )
         );
-
+ 
         /*
          * Pressing Enter in the password field
          * will attempt login.
@@ -406,7 +444,45 @@ public class MainJFrame extends JFrame {
         txtPassword.addActionListener(
                 event -> login()
         );
-
+ 
+        /*
+         * Quick Switch (Demo) dropdown.
+         * Bypasses typing a password so switching accounts
+         * during a demo is fast. Real login above still works
+         * as normal.
+         */
+        lblQuickSwitch.setFont(
+                new Font("Arial", Font.BOLD, 14)
+        );
+        lblQuickSwitch.setForeground(Color.WHITE);
+        lblQuickSwitch.setText("Quick Switch (Demo)");
+ 
+        cmbQuickSwitch.setFont(
+                new Font("Arial", Font.PLAIN, 12)
+        );
+        cmbQuickSwitch.setRenderer(
+                new javax.swing.DefaultListCellRenderer() {
+                    @Override
+                    public java.awt.Component getListCellRendererComponent(
+                            javax.swing.JList<?> list, Object value, int index,
+                            boolean isSelected, boolean cellHasFocus) {
+                        super.getListCellRendererComponent(
+                                list, value, index, isSelected, cellHasFocus);
+                        if (value instanceof UserAccount) {
+                            UserAccount ua = (UserAccount) value;
+                            setText(ua.getUsername() + " ("
+                                    + ua.getRole().getClass().getSimpleName() + ")");
+                        } else {
+                            setText("-- Select account --");
+                        }
+                        return this;
+                    }
+                }
+        );
+        cmbQuickSwitch.addActionListener(
+                event -> quickSwitchLogin()
+        );
+ 
         /*
          * Login button.
          */
@@ -417,15 +493,15 @@ public class MainJFrame extends JFrame {
                         14
                 )
         );
-
+ 
         btnLogin.setText(
                 "Login"
         );
-
+ 
         btnLogin.addActionListener(
                 event -> login()
         );
-
+ 
         
         /*
          * Logout button.
@@ -437,15 +513,15 @@ public class MainJFrame extends JFrame {
                         14
                 )
         );
-
+ 
         btnLogout.setText(
                 "Logout"
         );
-
+ 
         btnLogout.addActionListener(
                 event -> logout()
         );
-
+ 
         /*
          * Left-panel layout.
          */
@@ -453,11 +529,11 @@ public class MainJFrame extends JFrame {
                 new javax.swing.GroupLayout(
                         loginPanel
                 );
-
+ 
         loginPanel.setLayout(
                 loginPanelLayout
         );
-
+ 
         loginPanelLayout.setHorizontalGroup(
                 loginPanelLayout
                         .createParallelGroup(
@@ -512,6 +588,15 @@ public class MainJFrame extends JFrame {
                                                                 100,
                                                                 javax.swing.GroupLayout.PREFERRED_SIZE
                                                         )
+                                                        .addComponent(
+                                                                lblQuickSwitch
+                                                        )
+                                                        .addComponent(
+                                                                cmbQuickSwitch,
+                                                                javax.swing.GroupLayout.PREFERRED_SIZE,
+                                                                180,
+                                                                javax.swing.GroupLayout.PREFERRED_SIZE
+                                                        )
                                         )
                                         .addContainerGap(
                                                 25,
@@ -519,7 +604,7 @@ public class MainJFrame extends JFrame {
                                         )
                         )
         );
-
+ 
         loginPanelLayout.setVerticalGroup(
                 loginPanelLayout
                         .createParallelGroup(
@@ -595,44 +680,61 @@ public class MainJFrame extends JFrame {
                                                 35,
                                                 javax.swing.GroupLayout.PREFERRED_SIZE
                                         )
+                                        .addGap(
+                                                25,
+                                                25,
+                                                25
+                                        )
+                                        .addComponent(
+                                                lblQuickSwitch
+                                        )
+                                        .addPreferredGap(
+                                                javax.swing.LayoutStyle.ComponentPlacement.RELATED
+                                        )
+                                        .addComponent(
+                                                cmbQuickSwitch,
+                                                javax.swing.GroupLayout.PREFERRED_SIZE,
+                                                30,
+                                                javax.swing.GroupLayout.PREFERRED_SIZE
+                                        )
                                         .addContainerGap(
                                                 javax.swing.GroupLayout.DEFAULT_SIZE,
                                                 Short.MAX_VALUE
                                         )
                         )
         );
-
+ 
         splitPane.setLeftComponent(
                 loginPanel
         );
-
+ 
         /*
          * Right-side content panel.
          */
         contentPanel.setBackground(
                 Color.WHITE
         );
-
+ 
         contentPanel.setLayout(
                 new CardLayout()
         );
-
+ 
         splitPane.setRightComponent(
                 contentPanel
         );
-
+ 
         /*
          * Add split pane to frame.
          */
         getContentPane().setLayout(
                 new BorderLayout()
         );
-
+ 
         getContentPane().add(
                 splitPane,
                 BorderLayout.CENTER
         );
-
+ 
         pack();
     }
 

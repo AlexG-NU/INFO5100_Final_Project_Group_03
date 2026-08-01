@@ -117,19 +117,19 @@
     </Component>
     <Component class="javax.swing.JButton" name="btnView">
       <Properties>
-        <Property name="text" type="java.lang.String" value="View Request Details"/>
+        <Property name="text" type="java.lang.String" value="View Selected Case"/>
       </Properties>
       <Events><EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnViewActionPerformed"/></Events>
     </Component>
     <Component class="javax.swing.JButton" name="btnAssigned">
       <Properties>
-        <Property name="text" type="java.lang.String" value="Awaiting Credential Results"/>
+        <Property name="text" type="java.lang.String" value="Waiting for Specialist"/>
       </Properties>
       <Events><EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnAssignedActionPerformed"/></Events>
     </Component>
     <Component class="javax.swing.JButton" name="btnProcess">
       <Properties>
-        <Property name="text" type="java.lang.String" value="Open Review Workspace"/>
+        <Property name="text" type="java.lang.String" value="Cases Needing My Action"/>
       </Properties>
       <Events><EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnProcessActionPerformed"/></Events>
     </Component>
@@ -147,7 +147,7 @@
     </Component>
     <Component class="javax.swing.JButton" name="btnReports">
       <Properties>
-        <Property name="text" type="java.lang.String" value="Show All Assigned Work"/>
+        <Property name="text" type="java.lang.String" value="Completed Cases (View Only)"/>
       </Properties>
       <Events><EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnReportsActionPerformed"/></Events>
     </Component>

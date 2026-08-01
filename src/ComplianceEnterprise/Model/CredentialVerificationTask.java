@@ -16,6 +16,7 @@ public class CredentialVerificationTask {
     private final int taskId;
     private final VerificationReview review;
     private CredentialRecord credential;
+    private final RegistryCredentialRecord registryRecord;
     private CredentialSpecialist completedBy;
     private CredentialStatus result;
     private String verificationNotes;
@@ -23,12 +24,18 @@ public class CredentialVerificationTask {
 
     public CredentialVerificationTask(VerificationReview review,
             CredentialRecord credential) {
+        this(review, credential, null);
+    }
+
+    public CredentialVerificationTask(VerificationReview review,
+            CredentialRecord credential, RegistryCredentialRecord registryRecord) {
         if (review == null) {
             throw new IllegalArgumentException("Compliance review is required.");
         }
         this.taskId = ID_SEQUENCE.incrementAndGet();
         this.review = review;
         this.credential = credential;
+        this.registryRecord = registryRecord;
         this.result = CredentialStatus.NOT_STARTED;
         this.verificationNotes = "";
     }
@@ -43,6 +50,22 @@ public class CredentialVerificationTask {
 
     public CredentialRecord getCredential() {
         return credential;
+    }
+
+    public RegistryCredentialRecord getRegistryRecord() {
+        return registryRecord;
+    }
+
+    public CredentialStatus getRegistryResult() {
+        if (registryRecord == null) {
+            return CredentialStatus.RECORD_NOT_FOUND;
+        }
+        if (registryRecord.getExpirationDate().isBefore(LocalDate.now())
+                || registryRecord.getStatus() == CredentialStatus.EXPIRED) {
+            return CredentialStatus.EXPIRED;
+        }
+        return registryRecord.getStatus() == CredentialStatus.VERIFIED
+                ? CredentialStatus.VERIFIED : CredentialStatus.REJECTED;
     }
 
     public void attachCredential(CredentialRecord credential) {
@@ -87,21 +110,13 @@ public class CredentialVerificationTask {
         }
         if (result == null || result == CredentialStatus.NOT_STARTED
                 || result == CredentialStatus.SUBMITTED) {
-            throw new IllegalArgumentException("Select Verified, Missing, Expired, or Rejected.");
+            throw new IllegalArgumentException("A completed verification result is required.");
         }
         if (notes == null || notes.trim().length() < 10
                 || notes.trim().length() > 500) {
             throw new IllegalArgumentException(
                     "Evidence notes must contain 10-500 characters and describe what was checked.");
         }
-        if (result == CredentialStatus.VERIFIED && credential == null) {
-            throw new IllegalStateException("A missing credential cannot be marked Verified.");
-        }
-        if (result == CredentialStatus.VERIFIED
-                && credential.getExpirationDate().isBefore(LocalDate.now())) {
-            throw new IllegalStateException("An expired credential cannot be marked Verified.");
-        }
-
         this.completedBy = specialist;
         this.result = result;
         this.verificationNotes = notes.trim();
@@ -109,5 +124,24 @@ public class CredentialVerificationTask {
         if (credential != null) {
             credential.setStatus(result);
         }
+        review.closeForCredentialIssue();
+    }
+
+    public void completeFromRegistry(CredentialSpecialist specialist,
+            String notes) {
+        CredentialStatus registryResult = getRegistryResult();
+        String finalNotes = notes == null ? "" : notes.trim();
+        if (finalNotes.isEmpty()) {
+            if (registryResult == CredentialStatus.RECORD_NOT_FOUND) {
+                finalNotes = "No matching record was found in the simulated registry.";
+            } else if (registryResult == CredentialStatus.EXPIRED) {
+                finalNotes = "The simulated registry record is expired.";
+            } else if (registryResult == CredentialStatus.VERIFIED) {
+                finalNotes = "The simulated registry record is active and matches the request.";
+            } else {
+                finalNotes = "The simulated registry record is not active.";
+            }
+        }
+        completeTask(specialist, registryResult, finalNotes);
     }
 }

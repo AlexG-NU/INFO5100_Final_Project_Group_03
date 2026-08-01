@@ -90,27 +90,42 @@ public class ComplianceDataGenerator {
             credential.setStatus(statusFor(index));
             directory.addCredential(credential);
 
+            // These records belong only to Compliance and simulate the
+            // outside registry searched by the Credential Specialist.
+            if (index != 5) {
+                directory.getCredentialRegistry().addRecord(
+                        new RegistryCredentialRecord(
+                                contractor.getFullName(), credentialType,
+                                credential.getDocumentNumber(),
+                                "Sample Credential Board",
+                                credential.getExpirationDate(),
+                                index == 2 ? CredentialStatus.EXPIRED
+                                        : CredentialStatus.VERIFIED));
+            } else {
+                directory.getCredentialRegistry().keepRecordMissing(
+                        contractor.getFullName(), credentialType);
+            }
+
             /*
              * Include completed and assigned records so every report section
              * has meaningful data when the application first opens.
              */
             if (index < 3) {
                 review.assignAnalyst(analyst);
+                review.selectRequiredCredential(credentialType);
                 CredentialVerificationTask task =
                         directory.requestCredentialVerification(review);
-                task.completeTask(specialist, credential.getStatus(),
+                task.completeFromRegistry(specialist,
                         index == 2
                                 ? "The submitted credential is past its expiration date."
-                                : "Document number and expiration date were confirmed.");
-                review.completeReview(
-                        index == 2
-                                ? ComplianceDecision.REJECTED
-                                : ComplianceDecision.APPROVED,
-                        index == 2
-                                ? "Credential information could not be confirmed."
-                                : "Credential information was reviewed and confirmed.");
+                        : "Document number and expiration date were confirmed.");
+                if (credential.getStatus() == CredentialStatus.VERIFIED) {
+                    review.completeReview(ComplianceDecision.APPROVED,
+                            "Credential information was reviewed and confirmed.");
+                }
             } else if (index < 6) {
                 review.assignAnalyst(analyst);
+                review.selectRequiredCredential(credentialType);
                 directory.requestCredentialVerification(review);
             }
         }

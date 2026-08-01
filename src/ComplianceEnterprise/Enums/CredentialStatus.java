@@ -10,6 +10,7 @@ public enum CredentialStatus {
     VERIFIED("Verified"),
     MISSING("Missing"),
     EXPIRED("Expired"),
+    RECORD_NOT_FOUND("Record Not Found"),
     REJECTED("Rejected");
 
     private final String displayName;

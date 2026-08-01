@@ -36,7 +36,8 @@ public class ComplianceAnalystWorkAreaJPanel extends javax.swing.JPanel {
     private void configureTable() {
         ComplianceTableUI.configure(tblRequests,
                 90, 100, 100, 170, 170, 210, 150, 150, 130);
-        lblNextStep.setVisible(false);
+        lblNextStep.setVisible(true);
+        lblNextStep.setText("Purpose: review an assigned case, send the credential check, then make the final decision.");
         lblCaseStatus.setText("Selected case: none");
         tblRequests.getSelectionModel().addListSelectionListener(event -> {
             if (!event.getValueIsAdjusting()) {
@@ -128,7 +129,7 @@ public class ComplianceAnalystWorkAreaJPanel extends javax.swing.JPanel {
         lblOrganization.setText("Compliance Enterprise - Compliance Verification Organization");
         lblNextStep.setFont(new java.awt.Font("Segoe UI", 1, 13));
         lblCaseStatus.setForeground(new java.awt.Color(0, 102, 153));
-        btnView.setText("View Request Details"); btnProcess.setText("Open Active Case"); btnAssigned.setText("Awaiting Credential Results"); btnReports.setText("Completed Cases");
+        btnView.setText("View Selected Case"); btnProcess.setText("Cases Needing My Action"); btnAssigned.setText("Waiting for Specialist"); btnReports.setText("Completed Cases (View Only)");
         // Keep these assignments in the generated initialization block so the
         // runtime view stays synchronized with the labels stored in the .form.
         // Without them Swing creates two blank buttons even though NetBeans

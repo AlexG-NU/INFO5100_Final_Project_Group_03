@@ -4,6 +4,8 @@
  */
 package UserInterface.PayrollBilling;
 
+import StaffingAgency.Request.Contract;
+import java.time.LocalDate;
 import PayrollBilling.Request.BillingRequest;
 import Business.Network;
 import Core.NetworkUtils;
@@ -273,8 +275,8 @@ public class PayrollSpecialistWorkAreaJPanel extends javax.swing.JPanel {
 
         DefaultTableModel model = new DefaultTableModel(
                 new String[]{
-                    "Payroll ID", "Contractor", "Hours", "Pay Rate",
-                    "Total", "Processed Date", "Payment Status"
+                    "Payroll ID", "Contractor", "Hours", "Contractor Pay Rate",
+                    "Contractor Pay Total", "Processed Date", "Payment Status"
                 }, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
@@ -391,7 +393,7 @@ public class PayrollSpecialistWorkAreaJPanel extends javax.swing.JPanel {
             return;
         }
 
-        ContractorAssignment assignment = getDemoAssignment();
+        ContractorAssignment assignment = getAssignmentForTimecard(timecard);
 
         if (assignment == null) {
             JOptionPane.showMessageDialog(
@@ -431,7 +433,7 @@ public class PayrollSpecialistWorkAreaJPanel extends javax.swing.JPanel {
 
             JOptionPane.showMessageDialog(
                     this,
-                    "Payroll processed. Payroll total: " + money(payrollRecord.getTotalAmount())
+                    "Payroll processed. Contractor payment total: " + money(payrollRecord.getTotalAmount())
             );
 
             showPayrollRecords();
@@ -476,6 +478,93 @@ public class PayrollSpecialistWorkAreaJPanel extends javax.swing.JPanel {
                 "password"
         );
     }
+    
+    private ContractorAssignment getAssignmentForTimecard(
+        TimecardWorkOrder timecard) {
+
+    if (timecard == null
+            || timecard.getSender() == null
+            || timecard.getSender().getPerson() == null) {
+        return null;
+    }
+
+    String contractorName =
+            timecard.getSender().getPerson().getName();
+
+    // Reuse an assignment previously created for this contractor.
+    for (PayrollRequest request : module.getPayrollRequests()) {
+        ContractorAssignment existing = request.getAssignment();
+
+        if (existing != null
+                && existing.getContractor() != null
+                && contractorName.equalsIgnoreCase(
+                        existing.getContractor().getFullName())) {
+            return existing;
+        }
+    }
+
+    /*
+     * The current TimecardWorkOrder does not carry its own
+     * ContractorAssignment. Use the sample contract only as
+     * the source of the pay and billing rates.
+     */
+    ContractorAssignment template = getDemoAssignment();
+
+    if (template == null || template.getContract() == null) {
+        return null;
+    }
+
+    String firstName =
+            timecard.getSender().getPerson().getFirstName();
+    String lastName =
+            timecard.getSender().getPerson().getLastName();
+
+    if (firstName == null || firstName.isBlank()) {
+        firstName = timecard.getSender().getUsername();
+    }
+
+    if (lastName == null || lastName.isBlank()) {
+        lastName = "Contractor";
+    }
+
+    String emailPrefix = timecard.getSender()
+            .getUsername()
+            .replaceAll("[^A-Za-z0-9._-]", "")
+            .toLowerCase();
+
+    if (emailPrefix.isBlank()) {
+        emailPrefix = "contractor";
+    }
+
+    Contract templateContract = template.getContract();
+
+    Contractor contractor = new Contractor(
+            firstName,
+            lastName,
+            emailPrefix + "@example.com",
+            "555-010-0000",
+            "Assigned contractor",
+            templateContract.getPayRate()
+    );
+
+    LocalDate startDate =
+            timecard.getWeekEndingDate() == null
+                    ? LocalDate.now()
+                    : timecard.getWeekEndingDate().minusDays(6);
+
+    ContractorAssignment assignment =
+            new ContractorAssignment(contractor, startDate);
+
+    new Contract(
+            assignment,
+            startDate,
+            startDate.plusMonths(3),
+            templateContract.getPayRate(),
+            templateContract.getBillRate()
+    );
+
+    return assignment;
+}
 
     private ContractorAssignment getDemoAssignment() {
         if (module == null || module.getPayrollRequests().isEmpty()) {

@@ -302,7 +302,7 @@ public class BillingAnalystWorkAreaJPanel extends javax.swing.JPanel {
 
             JOptionPane.showMessageDialog(
                     this,
-                    "Invoice generated. Total: " + money(invoice.getInvoiceTotal())
+                    "Invoice generated. Client invoice total: " + money(invoice.getInvoiceTotal())
             );
 
             showInvoices();
@@ -321,7 +321,7 @@ public class BillingAnalystWorkAreaJPanel extends javax.swing.JPanel {
         currentView = "records";
 
         DefaultTableModel model = new DefaultTableModel(
-                new String[]{"Billing ID", "Contractor", "Hours", "Bill Rate", "Invoice Amount", "Status"}, 0) {
+                new String[]{"Billing ID", "Contractor", "Hours", "Client Bill Rate", "Client Invoice Total", "Status"}, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
                 return false;

@@ -29,4 +29,17 @@ public class NetworkUtils {
         return null;
     }
     
+    public static Enterprise findEnterpriseByName(Network network, String enterpriseName) {
+        if (network == null || network.getEnterpriseList() == null) {
+            return null;
+        }
+
+        for (Enterprise enterprise : network.getEnterpriseList()) {
+            if (enterprise.getName().equalsIgnoreCase(enterpriseName)) {
+                return enterprise;
+            }
+        }
+        return null;
+    }
+    
 }

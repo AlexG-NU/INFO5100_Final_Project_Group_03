@@ -27,10 +27,25 @@ public class PersonDirectory {
         personList.add(person);
         return person;
     }
+    
+    public Person createPerson(String firstName, String lastName) {
+        Person person = new Person(firstName, lastName);
+        personList.add(person);
+        return person;
+    }
 
     public Person findPerson(String name) {
         for (Person p : personList) {
             if (p.getName().equalsIgnoreCase(name)) {
+                return p;
+            }
+        }
+        return null;
+    }
+    
+    public Person findPersonById(int personId) {
+        for (Person p : personList) {
+            if (p.getPersonId() == personId) {
                 return p;
             }
         }

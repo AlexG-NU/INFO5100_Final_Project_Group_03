@@ -5,6 +5,7 @@
 package UserInterface.Client;
 
 import Business.Network;
+import Core.Enterprise;
 import Core.NetworkUtils;
 import Core.Organization;
 import Core.UserAccount;
@@ -306,7 +307,18 @@ private void refreshTable() {
         }
  
         String defaultPassword = "password";
-        Core.Person loginPerson = new Core.Person(candidate.getFullName());
+
+        Enterprise clientEnterprise = NetworkUtils.findEnterpriseByName(network, "Client Enterprise");
+
+        Core.Person loginPerson;
+        if (clientEnterprise != null) {
+            loginPerson = clientEnterprise.getPersonDirectory()
+                    .createPerson(candidate.getFirstName(), candidate.getLastName());
+        } else {
+            loginPerson = new Core.Person(candidate.getFirstName(), candidate.getLastName());
+        }
+        loginPerson.setEmail(candidate.getEmail());
+        loginPerson.setPhone(candidate.getPhone());
  
         network.getUserAccountDirectory().createUserAccount(
                 username,

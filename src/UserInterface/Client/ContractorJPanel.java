@@ -27,7 +27,8 @@ public class ContractorJPanel extends javax.swing.JPanel {
         btnBack.setVisible(false);
         btnRefresh.setVisible(false);
         btnReports.setVisible(false);
-        txtSupervisor.setText(account.getSupervisor().getUsername());
+        String supervisorName = (account.getSupervisor() != null) ? account.getSupervisor().getUsername(): "Not yet assigned";
+        txtSupervisor.setText(supervisorName);
     }
     public void setWorkAreaHeader(String title, String subtitle) {
         lblTitle.setText(title);

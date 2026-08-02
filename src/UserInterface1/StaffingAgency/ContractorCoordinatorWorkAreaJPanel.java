@@ -162,7 +162,7 @@ public class ContractorCoordinatorWorkAreaJPanel
         );
 
         JPanel buttonPanel =
-                new JPanel(new GridLayout(2, 2, 40, 20));
+        new JPanel(new GridLayout(1, 3, 40, 20));
 
         buttonPanel.setOpaque(false);
 
@@ -190,7 +190,7 @@ public class ContractorCoordinatorWorkAreaJPanel
         buttonPanel.add(btnManageContractors);
         buttonPanel.add(btnManageAssignments);
         buttonPanel.add(btnCredentialVerification);
-        buttonPanel.add(btnContractExtensions);
+       // buttonPanel.add(btnContractExtensions);
 
         headerPanel.add(
                 buttonPanel,

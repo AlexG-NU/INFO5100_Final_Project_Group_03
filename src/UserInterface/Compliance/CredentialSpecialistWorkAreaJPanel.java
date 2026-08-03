@@ -39,6 +39,8 @@ public class CredentialSpecialistWorkAreaJPanel extends javax.swing.JPanel {
         this.specialist = specialist;
         this.contractorList = contractorList;
         initComponents();
+        btnCredentialRecords = new javax.swing.JButton("Manage Credential Records");
+        btnCredentialRecords.addActionListener(evt -> openCredentialManagement());
         btnBack.setVisible(previousPanel != null);
         configureTable();
         applyResponsiveLayout();
@@ -87,7 +89,8 @@ public class CredentialSpecialistWorkAreaJPanel extends javax.swing.JPanel {
         header.add(lblCaseStatus);
         header.add(javax.swing.Box.createVerticalStrut(10));
         header.add(managerStyleGrid(
-                btnView, btnExpiring, btnManage, btnReports));
+                btnView, btnExpiring, btnManage, btnReports,
+                btnCredentialRecords));
         ComplianceTableUI.styleScrollPane(jScrollPane1, 360);
         jScrollPane1.setBorder(javax.swing.BorderFactory.createTitledBorder(
                 "Credential Verification Queue"));
@@ -108,8 +111,9 @@ public class CredentialSpecialistWorkAreaJPanel extends javax.swing.JPanel {
                 new java.awt.GridLayout(0, 2, 14, 10));
         panel.setBackground(new java.awt.Color(255, 255, 204));
         panel.setAlignmentX(LEFT_ALIGNMENT);
+        int rows = (buttons.length + 1) / 2;
         panel.setMaximumSize(new java.awt.Dimension(
-                Integer.MAX_VALUE, buttons.length <= 2 ? 38 : 82));
+                Integer.MAX_VALUE, rows * 38 + Math.max(0, rows - 1) * 10));
         for (javax.swing.JButton button : buttons) {
             button.setPreferredSize(new java.awt.Dimension(210, 32));
             panel.add(button);
@@ -310,6 +314,30 @@ public class CredentialSpecialistWorkAreaJPanel extends javax.swing.JPanel {
         }
     }
 
+    private void openCredentialManagement() {
+        CredentialManagementJPanel managementPanel =
+                new CredentialManagementJPanel(container, complianceDirectory,
+                        contractorList, this);
+        if (container != null) {
+            container.removeAll();
+            container.setLayout(new java.awt.CardLayout());
+            container.add(managementPanel, "CredentialManagement");
+            ((java.awt.CardLayout) container.getLayout()).show(
+                    container, "CredentialManagement");
+            container.revalidate();
+            container.repaint();
+        } else {
+            javax.swing.JDialog dialog = new javax.swing.JDialog(
+                    javax.swing.SwingUtilities.getWindowAncestor(this),
+                    "Manage Credential Records",
+                    java.awt.Dialog.ModalityType.APPLICATION_MODAL);
+            dialog.setContentPane(managementPanel);
+            dialog.setSize(980, 700);
+            dialog.setLocationRelativeTo(this);
+            dialog.setVisible(true);
+        }
+    }
+
     private void viewCredential() {
         CredentialVerificationTask task = getSelectedTask();
         if (task == null) return;
@@ -407,6 +435,7 @@ public class CredentialSpecialistWorkAreaJPanel extends javax.swing.JPanel {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnBack;
+    private javax.swing.JButton btnCredentialRecords;
     private javax.swing.JButton btnExpiring;
     private javax.swing.JButton btnManage;
     private javax.swing.JButton btnRefresh;

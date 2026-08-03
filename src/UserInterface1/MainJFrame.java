@@ -57,8 +57,8 @@ public class MainJFrame extends JFrame {
 
     private JButton btnLogin;
     private JButton btnLogout;
-    private JLabel lblQuickSwitch;
-    private javax.swing.JComboBox<UserAccount> cmbQuickSwitch;
+    //private JLabel lblQuickSwitch;
+    //private javax.swing.JComboBox<UserAccount> cmbQuickSwitch;
     private Network network;
     
     public MainJFrame() {
@@ -82,7 +82,7 @@ public class MainJFrame extends JFrame {
                 candidateList,
                 submissionList);
         
-        populateQuickSwitchComboBox();
+        //populateQuickSwitchComboBox();
 
         setTitle("Global Workforce Staffing Network");
         setSize(1100, 700);
@@ -230,7 +230,7 @@ public class MainJFrame extends JFrame {
         btnLogout.setVisible(true);
     }
     //Demo ONLY!!!
-    private void quickSwitchLogin() {
+    /*private void quickSwitchLogin() {
  
         Object selected = cmbQuickSwitch.getSelectedItem();
  
@@ -246,9 +246,9 @@ public class MainJFrame extends JFrame {
         showPanel(workArea);
         setLoginFieldsVisible(false);
         btnLogout.setVisible(true);
-    }
+    }*/
     
-    private void populateQuickSwitchComboBox() {
+    /*private void populateQuickSwitchComboBox() {
  
         cmbQuickSwitch.removeAllItems();
         cmbQuickSwitch.addItem(null);
@@ -256,7 +256,7 @@ public class MainJFrame extends JFrame {
         for (UserAccount ua : network.getUserAccountDirectory().getUserAccountList()) {
             cmbQuickSwitch.addItem(ua);
         }
-    }
+    }*/
 
     /**
      * Handles logout.
@@ -265,7 +265,7 @@ public class MainJFrame extends JFrame {
 
         txtUsername.setText("");
         txtPassword.setText("");
-        cmbQuickSwitch.setSelectedIndex(0);
+        //cmbQuickSwitch.setSelectedIndex(0);
 
         setLoginFieldsVisible(true);
         btnLogout.setVisible(false);
@@ -288,8 +288,8 @@ public class MainJFrame extends JFrame {
 
         btnLogin.setVisible(visible);
         
-        lblQuickSwitch.setVisible(visible);
-        cmbQuickSwitch.setVisible(visible);
+        //lblQuickSwitch.setVisible(visible);
+        //cmbQuickSwitch.setVisible(visible);
     }
 
     /**
@@ -311,8 +311,8 @@ public class MainJFrame extends JFrame {
  
         btnLogin = new JButton();
         btnLogout = new JButton();
-        lblQuickSwitch = new JLabel();
-        cmbQuickSwitch = new javax.swing.JComboBox<>();
+        //lblQuickSwitch = new JLabel();
+        //cmbQuickSwitch = new javax.swing.JComboBox<>();
  
         setDefaultCloseOperation(
                 JFrame.EXIT_ON_CLOSE
@@ -451,16 +451,16 @@ public class MainJFrame extends JFrame {
          * during a demo is fast. Real login above still works
          * as normal.
          */
-        lblQuickSwitch.setFont(
-                new Font("Arial", Font.BOLD, 14)
-        );
-        lblQuickSwitch.setForeground(Color.WHITE);
-        lblQuickSwitch.setText("Quick Switch (Demo)");
+        //lblQuickSwitch.setFont(
+        //        new Font("Arial", Font.BOLD, 14)
+        //);
+        //lblQuickSwitch.setForeground(Color.WHITE);
+        //lblQuickSwitch.setText("Quick Switch (Demo)");
  
-        cmbQuickSwitch.setFont(
-                new Font("Arial", Font.PLAIN, 12)
-        );
-        cmbQuickSwitch.setRenderer(
+        //cmbQuickSwitch.setFont(
+        //        new Font("Arial", Font.PLAIN, 12)
+        //);
+        /*cmbQuickSwitch.setRenderer(
                 new javax.swing.DefaultListCellRenderer() {
                     @Override
                     public java.awt.Component getListCellRendererComponent(
@@ -478,10 +478,10 @@ public class MainJFrame extends JFrame {
                         return this;
                     }
                 }
-        );
-        cmbQuickSwitch.addActionListener(
-                event -> quickSwitchLogin()
-        );
+        );*/
+        //cmbQuickSwitch.addActionListener(
+        //        event -> quickSwitchLogin()
+        //);
  
         /*
          * Login button.
@@ -588,15 +588,15 @@ public class MainJFrame extends JFrame {
                                                                 100,
                                                                 javax.swing.GroupLayout.PREFERRED_SIZE
                                                         )
-                                                        .addComponent(
-                                                                lblQuickSwitch
-                                                        )
-                                                        .addComponent(
-                                                                cmbQuickSwitch,
-                                                                javax.swing.GroupLayout.PREFERRED_SIZE,
-                                                                180,
-                                                                javax.swing.GroupLayout.PREFERRED_SIZE
-                                                        )
+                                                        //.addComponent(
+                                                        //        lblQuickSwitch
+                                                        //)
+                                                        //.addComponent(
+                                                        //        cmbQuickSwitch,
+                                                        //        javax.swing.GroupLayout.PREFERRED_SIZE,
+                                                        //        180,
+                                                        //        javax.swing.GroupLayout.PREFERRED_SIZE
+                                                        //)
                                         )
                                         .addContainerGap(
                                                 25,
@@ -685,18 +685,18 @@ public class MainJFrame extends JFrame {
                                                 25,
                                                 25
                                         )
-                                        .addComponent(
-                                                lblQuickSwitch
-                                        )
+                                        //.addComponent(
+                                        //        lblQuickSwitch
+                                        //)
                                         .addPreferredGap(
                                                 javax.swing.LayoutStyle.ComponentPlacement.RELATED
                                         )
-                                        .addComponent(
-                                                cmbQuickSwitch,
-                                                javax.swing.GroupLayout.PREFERRED_SIZE,
-                                                30,
-                                                javax.swing.GroupLayout.PREFERRED_SIZE
-                                        )
+                                        //.addComponent(
+                                        //        cmbQuickSwitch,
+                                        //        javax.swing.GroupLayout.PREFERRED_SIZE,
+                                        //        30,
+                                        //        javax.swing.GroupLayout.PREFERRED_SIZE
+                                        //)
                                         .addContainerGap(
                                                 javax.swing.GroupLayout.DEFAULT_SIZE,
                                                 Short.MAX_VALUE
